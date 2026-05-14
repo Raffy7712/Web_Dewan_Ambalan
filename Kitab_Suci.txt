@@ -472,3 +472,42 @@ FUTURE:
 Catatan: Untuk now, cukup dokumentasi ini. Setup real akan dilakukan
 saat ada kebutuhan urgent atau user request explicit integration.
 Sistem saat ini sudah support image URLs publik dari service manapun.
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN IX: UI/UX CONVENTIONS & EMOJI REFERENCE (May 2026)
+═══════════════════════════════════════════════════════════════════════════════
+
+POLICY: Emojis dihilangkan dari web interface untuk konsistensi visual.
+Berikut referensi emoji yang pernah digunakan untuk dokumentasi internal:
+
+POST CATEGORIES (Untuk Referensi Internal):
+🎯 Kegiatan         - Jadwal & acara dengan tanggal/lokasi (kegiatan)
+📢 Pengumuman        - Informasi & berita penting (pengumuman)
+🖼️ Album Dokumentasi - Kumpulan foto kegiatan (galeri)
+🏆 Prestasi          - Pencapaian & penghargaan (prestasi)
+
+ADMIN ACTIONS (Untuk Referensi Internal):
+📷 Upload foto      - Cloudinary drag-drop uploader
+📹 Upload video     - Cloudinary video uploader
+✏️ Edit             - Modify existing posts
+🗑️ Hapus            - Delete posts
+👁️ View            - Display/preview posts
+📧 Email            - Send notifications
+⚙️ Pengaturan       - Settings & configuration
+
+IMPLEMENTATION NOTE:
+- Emojis hanya di Kitab Suci (dokumentasi internal) untuk visual reference
+- Web interface pakai text labels saja (cleaner UI)
+- Icon library: Lucide React (untuk visual needs)
+
+PROFILE PHOTOS:
+- User profile photo sementara: static image dari /public/default-avatar.jpg
+- Path di database: stored as relative path atau URL
+- Future: Integrate gravatar atau upload system
+
+POSTS MANAGEMENT:
+- Unified interface di /admin/posts dengan tabs/buttons untuk:
+  1. List semua posts (view, edit, delete, toggle status)
+  2. Create new post (inline atau modal)
+- Removed duplicate "Posting berita & galeri" menu item
+- Single entry point untuk post management

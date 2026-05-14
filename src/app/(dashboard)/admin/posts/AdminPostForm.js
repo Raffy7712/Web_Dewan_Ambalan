@@ -75,10 +75,10 @@ export default function AdminPostForm() {
               onChange={(e) => setKind(e.target.value)}
               className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             >
-              <option value="kegiatan">🎯 Kegiatan - Jadwal & acara dengan tanggal/lokasi</option>
-              <option value="pengumuman">📢 Pengumuman - Informasi & berita penting</option>
-              <option value="galeri">🖼️ Album Dokumentasi - Kumpulan foto kegiatan</option>
-              <option value="prestasi">🏆 Prestasi - Pencapaian & penghargaan</option>
+              <option value="kegiatan">Kegiatan - Jadwal & acara dengan tanggal/lokasi</option>
+              <option value="pengumuman">Pengumuman - Informasi & berita penting</option>
+              <option value="galeri">Album Dokumentasi - Kumpulan foto kegiatan</option>
+              <option value="prestasi">Prestasi - Pencapaian & penghargaan</option>
             </select>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
               {kind === "kegiatan" && "Muncul di jadwal /kegiatan dan tab Berita → Kegiatan. Perlu tanggal & lokasi."}

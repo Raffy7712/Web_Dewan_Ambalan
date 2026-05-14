@@ -156,13 +156,6 @@ export default function CloudinaryMediaUpload({
       }
     }
   };
-                }
-              : item
-          )
-        );
-      }
-    }
-  };
 
   const handleDrag = (e) => {
     e.preventDefault();
