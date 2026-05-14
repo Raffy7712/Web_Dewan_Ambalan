@@ -93,15 +93,18 @@ export default function CloudinaryMediaUpload({
       }
 
       const itemId = `${Date.now()}-${Math.random()}`;
-      const newItem = {
-        id: itemId,
-        url: "",
-        mediaType: file.type.startsWith("video/") ? "video" : "image",
-        uploading: true,
-        error: null,
-      };
 
-      setItems((prev) => [...prev, newItem]);
+      // Add item with uploading state
+      setItems((prev) => [
+        ...prev,
+        {
+          id: itemId,
+          url: "",
+          mediaType: file.type.startsWith("video/") ? "video" : "image",
+          uploading: true,
+          error: null,
+        },
+      ]);
 
       try {
         const formData = new FormData();
@@ -126,20 +129,22 @@ export default function CloudinaryMediaUpload({
 
         const data = await response.json();
 
-        const updatedItems = items.map((item) =>
-          item.id === itemId
-            ? {
-                ...item,
-                url: data.secure_url,
-                mediaType: data.resource_type === "video" ? "video" : "image",
-                uploading: false,
-                error: null,
-              }
-            : item
-        );
-
-        setItems(updatedItems);
-        notifyChange(updatedItems);
+        // Update item with success
+        setItems((prev) => {
+          const updated = prev.map((item) =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  url: data.secure_url,
+                  mediaType: data.resource_type === "video" ? "video" : "image",
+                  uploading: false,
+                  error: null,
+                }
+              : item
+          );
+          notifyChange(updated);
+          return updated;
+        });
       } catch (error) {
         console.error("Cloudinary upload error:", error);
         setItems((prev) =>
