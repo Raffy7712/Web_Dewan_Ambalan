@@ -20,6 +20,9 @@ import {
   Pin,
 } from "lucide-react";
 
+// Page needs session for comments, so must be dynamic
+export const dynamic = "force-dynamic";
+
 function formatTanggal(iso) {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("id-ID", {
