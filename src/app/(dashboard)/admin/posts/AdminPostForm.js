@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createAdminPostAction } from "@/app/actions/posts";
+import CloudinaryMediaUpload from "@/components/CloudinaryMediaUpload";
 import {
   AlertCircle,
   CheckCircle,
@@ -20,6 +21,9 @@ export default function AdminPostForm() {
     null,
   );
   const [kind, setKind] = useState("kegiatan");
+  const [imageUrls, setImageUrls] = useState([]);
+  const [videoUrls, setVideoUrls] = useState([]);
+  const formRef = useRef(null);
 
   useEffect(() => {
     if (state?.success) router.refresh();
@@ -49,7 +53,17 @@ export default function AdminPostForm() {
         </div>
       )}
 
-      <form action={formAction} className="space-y-6">
+      <form
+        ref={formRef}
+        action={formAction}
+        className="space-y-6"
+        onSubmit={(e) => {
+          const imageUrlsInput = formRef.current?.querySelector('input[name="image_urls"]');
+          const videoUrlsInput = formRef.current?.querySelector('input[name="video_urls"]');
+          if (imageUrlsInput) imageUrlsInput.value = imageUrls.join("\n");
+          if (videoUrlsInput) videoUrlsInput.value = videoUrls.join("\n");
+        }}
+      >
         <fieldset className="space-y-3">
           <label className="block">
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
@@ -158,36 +172,36 @@ export default function AdminPostForm() {
           <label className="block">
             <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
               <ImagePlus size={16} />
-              URL foto (Google Drive)
+              Upload foto (Cloudinary)
             </span>
-            <p className="text-xs text-slate-500 mt-1 mb-2">
-              Satu URL per baris. Minimal 1 dan maksimal 10 tautan (boleh link
-              share Drive). Foto pertama menjadi sampul. Link akan dinormalisasi
-              untuk tampil di situs.
+            <p className="text-xs text-slate-500 mt-1 mb-3">
+              Drag & drop atau klik untuk upload. Minimal 1 dan maksimal 10 foto. Foto pertama menjadi sampul.
             </p>
-            <textarea
-              name="image_urls"
-              required
-              rows={6}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-mono text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-              placeholder={"https://drive.google.com/file/d/…/view\n…"}
+            <CloudinaryMediaUpload
+              mediaType="image"
+              maxFiles={10}
+              onChange={(urls) => setImageUrls(urls)}
             />
           </label>
+
           <label className="block">
             <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
               <Video size={16} />
-              URL video (Google Drive, opsional)
+              Upload video (Cloudinary, opsional)
             </span>
-            <p className="text-xs text-slate-500 mt-1 mb-2">
-              Maksimal 5 video. Satu URL per baris. Kosongkan jika tidak ada.
+            <p className="text-xs text-slate-500 mt-1 mb-3">
+              Maksimal 5 video. Kosongkan jika tidak ada.
             </p>
-            <textarea
-              name="video_urls"
-              rows={4}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-mono text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-              placeholder="https://drive.google.com/file/d/…/view"
+            <CloudinaryMediaUpload
+              mediaType="video"
+              maxFiles={5}
+              onChange={(urls) => setVideoUrls(urls)}
             />
           </label>
+
+          {/* Hidden inputs untuk form submission (backward compatible dengan action) */}
+          <input type="hidden" name="image_urls" />
+          <input type="hidden" name="video_urls" />
         </div>
 
         <label className="flex items-center gap-3 cursor-pointer">
