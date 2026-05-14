@@ -107,6 +107,7 @@ export default function CloudinaryMediaUpload({
         const formData = new FormData();
         formData.append("file", file);
         formData.append("upload_preset", uploadPreset);
+        formData.append("resource_type", "auto");
 
         const response = await fetch(
           `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
@@ -117,39 +118,30 @@ export default function CloudinaryMediaUpload({
         );
 
         if (!response.ok) {
-          throw new Error(`Upload failed: ${response.statusText}`);
+          const errorData = await response.json();
+          throw new Error(
+            errorData?.error?.message || `Upload failed: ${response.statusText}`
+          );
         }
 
         const data = await response.json();
 
-        setItems((prev) =>
-          prev.map((item) =>
-            item.id === itemId
-              ? {
-                  ...item,
-                  url: data.secure_url,
-                  mediaType: data.resource_type === "video" ? "video" : "image",
-                  uploading: false,
-                  error: null,
-                }
-              : item
-          )
+        const updatedItems = items.map((item) =>
+          item.id === itemId
+            ? {
+                ...item,
+                url: data.secure_url,
+                mediaType: data.resource_type === "video" ? "video" : "image",
+                uploading: false,
+                error: null,
+              }
+            : item
         );
 
-        notifyChange(
-          items.map((item) =>
-            item.id === itemId
-              ? {
-                  ...item,
-                  url: data.secure_url,
-                  mediaType: data.resource_type === "video" ? "video" : "image",
-                  uploading: false,
-                  error: null,
-                }
-              : item
-          )
-        );
+        setItems(updatedItems);
+        notifyChange(updatedItems);
       } catch (error) {
+        console.error("Cloudinary upload error:", error);
         setItems((prev) =>
           prev.map((item) =>
             item.id === itemId
@@ -157,6 +149,13 @@ export default function CloudinaryMediaUpload({
                   ...item,
                   uploading: false,
                   error: error.message || "Upload gagal",
+                }
+              : item
+          )
+        );
+      }
+    }
+  };
                 }
               : item
           )
