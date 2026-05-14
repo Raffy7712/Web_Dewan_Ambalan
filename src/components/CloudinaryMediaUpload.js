@@ -9,6 +9,7 @@ export default function CloudinaryMediaUpload({
   mediaType = "image",
   onChange,
   maxFiles = mediaType === "image" ? 10 : 5,
+  folder = "da-alf",
 }) {
   const [items, setItems] = useState(
     initialUrls.map((url, idx) => ({
@@ -111,6 +112,7 @@ export default function CloudinaryMediaUpload({
         formData.append("file", file);
         formData.append("upload_preset", uploadPreset);
         formData.append("resource_type", "auto");
+        formData.append("folder", folder);
 
         const response = await fetch(
           `https://api.cloudinary.com/v1_1/${cloudName}/upload`,

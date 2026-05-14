@@ -8,6 +8,7 @@ import {
   deleteSuratMasukAction,
   deleteSuratKeluarAction,
 } from "@/app/actions/agenda-surat";
+import SuratMediaUpload from "@/components/SuratMediaUpload";
 import { FileSpreadsheet, Inbox, Pencil, Send, Trash2 } from "lucide-react";
 
 function formatIdDate(value) {
@@ -298,17 +299,18 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                   className={inputClass}
                 />
               </label>
-              <label className="sm:col-span-2 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Lampiran (URL, opsional)</span>
-                <input
-                  type="url"
-                  name="lampiran_url"
-                  placeholder={CONTOH_MASUK.lampiran_url}
-                  value={draftMasuk.lampiran_url}
-                  onChange={(e) => setDraftMasuk((d) => ({ ...d, lampiran_url: e.target.value }))}
-                  className={inputClass}
+              <div className="sm:col-span-2">
+                <SuratMediaUpload
+                  initialUrl={draftMasuk.lampiran_url}
+                  suratType="masuk"
+                  onChange={(url) => setDraftMasuk((d) => ({ ...d, lampiran_url: url }))}
                 />
-              </label>
+                <input
+                  type="hidden"
+                  name="lampiran_url"
+                  value={draftMasuk.lampiran_url}
+                />
+              </div>
               <div className="sm:col-span-2 flex flex-wrap gap-2">
                 <button
                   type="submit"
@@ -499,17 +501,18 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                   className={inputClass}
                 />
               </label>
-              <label className="sm:col-span-2 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Lampiran (URL, opsional)</span>
-                <input
-                  type="url"
-                  name="lampiran_url"
-                  placeholder={CONTOH_KELUAR.lampiran_url}
-                  value={draftKeluar.lampiran_url}
-                  onChange={(e) => setDraftKeluar((d) => ({ ...d, lampiran_url: e.target.value }))}
-                  className={inputClass}
+              <div className="sm:col-span-2">
+                <SuratMediaUpload
+                  initialUrl={draftKeluar.lampiran_url}
+                  suratType="keluar"
+                  onChange={(url) => setDraftKeluar((d) => ({ ...d, lampiran_url: url }))}
                 />
-              </label>
+                <input
+                  type="hidden"
+                  name="lampiran_url"
+                  value={draftKeluar.lampiran_url}
+                />
+              </div>
               <div className="sm:col-span-2 flex flex-wrap gap-2">
                 <button
                   type="submit"
