@@ -9,6 +9,7 @@ import { getSession } from "@/app/actions/auth";
 import { notFound } from "next/navigation";
 import CommentForm from "@/components/CommentForm";
 import CommentList from "@/components/CommentList";
+import ImageLightbox from "@/components/ImageLightbox";
 import {
   ChevronRight,
   User,
@@ -234,20 +235,9 @@ export default async function PostDetailPage({ params }) {
               Galeri Foto ({images.length})
             </h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {images.map((img) => (
-              <div
-                key={img.id}
-                className="rounded-xl overflow-hidden bg-purple-100 dark:bg-purple-900/20 aspect-square"
-              >
-                <img
-                  src={getDisplayUrl(img.url)}
-                  alt={img.caption ?? "Foto dokumentasi"}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
+          <ImageLightbox
+            images={images.map((img) => getDisplayUrl(img.url))}
+          />
         </section>
       )}
 
