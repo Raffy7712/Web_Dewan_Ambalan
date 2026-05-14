@@ -1,6 +1,7 @@
 "use client";
 import { useState, useOptimistic, useTransition } from "react";
 import { deleteCommentAction, togglePinAction, toggleSpamAction } from "@/app/actions/admin";
+import { getAvatarUrl } from "@/lib/avatar";
 import { User, Trash2, Pin, PinOff, ShieldAlert, ShieldCheck } from "lucide-react";
 
 const STAFF_ROLES = ["admin", "moderator"];
@@ -19,10 +20,12 @@ function formatTanggal(iso) {
 function Avatar({ url, name, size = "sm" }) {
   const dim = size === "sm" ? "w-7 h-7 text-[10px]" : "w-5 h-5 text-[9px]";
   const initials = name?.[0]?.toUpperCase() ?? "?";
+  const avatarUrl = getAvatarUrl(url);
+
   return (
     <div className={`${dim} rounded-full bg-purple-200 dark:bg-purple-800 flex items-center justify-center flex-shrink-0 overflow-hidden`}>
       {url ? (
-        <img src={url} alt="" className="w-full h-full object-cover" />
+        <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
       ) : (
         <User size={size === "sm" ? 14 : 11} className="text-purple-600 dark:text-purple-400" />
       )}

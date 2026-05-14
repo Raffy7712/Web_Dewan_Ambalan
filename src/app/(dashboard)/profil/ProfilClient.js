@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from 'react';
 import { Edit2, Lock, Mail, Briefcase, Calendar } from 'lucide-react';
 import { updateProfileAction } from '@/app/actions/auth';
+import { getAvatarUrl } from '@/lib/avatar';
 import { useRouter } from 'next/navigation';
 
 export default function ProfilClient({ account }) {
@@ -49,13 +50,13 @@ export default function ProfilClient({ account }) {
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-12 mb-6">
               {account.profile_picture_url ? (
                 <img
-                  src={account.profile_picture_url}
+                  src={getAvatarUrl(account.profile_picture_url)}
                   alt={account.display_name}
                   className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg border-4 border-white dark:border-slate-900 shadow-lg object-cover flex-shrink-0"
                 />
               ) : (
                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg border-4 border-white dark:border-slate-900 shadow-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
-                  <span className="text-4xl">👤</span>
+                  <img src="/default-avatar.svg" alt="default" className="w-16 h-16 opacity-60" />
                 </div>
               )}
               <div className="flex-1">

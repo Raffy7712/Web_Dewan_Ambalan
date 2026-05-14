@@ -56,12 +56,6 @@ const modules = [
     icon: Newspaper,
   },
   {
-    href: "/admin/posts/new",
-    title: "Posting berita & galeri",
-    description: "Kegiatan (tab jadwal) atau album foto ke galeri + email.",
-    icon: Newspaper,
-  },
-  {
     href: "/admin/settings",
     title: "Pengaturan situs",
     description: "Registrasi akun, seleksi calon pengurus, masa bakti.",

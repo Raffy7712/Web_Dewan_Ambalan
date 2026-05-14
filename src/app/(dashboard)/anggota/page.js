@@ -3,20 +3,18 @@ import { getAnggota, getJabatanList } from "@/lib/queries";
 import { getSession } from "@/app/actions/auth";
 import { getAllActiveAccountsForAdmin } from "@/lib/admin-queries";
 import { getCmsText, isAmbalanRegistrationEnabled } from "@/lib/cms";
+import { getAvatarUrl, getInitials } from "@/lib/avatar";
 import { Users, UserPlus, Settings } from "lucide-react";
 import AnggotaAdminPanel from "./AnggotaAdminPanel";
 
 function Avatar({ name, url }) {
-  const initials =
-    name
-      ?.split(" ")
-      .slice(0, 2)
-      .map((w) => w[0]?.toUpperCase())
-      .join("") ?? "?";
+  const initials = getInitials(name);
+  const avatarUrl = getAvatarUrl(url);
+
   return (
     <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mx-auto mb-3 overflow-hidden">
       {url ? (
-        <img src={url} alt={name} className="w-full h-full object-cover" />
+        <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
       ) : (
         <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
           {initials}
