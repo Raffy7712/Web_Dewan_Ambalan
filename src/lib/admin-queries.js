@@ -197,7 +197,34 @@ export async function getAllAdminPosts() {
   }
 
   return data ?? [];
-  return data ?? [];
+}
+
+/** Admin: fetch single post with media for editing */
+export async function getPostForEdit(postId) {
+  const db = createAdminClient();
+
+  const { data, error } = await db
+    .from("posts")
+    .select(
+      `id, title, description, content, slug, category, status,
+       published_at, author_id, post_number, event_date, event_location,
+       cover_image_url, post_media(id, media_type, url, order_index)`,
+    )
+    .eq("id", postId)
+    .single();
+
+  if (error) {
+    console.error("getPostForEdit:", error.message);
+    return null;
+  }
+
+  if (data && data.post_media) {
+    data.post_media = data.post_media.sort(
+      (a, b) => a.order_index - b.order_index,
+    );
+  }
+
+  return data;
 }
 
 export async function getPermissionMatrix() {

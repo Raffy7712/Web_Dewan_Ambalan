@@ -263,6 +263,170 @@ export async function createAdminPostAction(prevState, formData) {
   };
 }
 
+/** Admin: Update an existing post */
+export async function updateAdminPostAction(postId, prevState, formData) {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { error: "Hanya admin yang dapat mengubah postingan." };
+  }
+
+  const title = formData.get("title")?.toString().trim() ?? "";
+  const description = formData.get("description")?.toString().trim() ?? "";
+  const content = formData.get("content")?.toString().trim() ?? "";
+  const notifyEmail = formData.get("notify_email") === "on";
+
+  const event_date = formData.get("event_date")?.toString().trim() ?? "";
+  const event_location = formData.get("event_location")?.toString().trim() ?? "";
+
+  if (!title) return { error: "Judul wajib diisi." };
+  if (title.length > 200) return { error: "Judul terlalu panjang." };
+  if (!description) return { error: "Ringkasan wajib diisi." };
+  if (description.length > 500) {
+    return { error: "Ringkasan maksimal 500 karakter." };
+  }
+
+  const db = createAdminClient();
+  const { data: post, error: fetchErr } = await db
+    .from("posts")
+    .select("id, category, slug, event_date, event_location, cover_image_url")
+    .eq("id", postId)
+    .single();
+
+  if (fetchErr || !post) {
+    return { error: "Postingan tidak ditemukan." };
+  }
+
+  if (post.category === "kegiatan") {
+    if (!event_date) return { error: "Tanggal kegiatan wajib diisi." };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(event_date)) {
+      return { error: "Format tanggal harus YYYY-MM-DD." };
+    }
+    if (!event_location) return { error: "Lokasi kegiatan wajib diisi." };
+  }
+
+  const imageLines = parseMediaUrlLines(
+    formData.get("image_urls")?.toString() ?? "",
+  );
+  const videoLines = parseMediaUrlLines(
+    formData.get("video_urls")?.toString() ?? "",
+  );
+
+  const seenImg = new Set();
+  const imageUrls = [];
+  for (const line of imageLines) {
+    if (seenImg.has(line)) continue;
+    seenImg.add(line);
+    if (!isValidHttpUrl(line)) {
+      return {
+        error: `URL foto tidak valid (wajib http/https): ${line.slice(0, 80)}${line.length > 80 ? "…" : ""}`,
+      };
+    }
+    imageUrls.push(getDisplayUrl(line));
+  }
+
+  if (imageUrls.length < MIN_POST_IMAGES) {
+    return {
+      error: `Wajib minimal ${MIN_POST_IMAGES} dan maksimal ${MAX_POST_IMAGES} URL foto (saat ini ${imageUrls.length}).`,
+    };
+  }
+  if (imageUrls.length > MAX_POST_IMAGES) {
+    return {
+      error: `Maksimal ${MAX_POST_IMAGES} URL foto (saat ini ${imageUrls.length}).`,
+    };
+  }
+
+  const seenVid = new Set();
+  const videoUrls = [];
+  for (const line of videoLines) {
+    if (seenVid.has(line)) continue;
+    seenVid.add(line);
+    if (!isValidHttpUrl(line)) {
+      return {
+        error: `URL video tidak valid (wajib http/https): ${line.slice(0, 80)}${line.length > 80 ? "…" : ""}`,
+      };
+    }
+    videoUrls.push(line.trim());
+  }
+  if (videoUrls.length > MAX_POST_VIDEOS) {
+    return {
+      error: `Maksimal ${MAX_POST_VIDEOS} URL video (saat ini ${videoUrls.length}).`,
+    };
+  }
+
+  const updatePayload = {
+    title,
+    description,
+    content: content || null,
+    event_date: post.category === "kegiatan" ? event_date : null,
+    event_location: post.category === "kegiatan" ? event_location : null,
+  };
+
+  const { error: updateErr } = await db
+    .from("posts")
+    .update(updatePayload)
+    .eq("id", postId);
+
+  if (updateErr) {
+    console.error("updateAdminPostAction update:", updateErr.message);
+    return { error: "Gagal memperbarui postingan. Coba lagi." };
+  }
+
+  await db.from("post_media").delete().eq("post_id", postId);
+
+  let order = 0;
+  let coverUrl = null;
+  for (let i = 0; i < imageUrls.length; i++) {
+    const url = imageUrls[i];
+    if (!coverUrl) coverUrl = url;
+    const { error: mErr } = await db.from("post_media").insert({
+      post_id: postId,
+      media_type: "image",
+      url,
+      thumbnail_url: null,
+      caption: "",
+      order_index: order++,
+    });
+    if (mErr) {
+      console.error("post_media insert:", mErr.message);
+      return { error: "Gagal menyimpan lampiran foto." };
+    }
+  }
+
+  for (let i = 0; i < videoUrls.length; i++) {
+    const url = videoUrls[i];
+    const { error: mErr } = await db.from("post_media").insert({
+      post_id: postId,
+      media_type: "video",
+      url,
+      thumbnail_url: null,
+      caption: "",
+      order_index: order++,
+    });
+    if (mErr) {
+      console.error("post_media insert:", mErr.message);
+      return { error: "Gagal menyimpan lampiran video." };
+    }
+  }
+
+  if (coverUrl && coverUrl !== post.cover_image_url) {
+    await db.from("posts").update({ cover_image_url: coverUrl }).eq("id", postId);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/berita");
+  revalidatePath(`/berita/${post.slug}`);
+  revalidatePath("/galeri");
+  revalidatePath("/kegiatan");
+  revalidatePath("/home");
+  revalidatePath("/admin/posts");
+
+  return {
+    success: true,
+    slug: post.slug,
+    message: "Postingan berhasil diperbarui.",
+  };
+}
+
 /** Admin: Delete a post by ID */
 export async function deletePostAction(postId) {
   const session = await getSession();
