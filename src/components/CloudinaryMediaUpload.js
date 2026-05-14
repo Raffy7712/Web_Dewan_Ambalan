@@ -129,7 +129,7 @@ export default function CloudinaryMediaUpload({
 
         const data = await response.json();
 
-        // Update item with success
+        // Update item with success (deferred to avoid render conflict)
         setItems((prev) => {
           const updated = prev.map((item) =>
             item.id === itemId
@@ -142,7 +142,8 @@ export default function CloudinaryMediaUpload({
                 }
               : item
           );
-          notifyChange(updated);
+          // Defer parent update to next event loop
+          queueMicrotask(() => notifyChange(updated));
           return updated;
         });
       } catch (error) {
