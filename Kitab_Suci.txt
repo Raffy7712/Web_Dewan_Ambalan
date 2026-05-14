@@ -1,0 +1,394 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║                     KITAB SUCI - DEWAN AMBALAN DA-ALF                          ║
+║                  Dokumentasi Lengkap Project Next.js 16 + Supabase             ║
+║                                                                                ║
+║                         Last Updated: May 2026 (Session ++)                    ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN I: DAFTAR PERBAIKAN & PROGRES
+═══════════════════════════════════════════════════════════════════════════════
+
+1. [DONE] Koreksi Konten & Narasi:
+   - Update Nama Gugus Depan: Brebes 02.165 - 02.166.
+   - Narasi Jujur: Hapus "Kemah Rutin", ganti dengan "Perkemahan & Penjelajahan".
+   - Update Info Lomba: Fokus ke internal & persiapan LCTP Penggalang.
+   - Update Statistik: 10+ Kegiatan, 500+ Anggota Aktif (tadi tertulis 120+).
+   - Masa Bakti: Update ke 2026/2027.
+
+2. [DONE] Fix Default Export Error (Confirmed Path):
+   - Masalah: Error 500 karena `src/app/home/page.js` tidak meng-export komponen React.
+   - Tindakan: Memindahkan kode dari root ke `src/app/home/page.js` dan memastikan `export default function`.
+
+3. [DONE] Turbopack Module Resolution:
+   - Masalah: Gagal parse `_error.js` saat terjadi crash.
+   - Status: Sudah stabil setelah export diperbaiki.
+
+4. [DONE] Fix Redirect Page:
+   - Proxy + login/register `next`, form CTA home, dll. (sesi 2026-05).
+
+5. [DONE] Implementasi Program Unggulan:
+   - Tabel `featured_programs` + migration-v5.sql; admin `/admin/programs`; blok Fokus di `/home`.
+
+6. [DONE] UI Refinement & alur pendaftaran:
+   - CTA inklusif; toggle `ambalan_registration_enabled` + CMS halaman `daftar_ambalan`;
+   - `submitAmbalanApplicationAction` gate + periode dari `masa_bakti`; email staff pendaftaran baru.
+
+7. [DONE] Next.js 16 / React 19 — Error Script, Tema, Navbar Admin, Hydration:
+   - Hapus `<Script src="/theme-init.js" strategy="beforeInteractive" />` dari root layout.
+   - Pindahkan inisialisasi tema ke client: `src/components/ThemeToggle.js`.
+   - `src/app/(dashboard)/layout.js`: async, panggil `getSession()`, pass `isAdmin` ke Navbar.
+   - `src/components/Navbar.js`: prop `isAdmin`, tambah link Admin (ikon Shield) jika admin.
+   - Dashboard admin tetap hanya admin: semua route di `src/app/(dashboard)/admin/*` redirect ke /anggota jika bukan admin.
+
+8. [DONE] Login setelah Reset Password — Username vs Email:
+   - Masalah: User reset lewat email lalu login dengan email → akun tidak ditemukan.
+   - Tindakan: `loginAction` di `src/app/actions/auth.js` menerima username ATAU email.
+
+9. [DONE] Admin dashboard — ban akun + traffic + UI panel:
+   - `migration-v7.sql`: kolom `banned`, `banned_at`, `banned_reason`, `banned_by` pada `accounts`.
+   - Tabel `page_view_logs` (RLS on, tanpa policy = hanya service role).
+   - Login & sesi: `loginAction` + `getCurrentUser` menolak akun `banned`.
+   - `src/app/actions/admin-users.js`: `setAccountBannedAction` (admin only).
+   - Traffic: `INTERNAL_ANALYTICS_SECRET` di env → `src/proxy.js` memanggil `/api/internal/page-view`.
+   - Halaman `/admin/analytics` untuk melihat traffic.
+   - Layout admin: `AdminShell` (sidebar + strip mobile), `/admin/users`.
+
+10. [DONE] Laporan keuangan & transparansi:
+    - `migration-v8.sql`: `finance_months`, `finance_transactions`.
+    - Admin: `/admin/finance`; Publik: `/keuangan` (tab ringkasan + per bulan).
+    - Link Navbar & Footer; entri di `AdminShell` + kartu `/admin`.
+
+11. [DONE] Komentar & gambar posting (2026):
+    - Hapus teks "Komentar akan ditinjau moderator sebelum tampil" di form komentar.
+    - Foto posting: URL Google Drive dinormalisasi ke `https://drive.google.com/uc?export=view&id=…`
+    - Implementasi via `src/lib/media-url.js` (`getDisplayUrl`) di `/berita`, `/berita/[slug]`, `/`, dan `GaleriView`.
+
+12. [OPS] INTERNAL_ANALYTICS_SECRET, keamanan API, rate limit & email:
+    - **INTERNAL_ANALYTICS_SECRET** (traffic): string acak panjang (mis. `openssl rand -hex 32`).
+    - **Production:** pindahkan ke env hosting, jangan commit ke git.
+    - **Vercel:** Project → Settings → Environment Variables → Production.
+    - **Docker / VPS:** `docker run -e INTERNAL_ANALYTICS_SECRET=...` atau env_file tidak ikut Git.
+    - **Node langsung:** `export INTERNAL_ANALYTICS_SECRET=...` sebelum `node`.
+    - **API security:** `POST /api/internal/page-view` wajib header `x-da-internal` sama secret.
+    - **Rate limiting:** `src/lib/rate-limit.js` (in-memory per instance).
+      - Login gagal per IP; OTP lupa password (per IP + email); OTP/register (per IP + email).
+      - Verifikasi registrasi per IP; submit reset password per IP; form ambalan per user.
+      - **Multi-replica:** Pertimbangkan **Upstash Redis** + `@upstash/ratelimit` atau **Vercel KV**.
+    - **Email notifikasi (Resend, `RESEND_API_KEY` + `EMAIL_FROM`):**
+      - Sudah ada: OTP reset/registrasi, welcome, komentar baru → staff, posting baru → user.
+      - Ditambah: password berhasil diubah → user; akun diblokir/dibuka → user; role perubahan → user.
+      - Konfirmasi pendaftaran seleksi → peserta; pengguna baru → staff; keuangan dipublikasikan → staff.
+
+13. [NOTE] Dev — Peringatan Next.js `scroll-behavior: smooth`:
+    - Bukan bug; opsional: tambah `data-scroll-behavior="smooth"` di `<html>` jika ingin smooth scroll.
+
+14. [ROADMAP — SARAN USER] Fitur & CMS (belum diimplementasi massal; urut prioritas):
+    
+    FASE A — Cepat & dampak langsung
+    - Kelola Jabatan (`admin/jabatan`): auto-refresh setelah tambah/hapus.
+    - Home (`/home`): blok "Fokus Kegiatan", "Kegiatan Terdekat", stats, masa bakti dari CMS.
+    - Site settings: toggle "pendaftaran calon dewan ambalan" + masa bakti string dinamis.
+
+    FASE B — Konten & halaman
+    - Halaman `/daftar-ambalan`: hero, syarat, timeline dari CMS.
+    - Konsistensi tema: audit palet, rapikan warna antar route.
+    - Sub-nav / breadcrumb atau tombol "kembali" di halaman child.
+
+    FASE C — Posting & event
+    - Posting kegiatan/event: model DB (judul, isi, tanggal, status, image).
+    - Ganti sumber `kegiatanList` dari `lib/data.js` ke data DB untuk home & `/kegiatan`.
+
+    FASE D — Notifikasi email
+    - User: email saat berita/posting baru (perlu opt-in di `accounts`).
+    - Admin: email komentar baru, email pendaftaran calon dewan.
+
+15. [SARAN] UX/UI Modern & Profesional:
+    - Identitas visual: satukan sistem desain (emerald + netral), kurangi purple/slate.
+    - Typography: hierarchy jelas, spacing konsisten (skala 4/8px).
+    - Komponen: card/button radius konsisten, status badge satu gaya.
+    - Navigasi: breadcrumb/judul halaman, footer dengan kontak & link.
+    - Performa: `next/image` untuk foto besar, lazy load, Open Graph per halaman.
+    - Admin: dashboard pola sama, feedback aksi jelas.
+    - Aksesibilitas: kontras teks, fokus keyboard, aria-label ikon.
+
+16. [DONE] Catatan footer, analytics, posting Drive, refresh admin (2026):
+    - Footer: kontak dari env `FOOTER_CONTACT_PHONE`, `FOOTER_CONTACT_EMAIL`, `FOOTER_WEBSITE_URL`.
+    - Helper: `src/lib/site-contact.js`.
+    - `/admin/posts/new`: lampiran URL Google Drive (1–10 foto, 0–5 video).
+    - `createAdminPostAction` normalisasi gambar Drive via `getDisplayUrl`, simpan `post_media`.
+    - Video Google Drive: iframe preview (`getDriveVideoEmbedUrl`); non-Drive tetap `<video>`.
+    - Auto-refresh: `router.refresh()` setelah sukses di CMS, Users (ban), Posts, Permissions.
+    - `src/proxy.js`: logging page view wajib `event.waitUntil(promise)`.
+
+17. [NOTE] Dev — Node.js DEP0205:
+    - Peringatan dari toolchain, bukan aplikasi da-alf.
+    - `npm run dev` pakai `node --disable-warning=DEP0205 … next dev` agar konsol bersih.
+    - Alternatif: `npm run dev:all-warnings` atau `npm run dev:webpack`.
+
+18. [DONE] Landing `/` — narasi Penegak, program dari admin, panduan (2026):
+    - Narasi: disesuaikan tingkat **Pramuka Penegak** (SMK).
+    - Stats label "Anggota Penegak".
+    - Blok **Program** dari `featured_programs` aktif; fallback statis jika tabel kosong.
+    - Kontak strip landing: `getSiteContact()` (sama env dengan footer).
+    - Halaman `/admin/panduan`: dokumentasi singkat penggunaan panel admin.
+
+19. [DONE] Content CMS lengkap + Buku agenda surat (admin only) — 2026:
+    - **CMS:** `deleteCmsEntryAction`, `toggleCmsPublishedAction` di `src/app/actions/admin.js`.
+    - Helper: `revalidatePathsAfterCmsChange` (termasuk `/profil`, `layout` untuk footer).
+    - UI `ContentManager.js`: edit (prefill, kunci readonly), hapus dengan konfirmasi, draft/publish cepat.
+    - `src/app/(dashboard)/admin/content/page.js` key={selectedPage} agar reset form saat ganti tab.
+    - **CMS (slot terpetakan):** `CMS_PUBLIC_BINDINGS` + `getCmsBindingKeySet` di `src/lib/cms.js`.
+    - Kartu per slot (status Published/Draft/belum diisi) dengan aksi Isi/Ubah, publish cepat, hapus.
+    - **Agenda surat:** `migration-v9.sql` — tabel `surat_masuk`, `surat_keluar`.
+    - Aksi `src/app/actions/agenda-surat.js` (hanya admin). UI `/admin/agenda-surat` (`AgendaSuratManager.js`).
+    - Tab surat masuk/keluar, form tambah-ubah, tabel, hapus. Sidebar + kartu `/admin`.
+    - **Excel:** `GET /api/admin/agenda-surat/export?scope=masuk|keluar|both` (admin session), paket `xlsx`.
+
+20. [NOTE] Agent — verifikasi lokal (2026):
+    - Untuk cek perubahan: cukup `npm run dev` (Turbopack dev server).
+    - Jangan `npm run build` kecuali pengguna minta build produksi.
+    - Verifikasi cepat: `npm run lint`; test di `http://localhost:3000`.
+
+21. [NOTE] CMS — mengapa teks tidak tampil (troubleshooting):
+    - Halaman publik hanya call `getCmsText(page_key, section_key, entry_key)` dengan kombinasi tetap di kode.
+    - `getCmsEntry` / `getCmsText` hanya baca entri `is_published = true`.
+    - Panel `/admin/content`: kartu slot terpetakan (nama Indonesia + kunci + link halaman).
+
+22. [DONE] Teks portal ke CMS + arsip surat (kebijakan & implementasi 2026):
+    - **Kebijakan teks portal:** Teks publik (hero, section, label, tab) via `cms_entries` + `CMS_PUBLIC_BINDINGS`.
+    - Halaman auth & error teknis boleh tetap di kode.
+    - **Halaman tambahan di CMS:** `page_key` kegiatan, berita, galeri, keuangan + perluasan home/organization.
+    - Izin via kunci `content.portal.manage` (lihat `migration-v10.sql`).
+    - Setelah deploy: jalankan **migration-v10.sql** di Supabase SQL Editor.
+    - **Arsip surat:** Modul `/admin/agenda-surat` = buku surat masuk & keluar (internal dewan).
+    - CRUD lengkap + unduh Excel; hanya admin; tidak ada API/route publik.
+
+23. [NEW] Admin Role Management (May 2026):
+    - Fitur promote/demote user ke admin di `/admin/users`.
+    - Tombol "Ubah peran" buka form dengan radio options (admin/moderator/anggota).
+    - Safety guards: prevent self-demotion, maintain min 1 active admin.
+    - Email notification saat role berubah: `sendAccountRoleChangedEmail()`.
+    - Files: `UsersManager.js`, `admin-users.js` action, `email.js` template.
+
+24. [NEW] Production Hosting Preparation (May 2026):
+    - Migrations folder: `/migrations/` berisi semua migration files.
+    - .gitignore: updated dengan env rules (.env, .env.local, .env.production.local).
+    - Removed: dev-only content, debug logs, developer comments.
+    - Email setup: documented production requirements untuk EMAIL_FROM Resend.
+    - Code quality: ESLint passes (0 errors).
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN II: DATABASE SCHEMA
+═══════════════════════════════════════════════════════════════════════════════
+
+TABEL UTAMA:
+- accounts: user dengan role (user/admin/moderator), banned status, profile.
+- posts: postingan (pengumuman/kegiatan/prestasi) dengan event_date, achievement_level.
+- post_media: foto & video per postingan (max 10 foto, 3 video).
+- comments: komentar dengan nested (max 1 level), approval, pinned.
+- featured_programs: program unggulan di home & landing.
+- cms_entries: konten portal dinamis (hero, section, label).
+- site_settings: toggle & string settings (registration_enabled, masa_bakti, dll).
+- finance_months: periode laporan keuangan.
+- finance_transactions: transaksi masuk/keluar.
+- page_view_logs: traffic analytics.
+- surat_masuk, surat_keluar: arsip surat internal.
+- ambalan_applications: pendaftaran calon pengurus.
+
+MIGRATION FILES (di `/migrations/`):
+- migration.sql: schema awal.
+- migration-v2.sql s/d migration-v10.sql: incremental updates.
+
+Detail full schema ada di file database.txt (now embedded dalam Kitab ini).
+Untuk deploy: jalankan migration-v10.sql terakhir di Supabase SQL Editor.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN III: TODO UNTUK AGENT PENERUS
+═══════════════════════════════════════════════════════════════════════════════
+
+KONTEKS SINGKAT:
+- Project Next.js 16 App Router + Supabase.
+- Baca AGENTS.md dan docs lokal Next.js di node_modules/next/dist/docs sebelum ubah API Next.
+- ESLint & build sudah di-setup dan passing.
+
+YANG SUDAH DIKERJAKAN (May 2026++):
+- Label "Anggota" → "Struktur Dewan Ambalan"; default akun "Anggota Pramuka".
+- CTA daftar → halaman khusus /daftar-ambalan.
+- Fitur pendaftaran calon Dewan Ambalan masa bakti 2026-2027.
+- Session auth secure, cookie httpOnly, JWT dengan issuer/audience.
+- Admin route dilindungi via `src/proxy.js` (bukan middleware).
+- Assign jabatan tidak query langsung dari browser.
+- Cookie consent banner.
+- Admin role management + email notifications.
+- Production hosting prep (migrations folder, .gitignore, env docs).
+
+PRIORITAS WAJIB BERIKUTNYA:
+
+1. Test comprehensive:
+   - Register akun baru → login/logout → /profil.
+   - Test /admin/users: ban, unban, promote, demote user (verify email sent).
+   - Test role UI prevent self-demotion, last admin guard.
+
+2. Audit Tuning:
+   - Performance: CSP (Content Security Policy) di next.config.mjs.
+   - Domain whitelist: Supabase public URL, Google Drive media, CDN.
+   - Input validation & SQL injection prevention (sudah ada, audit ulang).
+   - Email HTML escaping di `src/lib/email.js` (sudah ada, audit).
+
+3. UI Polish:
+   - Warna primary: emerald (done), hapus sisa purple.
+   - Mobile layout check: /home, /anggota, /daftar-ambalan, /profil, /berita/[slug].
+   - Loading state & empty state consistency.
+
+4. Future Features (prioritas bawah):
+   - Jabatan sorting / drag-drop: kolom `urutan` di DB.
+   - Event countdown timer untuk pengumuman.
+   - Foto profil compression & validation.
+   - Comment profanity filter (sudah ada, test).
+
+5. Update dokumentasi:
+   - README: env vars wajib, urutan migration, cara jalankan lokal.
+   - Catatan Google Drive media postingan vs Supabase avatar.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN IV: CATATAN NOTES DARI for-agents.txt (ARCHIVED)
+═══════════════════════════════════════════════════════════════════════════════
+
+NOTEBOOK PROJECT (dari for-agents.txt 2026):
+
+- Tambahkan auto refresh ke seluruh page yang perlu melihat perubahan real-time.
+- Content CMS juga di rawat, landing page masuk ke CMS, styling consistency.
+- /admin/posts/new: foto lampiran minimal 4 foto, maksimal 10 foto & 5 video (from Google Drive URL).
+- /admin/analytics: clarification tentang INTERNAL_ANALYTICS_SECRET (solved di Kitab III.12).
+- Footer contact dari .env.local: FOOTER_CONTACT_PHONE, FOOTER_CONTACT_EMAIL, FOOTER_WEBSITE_URL.
+
+UPDATES 2026:
+- Migration-v9.sql: tabel surat_masuk/surat_keluar.
+- /admin/agenda-surat (sidebar): buku surat masuk & keluar (internal, tidak dipublikasikan).
+- Content CMS: edit baris, hapus, toggle draft/published (detail di Kitab I.19).
+- CMS /admin/content: kartu hijau per slot teks (kunci pasti + link halaman).
+- Agenda export: GET /api/admin/agenda-surat/export?scope=masuk|keluar|both (admin session, xlsx).
+- Dependency: npm package `xlsx` untuk Excel export.
+- Migration-v10.sql: izin `content.portal.manage` (tab CMS: Jadwal kegiatan, Berita, Galeri, Keuangan).
+- Detail slot & kebijakan teks: lihat Kitab I.22.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN V: ENVIRONMENT VARIABLES SETUP
+═══════════════════════════════════════════════════════════════════════════════
+
+DEVELOPMENT (.env.local):
+```
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://...supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_public_...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Auth JWT Secret
+AUTH_SECRET=da-alf-super-secret-jwt-signing-key-2025
+
+# Resend Email
+RESEND_API_KEY=re_...
+EMAIL_FROM=Dewan Ambalan <onboarding@resend.dev>  # or production email
+
+# Internal Analytics
+INTERNAL_ANALYTICS_SECRET=363a249c6289e06d8acc28756772bae1b597a94e2ee02fc55597a3bbfc473967
+
+# Footer Contact (Optional)
+FOOTER_CONTACT_PHONE=(0289) 123456
+FOOTER_CONTACT_EMAIL=pramuka@smkalfurqon.sch.id
+FOOTER_WEBSITE_URL=https://smkalfurqon.sch.id
+
+# Public Site URL
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+PRODUCTION (.env.production):
+- Semua dari Development, TAPI:
+- AUTH_SECRET: ganti dengan string acak panjang.
+- INTERNAL_ANALYTICS_SECRET: ganti dengan string acak panjang (openssl rand -hex 32).
+- EMAIL_FROM: ganti dengan email verified di Resend domain.
+- NEXT_PUBLIC_SITE_URL: set ke domain production.
+- Semua sensitive vars: SET VIA HOSTING PANEL (jangan commit .env.production ke git).
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN VI: PRODUCTION DEPLOYMENT CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+PRE-DEPLOYMENT:
+☐ ESLint passing (npm run lint).
+☐ Build succeeds (npm run build).
+☐ All migrations up-to-date in Supabase.
+☐ Email template tested (RESEND_API_KEY valid).
+☐ Rate limit rules verified.
+☐ CSP headers configured.
+☐ No hardcoded secrets in codebase.
+
+DEPLOYMENT STEPS (Vercel example):
+1. Push code ke repo (migrations/ folder included).
+2. Project → Settings → Environment Variables.
+3. Add: INTERNAL_ANALYTICS_SECRET, AUTH_SECRET, RESEND_API_KEY, EMAIL_FROM, dll.
+4. Set untuk Production environment.
+5. Redeploy / trigger new deployment.
+6. Test login, admin functions, email sending.
+7. Verify analytics page loads & logs traffic.
+
+POST-DEPLOYMENT:
+☐ Smoke test: login, submit form, check email.
+☐ Admin functions: promote/demote user, ban/unban, role change.
+☐ Analytics page: traffic logging working.
+☐ Emails: verify subject & formatting correct.
+☐ Monitor error logs (Vercel/hosting dashboard).
+☐ Update README dengan production deployment notes.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN VII: QUICK REFERENCE & TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+Q: Bagaimana cara memulai dev server?
+A: npm run dev (disables DEP0205 warning). Browser: http://localhost:3000
+
+Q: Test admin features?
+A: Login sebagai admin → /admin. Test users panel, role change, ban/unban.
+
+Q: Build untuk production?
+A: npm run build (ganti env vars di hosting platform dulu).
+
+Q: Email tidak terkirim?
+A: Cek RESEND_API_KEY valid & EMAIL_FROM sudah verified di Resend dashboard.
+
+Q: Role change email tidak terkirim?
+A: Ensure sendAccountRoleChangedEmail() called di setAccountRoleAction.
+
+Q: INTERNAL_ANALYTICS_SECRET error?
+A: Harus string acak, minimal 32 karakter. Restart dev server setelah ubah .env.local.
+
+Q: Setup Supabase di environment baru?
+A: Buat project baru, copy URL & keys ke .env.local, jalankan migration-v10.sql terakhir.
+
+Q: Bagaimana struktur folder?
+A: /src/app/* = routes. /src/lib/* = utilities, queries, auth. /src/components/* = UI.
+   /migrations/ = SQL files. /public/ = static assets.
+
+Q: Audit keamanan checklist?
+A: Service role key server-only, no hardcoded secrets, rate limit on forms, CSP headers,
+   email escape HTML, session JWT issuer/audience, banned account gate.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+Catatan: File ini adalah konsolidasi dari:
+- Kitab_Suci_Agent.txt (asli)
+- todo.txt (prioritas agent penerus)
+- for-agents.txt (update 2026)
+- database.txt (schema reference)
+
+Semua informasi terpusat di sini. Hapus file original setelah deploy jika diperlukan.
