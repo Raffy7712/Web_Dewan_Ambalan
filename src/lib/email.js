@@ -1,8 +1,13 @@
 import { Resend } from "resend";
 
+if (!process.env.RESEND_API_KEY) {
+  throw new Error(
+    "RESEND_API_KEY belum diset. Email tidak dapat dikirim tanpa kunci API Resend.",
+  );
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM =
-  process.env.EMAIL_FROM ?? "Dewan Ambalan <noreply@smkalfurqon.sch.id>";
+const FROM = process.env.EMAIL_FROM?.trim() || "Dewan Ambalan <noreply@smkalfurqon.sch.id>";
 const SITE_NAME = "Dewan Ambalan SMK Al Furqon Bantarkawung";
 
 function escapeEmailHtml(s) {

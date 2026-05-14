@@ -60,7 +60,9 @@ export async function createAdminPostAction(prevState, formData) {
       ? "galeri"
       : postKind === "kegiatan"
         ? "kegiatan"
-        : "pengumuman";
+        : postKind === "prestasi"
+          ? "prestasi"
+          : "pengumuman";
 
   const title = formData.get("title")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
@@ -497,4 +499,19 @@ export async function togglePostStatusAction(postId) {
     message: `Postingan berhasil diubah ke status: ${newStatus}.`,
     newStatus,
   };
+}
+
+export async function getAllAdminPostsAction() {
+  const db = createAdminClient();
+  const { data, error } = await db
+    .from("posts")
+    .select("id, title, slug, category, status, published_at, created_at, author_id, accounts(display_name)")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("getAllAdminPostsAction:", error.message);
+    return [];
+  }
+
+  return data ?? [];
 }

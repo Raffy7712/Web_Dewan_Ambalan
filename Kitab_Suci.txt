@@ -391,4 +391,84 @@ Catatan: File ini adalah konsolidasi dari:
 - for-agents.txt (update 2026)
 - database.txt (schema reference)
 
-Semua informasi terpusat di sini. Hapus file original setelah deploy jika diperlukan.
+
+
+Update V1.0.0 (COMPLETED May 2026):
+✅ Add fitur Edit postingan kegiatan & konten (edit title, description, content, media)
+   - Admin dapat mengubah semua field postingan kecuali slug & kategori
+   - Media dapat diganti sepenuhnya (foto & video Google Drive)
+   - Perubahan di-revalidate ke semua halaman publik
+   - Interface: /admin/posts/[id]/edit dengan form prefilled
+   - Backend: updateAdminPostAction, getPostForEdit query, AdminPostFormEdit component
+
+✅ Add fitur Hapus postingan dengan cascade delete komentar otomatis
+   - Database FK: comments.post_id → posts(id) ON DELETE CASCADE
+   - Saat post dihapus, semua komentar & media otomatis terhapus
+   - Implementasi: deletePostAction (sudah ada di posts.js)
+   - Interface: /admin/posts (list page dengan delete button)
+
+✅ Add fitur LogOut
+   - logoutAction sudah ada di src/app/actions/auth.js:309-312
+   - Implementasi: clearSessionCookie() + redirect ke /login
+
+BONUS:
+✅ Admin posts list page (/admin/posts) untuk kelola semua postingan
+   - Tabel lengkap: title, category, status, author, published_at
+   - Buttons: Edit, Toggle Status, Delete
+   - Search & sort (implementasi: getAllAdminPosts query)
+
+Commit: 4e26257 - Implement edit posts feature for V1.0.0
+
+Semua informasi terpusat di sini.
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN VIII: MEDIA UPLOADS & CLOUDINARY INTEGRATION (May 2026)
+═══════════════════════════════════════════════════════════════════════════════
+
+MASALAH AWAL:
+- Google Drive share links (uc?export=view) return 403 Forbidden dari browser non-authenticated.
+- File di Drive hanya bisa di-access jika user sudah login ke Google account.
+- Solution: Gunakan public image hosting service.
+
+SOLUSI TERPILIH: Cloudinary
+✅ Alasan:
+  - 10GB free storage (vs Firebase 1GB/bulan)
+  - Upload widget built-in (drag & drop)
+  - API JavaScript untuk direct upload dari browser
+  - Image optimization & CDN otomatis
+  - Tidak perlu backend upload handler
+  - Scaling mudah (pay-as-you-go)
+
+IMPLEMENTATION ROADMAP:
+1. Setup Cloudinary account & env vars
+2. Create upload widget component di /admin/posts/new & /admin/posts/[id]/edit
+3. Replace Google Drive URL textarea dengan Cloudinary upload dropzone
+4. Modify form submission: save Cloudinary URLs ke post_media
+5. Update getDisplayUrl() untuk handle Cloudinary URLs
+
+ENV VARIABLES (.env.local):
+```
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+CLOUDINARY_API_KEY=your_api_key (optional, for server-side)
+```
+
+CLOUDINARY SETUP STEPS (Admin jika implementasi):
+1. Daftar ke https://cloudinary.com (free tier)
+2. Dashboard → Settings → Upload → Add upload preset (unsigned)
+3. Copy Cloud Name & Upload Preset ke env
+4. (Optional) API Key untuk server-side operations
+
+PRIORITY: Belum urgent, jika diperlukan:
+- User bisa manual upload ke Imgur/Imgbb terlebih dahulu
+- Copy public URL → paste ke form admin posts
+- Sistem sudah siap terima URL publik (getDisplayUrl handles)
+
+FUTURE:
+- Implement Cloudinary widget untuk streamline media uploads
+- Auto-optimize images via Cloudinary transformations
+- Setup signed upload (security++) kalau production
+
+Catatan: Untuk now, cukup dokumentasi ini. Setup real akan dilakukan
+saat ada kebutuhan urgent atau user request explicit integration.
+Sistem saat ini sudah support image URLs publik dari service manapun.

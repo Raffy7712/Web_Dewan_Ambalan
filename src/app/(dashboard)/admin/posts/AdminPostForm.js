@@ -51,47 +51,27 @@ export default function AdminPostForm() {
 
       <form action={formAction} className="space-y-6">
         <fieldset className="space-y-3">
-          <legend className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">
-            Tujuan posting
-          </legend>
-          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-slate-200 dark:border-slate-700 p-4 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/50 dark:has-[:checked]:bg-emerald-950/30">
-            <input
-              type="radio"
-              name="post_kind"
-              value="kegiatan"
-              checked={kind === "kegiatan"}
-              onChange={() => setKind("kegiatan")}
-              className="mt-1"
-            />
-            <span>
-              <span className="font-medium text-slate-900 dark:text-white">
-                Kegiatan
-              </span>
-              <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Muncul di tab Berita → Kegiatan dan di jadwal{" "}
-                <span className="font-mono">/kegiatan</span> (perlu tanggal &
-                lokasi).
-              </span>
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+              Kategori posting
             </span>
-          </label>
-          <label className="flex items-start gap-3 cursor-pointer rounded-lg border border-slate-200 dark:border-slate-700 p-4 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/50 dark:has-[:checked]:bg-emerald-950/30">
-            <input
-              type="radio"
+            <select
               name="post_kind"
-              value="galeri"
-              checked={kind === "galeri"}
-              onChange={() => setKind("galeri")}
-              className="mt-1"
-            />
-            <span>
-              <span className="font-medium text-slate-900 dark:text-white">
-                Album dokumentasi (galeri)
-              </span>
-              <span className="block text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Foto tampil di <span className="font-mono">/galeri</span> dan
-                tab Berita → Album. Sama seperti kegiatan: 1–10 URL foto Drive.
-              </span>
-            </span>
+              value={kind}
+              onChange={(e) => setKind(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <option value="kegiatan">🎯 Kegiatan - Jadwal & acara dengan tanggal/lokasi</option>
+              <option value="pengumuman">📢 Pengumuman - Informasi & berita penting</option>
+              <option value="galeri">🖼️ Album Dokumentasi - Kumpulan foto kegiatan</option>
+              <option value="prestasi">🏆 Prestasi - Pencapaian & penghargaan</option>
+            </select>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+              {kind === "kegiatan" && "Muncul di jadwal /kegiatan dan tab Berita → Kegiatan. Perlu tanggal & lokasi."}
+              {kind === "pengumuman" && "Muncul di tab Berita → Pengumuman. Tanggal & lokasi opsional."}
+              {kind === "galeri" && "Muncul di /galeri dan tab Berita → Album. Perlu 1-10 URL foto."}
+              {kind === "prestasi" && "Muncul di halaman prestasi. Untuk pencapaian dan penghargaan."}
+            </p>
           </label>
         </fieldset>
 

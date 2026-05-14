@@ -25,6 +25,7 @@ const links = [
   { href: "/admin/users", label: "Akun & blokir", icon: Users },
   { href: "/admin/management", label: "Manajemen admin", icon: UserCog },
   { href: "/admin/finance", label: "Keuangan", icon: Wallet },
+  { href: "/admin/posts", label: "Kelola postingan", icon: Newspaper },
   { href: "/admin/posts/new", label: "Posting berita", icon: Newspaper },
   { href: "/admin/settings", label: "Pengaturan situs", icon: Settings },
   { href: "/admin/programs", label: "Program unggulan", icon: Sparkles },

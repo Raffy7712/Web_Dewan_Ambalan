@@ -18,7 +18,8 @@ export async function getPosts({
        cover_image_url, event_date, event_location,
        achievement_level, achievement_rank,
        published_at, created_at,
-       author:accounts(display_name, username, profile_picture_url)`,
+       author:accounts(display_name, username, profile_picture_url),
+       post_media(id, media_type, url, thumbnail_url, caption, order_index)`,
     )
     .eq("status", "published")
     .order("published_at", { ascending: false })
@@ -32,6 +33,16 @@ export async function getPosts({
     console.error("getPosts error:", error.message);
     return [];
   }
+
+  // Sort post_media by order_index
+  if (data) {
+    data.forEach(post => {
+      if (post.post_media) {
+        post.post_media.sort((a, b) => a.order_index - b.order_index);
+      }
+    });
+  }
+
   return data ?? [];
 }
 

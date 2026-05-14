@@ -50,6 +50,12 @@ const modules = [
     icon: Wallet,
   },
   {
+    href: "/admin/posts",
+    title: "Kelola postingan",
+    description: "Lihat, edit, hapus, atau ubah status berita dan galeri.",
+    icon: Newspaper,
+  },
+  {
     href: "/admin/posts/new",
     title: "Posting berita & galeri",
     description: "Kegiatan (tab jadwal) atau album foto ke galeri + email.",

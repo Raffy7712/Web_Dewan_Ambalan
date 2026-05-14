@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Cookie, ShieldCheck, X } from "lucide-react";
 
 const CONSENT_COOKIE = "da_cookie_consent";
@@ -17,10 +17,11 @@ function setConsent(value) {
 }
 
 export default function CookieConsent() {
-  const [visible, setVisible] = useState(() => {
-    if (typeof document === "undefined") return false;
-    return !hasConsentCookie();
-  });
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setVisible(!hasConsentCookie());
+  }, []);
 
   if (!visible) return null;
 
