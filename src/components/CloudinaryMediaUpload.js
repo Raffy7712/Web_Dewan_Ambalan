@@ -51,6 +51,24 @@ export default function CloudinaryMediaUpload({
     }
   };
 
+  const isValidMediaFile = (file) => {
+    const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
+    const validVideoTypes = ["video/mp4", "video/webm", "video/quicktime"];
+    const allValidTypes = [...validImageTypes, ...validVideoTypes];
+
+    if (!allValidTypes.includes(file.type)) {
+      return { valid: false, error: `Format tidak didukung: ${file.type || "unknown"}` };
+    }
+
+    // Max file size: 100MB
+    const maxSizeBytes = 100 * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      return { valid: false, error: `File terlalu besar (max 100MB): ${(file.size / 1024 / 1024).toFixed(1)}MB` };
+    }
+
+    return { valid: true };
+  };
+
   const handleUpload = async (files) => {
     if (!files || files.length === 0) return;
 
@@ -58,6 +76,22 @@ export default function CloudinaryMediaUpload({
     const filesToUpload = Array.from(files).slice(0, availableSlots);
 
     for (const file of filesToUpload) {
+      // Validate file type and size
+      const validation = isValidMediaFile(file);
+      if (!validation.valid) {
+        setItems((prev) => [
+          ...prev,
+          {
+            id: `${Date.now()}-${Math.random()}`,
+            url: "",
+            mediaType: mediaType,
+            uploading: false,
+            error: validation.error,
+          },
+        ]);
+        continue;
+      }
+
       const itemId = `${Date.now()}-${Math.random()}`;
       const newItem = {
         id: itemId,
@@ -167,7 +201,7 @@ export default function CloudinaryMediaUpload({
             ref={fileInputRef}
             type="file"
             multiple
-            accept={mediaType === "image" ? "image/*" : "video/*"}
+            accept={mediaType === "image" ? "image/jpeg,image/png,image/gif,image/webp,image/svg+xml" : "video/mp4,video/webm,video/quicktime"}
             onChange={handleFileInput}
             className="hidden"
           />
