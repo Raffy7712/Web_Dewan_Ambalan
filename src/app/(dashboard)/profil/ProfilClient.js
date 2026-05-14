@@ -1,8 +1,8 @@
 'use client';
 
 import { useActionState, useEffect, useState } from 'react';
-import { Edit2, Lock, Mail, Briefcase, Calendar } from 'lucide-react';
-import { updateProfileAction } from '@/app/actions/auth';
+import { Edit2, Lock, Mail, Briefcase, Calendar, LogOut } from 'lucide-react';
+import { updateProfileAction, logoutAction } from '@/app/actions/auth';
 import { getAvatarUrl } from '@/lib/avatar';
 import { useRouter } from 'next/navigation';
 
@@ -113,20 +113,29 @@ export default function ProfilClient({ account }) {
 
         {/* Action Buttons */}
         <div className="grid sm:grid-cols-2 gap-4">
-          <button 
+          <button
             onClick={() => setEditMode(true)}
             className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white py-3 rounded-lg font-semibold transition-colors"
           >
             <Edit2 size={18} />
             Edit Profil
           </button>
-          <button 
+          <button
             onClick={() => setShowPasswordModal(true)}
             className="flex items-center justify-center gap-2 bg-slate-600 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white py-3 rounded-lg font-semibold transition-colors"
           >
             <Lock size={18} />
             Ubah Password
           </button>
+          <form action={logoutAction} className="sm:col-span-2">
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 dark:hover:bg-red-600 text-white py-3 rounded-lg font-semibold transition-colors"
+            >
+              <LogOut size={18} />
+              Logout
+            </button>
+          </form>
         </div>
 
         {/* Edit Profil Modal */}

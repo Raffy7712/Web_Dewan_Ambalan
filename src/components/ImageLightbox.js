@@ -43,7 +43,7 @@ export default function ImageLightbox({ images = [] }) {
             <img
               src={img}
               alt={`Foto ${idx + 1}`}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-100"
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
               <span className="text-white text-xs font-medium">Lihat</span>
@@ -77,7 +77,7 @@ export default function ImageLightbox({ images = [] }) {
             <img
               src={currentImage}
               alt={`Foto ${currentIndex + 1}`}
-              className="max-w-full max-h-full object-contain rounded-lg"
+              className="max-w-full max-h-full object-contain rounded-lg opacity-100"
             />
           </div>
 
