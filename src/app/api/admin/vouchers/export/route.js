@@ -74,7 +74,7 @@ export async function GET(request) {
     const { data, error } = await db
       .from("certificates")
       .select(
-        "code, recipient_name, certificate_type, dewan_ambalan, status, created_at",
+        "code, nomor_sertifikat, recipient_name, certificate_type, dewan_ambalan, status, created_at",
       )
       .order("created_at", { ascending: false });
 
@@ -89,6 +89,7 @@ export async function GET(request) {
 
     const rows = (data ?? []).map((r) => ({
       Kode: r.code ?? "",
+      "No. Sertifikat": r.nomor_sertifikat ?? "",
       "Nama Penerima": r.recipient_name ?? "",
       "Jenis Sertifikat": r.certificate_type ?? "",
       "Dewan Ambalan": r.dewan_ambalan ?? "",
@@ -103,6 +104,7 @@ export async function GET(request) {
     );
     ws["!cols"] = [
       { wch: 20 }, // Kode
+      { wch: 35 }, // No. Sertifikat
       { wch: 25 }, // Nama Penerima
       { wch: 22 }, // Jenis Sertifikat
       { wch: 25 }, // Dewan Ambalan

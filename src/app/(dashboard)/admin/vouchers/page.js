@@ -1,15 +1,29 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Ticket, Plus, Search, FileSpreadsheet, Edit3, Trash2,
   ChevronLeft, ChevronRight, X, CheckCircle, AlertTriangle,
-  Download, Eye, EyeOff
+  Download, QrCode, Copy, Award
 } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 /* ── Shared helpers ────────────────────────────────────────── */
 const inputClass = "w-full px-4 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
 const labelClass = "block text-sm font-medium text-[var(--text-primary)] mb-2";
+
+const PRAMUKA_CERT_TYPES = [
+  'Sertifikat Penghargaan',
+  'Sertifikat Partisipasi Kegiatan',
+  'Sertifikat Keahlian Pramuka',
+  'Piagam Penghargaan',
+  'Sertifikat Pelatihan',
+  'Sertifikat Lulus SKU',
+  'Sertifikat Danrantis',
+  'Sertifikat Jambore',
+  'Sertifikat Perkemahan',
+  'Lainnya',
+];
 
 function getStatusBadge(status) {
   const map = {
@@ -31,6 +45,63 @@ function getStatusLabel(status) {
     issued: 'Diterbitkan',
   };
   return map[status] || status;
+}
+
+/* ── QR Code Download Helper ────────────────────────────── */
+function downloadQRCode(canvasContainer, filename) {
+  const canvas = canvasContainer?.querySelector('canvas');
+  if (!canvas) return;
+  const url = canvas.toDataURL('image/png', 1.0);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+/* ── QR Code Card with Download ─────────────────────────── */
+function QRCertificateCard({ item }) {
+  const qrRef = useRef(null);
+  const verifyUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/vouchers?code=${item.code}`
+    : `https://da-alf.web.id/vouchers?code=${item.code}`;
+
+  return (
+    <div className="bg-[var(--surface-app)] rounded-lg p-4 border border-[var(--border-primary)]">
+      <div ref={qrRef} className="flex justify-center mb-3">
+        <QRCodeCanvas
+          value={verifyUrl}
+          size={180}
+          level="M"
+          includeMargin={true}
+          bgColor="#ffffff"
+          fgColor="#000000"
+        />
+      </div>
+      <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm text-center">{item.code}</p>
+      {item.nomor_sertifikat && (
+        <p className="text-xs text-[var(--text-muted)] text-center mt-0.5">{item.nomor_sertifikat}</p>
+      )}
+      <p className="text-sm text-[var(--text-primary)] mt-1 text-center">{item.recipient_name || item.title}</p>
+      <p className="text-xs text-[var(--text-muted)] mt-1 text-center">{new Date(item.created_at).toLocaleString('id-ID')}</p>
+      <div className="flex gap-2 mt-3">
+        <button
+          onClick={() => downloadQRCode(qrRef.current, `QR-${item.code}.png`)}
+          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors"
+        >
+          <Download size={13} /> QR Code
+        </button>
+        <button
+          onClick={() => { navigator.clipboard.writeText(verifyUrl); }}
+          className="inline-flex items-center justify-center gap-1.5 bg-[var(--surface-muted)] border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-emerald-600 font-medium py-2 px-3 rounded-lg text-xs transition-colors"
+          title="Salin link verifikasi"
+        >
+          <Copy size={13} />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 /* ── Confirmation Modal ────────────────────────────────────── */
@@ -65,7 +136,7 @@ function ConfirmModal({ open, title, message, onConfirm, onCancel, loading }) {
   );
 }
 
-/* ── Edit Modal ────────────────────────────────────────────── */
+/* ── Edit Voucher Modal ──────────────────────────────────── */
 function EditVoucherModal({ item, open, onClose, onSave }) {
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
@@ -137,6 +208,7 @@ function EditVoucherModal({ item, open, onClose, onSave }) {
   );
 }
 
+/* ── Edit Certificate Modal ──────────────────────────────── */
 function EditCertificateModal({ item, open, onClose, onSave }) {
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
@@ -147,6 +219,7 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
         recipient_name: item.recipient_name || '',
         certificate_type: item.certificate_type || '',
         dewan_ambalan: item.dewan_ambalan || '',
+        nomor_sertifikat: item.nomor_sertifikat || '',
         status: item.status || 'issued',
       });
     }
@@ -174,18 +247,19 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
             <input type="text" value={item.code} disabled className={`${inputClass} opacity-60`} />
           </div>
           <div>
+            <label className={labelClass}>Nomor Sertifikat</label>
+            <input type="text" value={form.nomor_sertifikat} onChange={(e) => setForm({ ...form, nomor_sertifikat: e.target.value })} placeholder="Contoh: 001/11.29.02.165-02.166-C/2026" maxLength={100} className={inputClass} />
+            <p className="text-[11px] text-[var(--text-muted)] mt-1">Format nomor urut sertifikat, diisi manual</p>
+          </div>
+          <div>
             <label className={labelClass}>Nama Penerima *</label>
             <input type="text" value={form.recipient_name} onChange={(e) => setForm({ ...form, recipient_name: e.target.value })} required maxLength={200} className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Jenis Sertifikat *</label>
             <select value={form.certificate_type} onChange={(e) => setForm({ ...form, certificate_type: e.target.value })} required className={inputClass}>
-              <option value="">-- Pilih --</option>
-              <option value="Penghargaan">Penghargaan</option>
-              <option value="Sertifikat Keahlian">Sertifikat Keahlian</option>
-              <option value="Sertifikat Partisipasi">Sertifikat Partisipasi</option>
-              <option value="Piagam Penghargaan">Piagam Penghargaan</option>
-              <option value="Lainnya">Lainnya</option>
+              <option value="">-- Pilih Jenis --</option>
+              {PRAMUKA_CERT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div>
@@ -213,12 +287,85 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
   );
 }
 
+/* ── Certificate Detail Modal with QR ────────────────────── */
+function CertificateDetailModal({ item, open, onClose }) {
+  const qrRef = useRef(null);
+  if (!open || !item) return null;
+
+  const verifyUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/vouchers?code=${item.code}`
+    : `https://da-alf.web.id/vouchers?code=${item.code}`;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-5">
+          <div className="flex items-center gap-2">
+            <Award size={20} className="text-emerald-600 dark:text-emerald-400" />
+            <h3 className="text-lg font-bold text-[var(--text-primary)]">Detail Sertifikat</h3>
+          </div>
+          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"><X size={18} /></button>
+        </div>
+
+        {/* QR Code */}
+        <div className="flex justify-center mb-5">
+          <div ref={qrRef} className="inline-block p-3 bg-white rounded-xl border border-[var(--border-primary)]">
+            <QRCodeCanvas value={verifyUrl} size={200} level="M" includeMargin={false} bgColor="#ffffff" fgColor="#000000" />
+          </div>
+        </div>
+
+        {/* Info */}
+        <div className="space-y-3 mb-5">
+          <div className="flex justify-between">
+            <span className="text-sm text-[var(--text-secondary)]">Kode</span>
+            <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">{item.code}</span>
+          </div>
+          {item.nomor_sertifikat && (
+            <div className="flex justify-between">
+              <span className="text-sm text-[var(--text-secondary)]">No. Sertifikat</span>
+              <span className="text-sm font-medium text-[var(--text-primary)]">{item.nomor_sertifikat}</span>
+            </div>
+          )}
+          <div className="flex justify-between">
+            <span className="text-sm text-[var(--text-secondary)]">Penerima</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">{item.recipient_name}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-[var(--text-secondary)]">Jenis</span>
+            <span className="text-sm text-[var(--text-primary)]">{item.certificate_type}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-sm text-[var(--text-secondary)]">Status</span>
+            <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(item.status)}`}>{getStatusLabel(item.status)}</span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => downloadQRCode(qrRef.current, `QR-${item.code}.png`)}
+            className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-colors"
+          >
+            <Download size={15} /> Download QR
+          </button>
+          <button
+            onClick={() => { navigator.clipboard.writeText(verifyUrl); }}
+            className="flex-1 inline-flex items-center justify-center gap-2 bg-[var(--surface-muted)] border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-emerald-600 font-medium py-2.5 px-4 rounded-lg text-sm transition-colors"
+          >
+            <Copy size={15} /> Salin Link
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main Page ─────────────────────────────────────────────── */
 export default function AdminVouchersPage() {
   const [activeTab, setActiveTab] = useState('generate');
 
   // Generate form state
-  const [type, setType] = useState('voucher');
+  const [type, setType] = useState('certificate');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
@@ -226,6 +373,7 @@ export default function AdminVouchersPage() {
   const [recipientName, setRecipientName] = useState('');
   const [certificateType, setCertificateType] = useState('');
   const [dewanAmbalan, setDewanAmbalan] = useState('');
+  const [nomorSertifikat, setNomorSertifikat] = useState('');
   const [genLoading, setGenLoading] = useState(false);
   const [genError, setGenError] = useState(null);
   const [generated, setGenerated] = useState(null);
@@ -247,6 +395,7 @@ export default function AdminVouchersPage() {
   const [editCertificate, setEditCertificate] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [viewCertificate, setViewCertificate] = useState(null);
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -305,10 +454,20 @@ export default function AdminVouchersPage() {
     setGenError(null);
     try {
       const payload = {
-        type, title, description,
+        type,
         quantity: parseInt(quantity),
-        ...(type === 'voucher' && { expires_at: expiresAt ? new Date(expiresAt).toISOString() : null }),
-        ...(type === 'certificate' && { recipient_name: recipientName, certificate_type: certificateType, dewan_ambalan: dewanAmbalan }),
+        ...(type === 'voucher' && {
+          title,
+          description,
+          expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+        }),
+        ...(type === 'certificate' && {
+          title: `Sertifikat ${certificateType} - ${recipientName}`,
+          recipient_name: recipientName,
+          certificate_type: certificateType,
+          dewan_ambalan: dewanAmbalan,
+          nomor_sertifikat: nomorSertifikat || null,
+        }),
       };
       const res = await fetch('/api/vouchers/generate', {
         method: 'POST',
@@ -318,9 +477,9 @@ export default function AdminVouchersPage() {
       const data = await res.json();
       if (!res.ok) { setGenError(data.error || 'Gagal membuat item'); return; }
       setGenerated(data);
-      showToast(`Berhasil membuat ${data.count} ${type}`);
+      showToast(`Berhasil membuat ${data.count} ${type === 'certificate' ? 'sertifikat' : 'voucher'}`);
       if (type === 'voucher') { setTitle(''); setDescription(''); setExpiresAt(''); }
-      else { setRecipientName(''); setCertificateType(''); setDewanAmbalan(''); }
+      else { setRecipientName(''); setCertificateType(''); setDewanAmbalan(''); setNomorSertifikat(''); }
       setQuantity(1);
     } catch (err) { setGenError('Error: ' + err.message); }
     finally { setGenLoading(false); }
@@ -369,8 +528,14 @@ export default function AdminVouchersPage() {
       if (str.includes(",") || str.includes('"') || str.includes("\n")) return `"${str.replace(/"/g, '""')}"`;
       return str;
     };
-    const headers = ['Code', 'Title', 'Status', 'Created At'];
-    const rows = generated.items.map((item) => [item.code, item.title || item.recipient_name, item.status, new Date(item.created_at).toLocaleString('id-ID')]);
+    const headers = type === 'certificate'
+      ? ['Code', 'Nomor Sertifikat', 'Penerima', 'Jenis', 'Status', 'Created At']
+      : ['Code', 'Title', 'Status', 'Created At'];
+    const rows = generated.items.map((item) =>
+      type === 'certificate'
+        ? [item.code, item.nomor_sertifikat || '', item.recipient_name, item.certificate_type, item.status, new Date(item.created_at).toLocaleString('id-ID')]
+        : [item.code, item.title, item.status, new Date(item.created_at).toLocaleString('id-ID')]
+    );
     const csv = [headers.map(escapeCsv).join(','), ...rows.map((row) => row.map(escapeCsv).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -383,9 +548,9 @@ export default function AdminVouchersPage() {
   const linkBtnClass = "inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors";
 
   const tabs = [
-    { key: 'generate', label: 'Generate' },
-    { key: 'vouchers', label: 'Daftar Voucher' },
-    { key: 'certificates', label: 'Daftar Sertifikat' },
+    { key: 'generate', label: 'Generate', icon: Plus },
+    { key: 'vouchers', label: 'Daftar Voucher', icon: Ticket },
+    { key: 'certificates', label: 'Daftar Sertifikat', icon: Award },
   ];
 
   return (
@@ -396,7 +561,7 @@ export default function AdminVouchersPage() {
           Verifikasi & Sertifikat
         </h1>
         <p className="text-sm text-[var(--text-secondary)]">
-          Generate, kelola, dan verifikasi voucher serta sertifikat dengan kode unik.
+          Kelola sertifikat Dewan Ambalan untuk anggota Pramuka, generate voucher, dan verifikasi kode unik.
         </p>
       </div>
 
@@ -406,12 +571,13 @@ export default function AdminVouchersPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors ${
               activeTab === tab.key
                 ? 'bg-emerald-600 text-white'
                 : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
+            <tab.icon size={15} />
             {tab.label}
           </button>
         ))}
@@ -444,12 +610,12 @@ export default function AdminVouchersPage() {
                   <label className={labelClass}>Tipe Item</label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" value="voucher" checked={type === 'voucher'} onChange={(e) => setType(e.target.value)} className="w-4 h-4 text-emerald-600 accent-emerald-600" />
-                      <span className="text-sm text-[var(--text-primary)]">Voucher</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" value="certificate" checked={type === 'certificate'} onChange={(e) => setType(e.target.value)} className="w-4 h-4 text-emerald-600 accent-emerald-600" />
                       <span className="text-sm text-[var(--text-primary)]">Sertifikat</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" value="voucher" checked={type === 'voucher'} onChange={(e) => setType(e.target.value)} className="w-4 h-4 text-emerald-600 accent-emerald-600" />
+                      <span className="text-sm text-[var(--text-primary)]">Voucher</span>
                     </label>
                   </div>
                 </div>
@@ -475,23 +641,24 @@ export default function AdminVouchersPage() {
                 ) : (
                   <>
                     <div>
+                      <label className={labelClass}>Nomor Sertifikat</label>
+                      <input type="text" value={nomorSertifikat} onChange={(e) => setNomorSertifikat(e.target.value)} placeholder="Contoh: 001/11.29.02.165-02.166-C/2026" maxLength={100} className={inputClass} />
+                      <p className="text-[11px] text-[var(--text-muted)] mt-1">Nomor urut sertifikat, diisi manual. Format bebas sesuai kebutuhan.</p>
+                    </div>
+                    <div>
                       <label className={labelClass}>Nama Penerima *</label>
-                      <input type="text" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Nama lengkap penerima" required className={inputClass} />
+                      <input type="text" value={recipientName} onChange={(e) => setRecipientName(e.target.value)} placeholder="Nama lengkap anggota Pramuka" required className={inputClass} />
                     </div>
                     <div>
                       <label className={labelClass}>Jenis Sertifikat *</label>
                       <select value={certificateType} onChange={(e) => setCertificateType(e.target.value)} required className={inputClass}>
                         <option value="">-- Pilih Jenis --</option>
-                        <option value="Penghargaan">Penghargaan</option>
-                        <option value="Sertifikat Keahlian">Sertifikat Keahlian</option>
-                        <option value="Sertifikat Partisipasi">Sertifikat Partisipasi</option>
-                        <option value="Piagam Penghargaan">Piagam Penghargaan</option>
-                        <option value="Lainnya">Lainnya</option>
+                        {PRAMUKA_CERT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className={labelClass}>Dewan Ambalan</label>
-                      <input type="text" value={dewanAmbalan} onChange={(e) => setDewanAmbalan(e.target.value)} placeholder="Nama dewan ambalan" className={inputClass} />
+                      <input type="text" value={dewanAmbalan} onChange={(e) => setDewanAmbalan(e.target.value)} placeholder="Nama dewan ambalan penerbit" className={inputClass} />
                     </div>
                   </>
                 )}
@@ -501,7 +668,7 @@ export default function AdminVouchersPage() {
                   </div>
                 )}
                 <button type="submit" disabled={genLoading} className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2.5 px-4 rounded-lg transition-colors">
-                  {genLoading ? 'Membuat...' : 'Generate'}
+                  {genLoading ? 'Membuat...' : `Generate ${type === 'certificate' ? 'Sertifikat' : 'Voucher'}`}
                 </button>
               </form>
             </div>
@@ -509,22 +676,53 @@ export default function AdminVouchersPage() {
             {/* Results Preview */}
             {generated && (
               <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
-                <h2 className="text-lg font-bold text-[var(--text-primary)] mb-4">Hasil ({generated.count})</h2>
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 rounded-lg p-4 mb-4">
-                  <p className="text-emerald-700 dark:text-emerald-300 font-medium text-sm">Berhasil membuat {generated.count} {type}</p>
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle size={18} className="text-emerald-500" />
+                  <h2 className="text-lg font-bold text-[var(--text-primary)]">Berhasil ({generated.count})</h2>
                 </div>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {generated.items.map((item, idx) => (
-                    <div key={idx} className="bg-[var(--surface-app)] rounded-lg p-3 border border-[var(--border-primary)]">
-                      <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{item.code}</p>
-                      <p className="text-sm text-[var(--text-primary)] mt-0.5">{item.title || item.recipient_name}</p>
-                      <p className="text-xs text-[var(--text-muted)] mt-1">{new Date(item.created_at).toLocaleString('id-ID')}</p>
-                    </div>
-                  ))}
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 rounded-lg p-3 mb-4">
+                  <p className="text-emerald-700 dark:text-emerald-300 font-medium text-sm">
+                    {generated.count} {type === 'certificate' ? 'sertifikat' : 'voucher'} berhasil dibuat
+                  </p>
                 </div>
-                <button onClick={handleDownloadCsv} className="w-full mt-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">
-                  <Download size={14} className="inline mr-1.5" /> Download CSV
-                </button>
+                {/* QR Code cards for certificates */}
+                {type === 'certificate' ? (
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                    {generated.items.map((item, idx) => (
+                      <QRCertificateCard key={idx} item={item} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {generated.items.map((item, idx) => (
+                      <div key={idx} className="bg-[var(--surface-app)] rounded-lg p-3 border border-[var(--border-primary)]">
+                        <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{item.code}</p>
+                        <p className="text-sm text-[var(--text-primary)] mt-0.5">{item.title}</p>
+                        <p className="text-xs text-[var(--text-muted)] mt-1">{new Date(item.created_at).toLocaleString('id-ID')}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-2 mt-4">
+                  <button onClick={handleDownloadCsv} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">
+                    <Download size={14} className="inline mr-1.5" /> CSV
+                  </button>
+                  {type === 'certificate' && generated.items.length > 0 && (
+                    <button
+                      onClick={() => {
+                        generated.items.forEach((item, idx) => {
+                          setTimeout(() => {
+                            const container = document.getElementById(`qr-result-${idx}`);
+                            if (container) downloadQRCode(container, `QR-${item.code}.png`);
+                          }, idx * 300);
+                        });
+                      }}
+                      className="flex-1 bg-[var(--surface-app)] border border-[var(--border-primary)] hover:border-emerald-500 text-[var(--text-primary)] font-bold py-2 px-4 rounded-lg transition-colors text-sm"
+                    >
+                      <QrCode size={14} className="inline mr-1.5" /> Download Semua QR
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -645,7 +843,7 @@ export default function AdminVouchersPage() {
               <div className="relative md:col-span-2">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                 <input
-                  type="text" placeholder="Cari kode atau nama penerima..." value={cSearch}
+                  type="text" placeholder="Cari kode, nomor, atau nama penerima..." value={cSearch}
                   onChange={(e) => { setCSerch(e.target.value); setCPagination({ ...cPagination, offset: 0 }); }}
                   className="w-full pl-9 pr-4 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500"
                 />
@@ -670,7 +868,7 @@ export default function AdminVouchersPage() {
               <div className="p-8 text-center"><p className="text-[var(--text-secondary)]">Memuat data...</p></div>
             ) : certificates.length === 0 ? (
               <div className="p-8 text-center">
-                <Ticket size={40} className="mx-auto text-[var(--text-muted)] mb-3" />
+                <Award size={40} className="mx-auto text-[var(--text-muted)] mb-3" />
                 <p className="text-[var(--text-secondary)]">Tidak ada sertifikat ditemukan</p>
               </div>
             ) : (
@@ -679,6 +877,7 @@ export default function AdminVouchersPage() {
                   <table className="w-full">
                     <thead className="bg-[var(--surface-muted)] border-b border-[var(--border-primary)]">
                       <tr>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">No. Sertifikat</th>
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Kode</th>
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Penerima</th>
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Jenis</th>
@@ -690,6 +889,9 @@ export default function AdminVouchersPage() {
                     <tbody className="divide-y divide-[var(--border-primary)]">
                       {certificates.map((c) => (
                         <tr key={c.id} className="hover:bg-[var(--surface-muted)] transition-colors">
+                          <td className="px-4 md:px-6 py-3 text-sm font-medium text-[var(--text-primary)] whitespace-nowrap">
+                            {c.nomor_sertifikat || <span className="text-[var(--text-muted)]">-</span>}
+                          </td>
                           <td className="px-4 md:px-6 py-3 font-mono text-sm text-emerald-600 dark:text-emerald-400">{c.code}</td>
                           <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-primary)]">{c.recipient_name}</td>
                           <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden sm:table-cell">{c.certificate_type}</td>
@@ -701,6 +903,9 @@ export default function AdminVouchersPage() {
                           </td>
                           <td className="px-4 md:px-6 py-3 text-right">
                             <div className="flex items-center justify-end gap-1">
+                              <button onClick={() => setViewCertificate(c)} className="p-1.5 rounded-lg hover:bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:text-emerald-600 transition-colors" title="Lihat QR Code">
+                                <QrCode size={15} />
+                              </button>
                               <button onClick={() => setEditCertificate(c)} className="p-1.5 rounded-lg hover:bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:text-emerald-600 transition-colors" title="Edit">
                                 <Edit3 size={15} />
                               </button>
@@ -737,9 +942,27 @@ export default function AdminVouchersPage() {
         </div>
       )}
 
-      {/* Modals */}
-      <EditVoucherModal item={editVoucher} open={!!editVoucher} onClose={() => setEditVoucher(null)} onSave={handleEditSave} />
-      <EditCertificateModal item={editCertificate} open={!!editCertificate} onClose={() => setEditCertificate(null)} onSave={handleEditSave} />
+      {/* ── Modals ────────────────────────────────────── */}
+      <EditVoucherModal
+        item={editVoucher}
+        open={!!editVoucher}
+        onClose={() => setEditVoucher(null)}
+        onSave={handleEditSave}
+      />
+
+      <EditCertificateModal
+        item={editCertificate}
+        open={!!editCertificate}
+        onClose={() => setEditCertificate(null)}
+        onSave={handleEditSave}
+      />
+
+      <CertificateDetailModal
+        item={viewCertificate}
+        open={!!viewCertificate}
+        onClose={() => setViewCertificate(null)}
+      />
+
       <ConfirmModal
         open={!!deleteTarget}
         title="Konfirmasi Hapus"

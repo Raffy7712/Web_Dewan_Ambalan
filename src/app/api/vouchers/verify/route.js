@@ -53,7 +53,7 @@ export async function POST(request) {
       // Try certificate
       const { data: certData } = await db
         .from("certificates")
-        .select("id, code, certificate_type, recipient_name, status, issue_date")
+        .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date")
         .eq("code", code)
         .single();
 
@@ -95,7 +95,7 @@ export async function POST(request) {
         isValid = false;
         validationMessage = "Sertifikat telah dibatalkan";
       } else {
-        validationMessage = "Sertifikat valid";
+        validationMessage = "Sertifikat valid — diterbitkan oleh " + (item.dewan_ambalan || "Dewan Ambalan");
       }
     }
 
@@ -122,7 +122,10 @@ export async function POST(request) {
         status: item.status,
         ...(itemType === "voucher" && { expires_at: item.expires_at }),
         ...(itemType === "certificate" && {
+          nomor_sertifikat: item.nomor_sertifikat || null,
           recipient_name: item.recipient_name,
+          certificate_type: item.certificate_type,
+          dewan_ambalan: item.dewan_ambalan || null,
           issue_date: item.issue_date,
         }),
       },
@@ -170,7 +173,7 @@ export async function GET(request) {
     } else {
       const { data: certData } = await db
         .from("certificates")
-        .select("id, code, certificate_type, recipient_name, status, issue_date")
+        .select("id, code, nomor_sertifikat, certificate_type, recipient_name, status, issue_date")
         .eq("code", code)
         .single();
 

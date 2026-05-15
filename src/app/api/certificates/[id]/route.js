@@ -18,7 +18,7 @@ export async function GET(request, { params }) {
     const db = createAdminClient();
     const { data, error } = await db
       .from("certificates")
-      .select("id, code, qr_code, barcode, recipient_name, certificate_type, dewan_ambalan, status, issue_date, created_at, updated_at")
+      .select("id, code, qr_code, barcode, nomor_sertifikat, recipient_name, certificate_type, dewan_ambalan, status, issue_date, created_at, updated_at")
       .eq("id", id)
       .single();
 
@@ -45,7 +45,7 @@ export async function PUT(request, { params }) {
     }
 
     const body = await request.json();
-    const allowedFields = ["recipient_name", "certificate_type", "dewan_ambalan", "status"];
+    const allowedFields = ["recipient_name", "certificate_type", "dewan_ambalan", "status", "nomor_sertifikat"];
     const updatePayload = {};
 
     for (const field of allowedFields) {
@@ -56,12 +56,42 @@ export async function PUT(request, { params }) {
         if (field === "recipient_name" && body[field].length > 200) {
           return NextResponse.json({ error: "recipient_name max 200 chars" }, { status: 400 });
         }
+        if (field === "nomor_sertifikat" && String(body[field]).length > 100) {
+          return NextResponse.json({ error: "nomor_sertifikat max 100 chars" }, { status: 400 });
+        }
         updatePayload[field] = body[field];
       }
     }
 
     if (Object.keys(updatePayload).length === 0) {
       return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+    }
+
+    // Also update the QR code data if relevant fields changed
+    if (updatePayload.recipient_name || updatePayload.certificate_type || updatePayload.dewan_ambalan || updatePayload.nomor_sertifikat) {
+      const db = createAdminClient();
+      // Fetch current data first
+      const { data: current } = await db
+        .from("certificates")
+        .select("code, qr_code, nomor_sertifikat, recipient_name, certificate_type, dewan_ambalan")
+        .eq("id", id)
+        .single();
+
+      if (current) {
+        const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://da-alf.web.id";
+        const mergedData = { ...current, ...updatePayload };
+        const verifyUrl = `${BASE_URL}/vouchers?code=${mergedData.code}`;
+        updatePayload.qr_code = JSON.stringify({
+          type: "certificate",
+          code: mergedData.code,
+          nomor_sertifikat: mergedData.nomor_sertifikat || null,
+          recipient_name: mergedData.recipient_name,
+          certificate_type: mergedData.certificate_type,
+          dewan_ambalan: mergedData.dewan_ambalan || "Dewan Ambalan",
+          verifyUrl,
+          generatedAt: new Date().toISOString(),
+        });
+      }
     }
 
     const db = createAdminClient();

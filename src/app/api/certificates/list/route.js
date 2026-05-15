@@ -18,7 +18,7 @@ export async function GET(request) {
     const db = createAdminClient();
     let query = db
       .from("certificates")
-      .select("id, code, recipient_name, certificate_type, dewan_ambalan, status, issue_date, created_at", { count: "exact" });
+      .select("id, code, nomor_sertifikat, recipient_name, certificate_type, dewan_ambalan, status, issue_date, created_at", { count: "exact" });
 
     if (status) {
       query = query.eq("status", status);
@@ -30,7 +30,7 @@ export async function GET(request) {
 
     if (search) {
       const escaped = search.replace(/%/g, "\\%").replace(/_/g, "\\_");
-      query = query.or(`code.ilike.%${escaped}%,recipient_name.ilike.%${escaped}%`);
+      query = query.or(`code.ilike.%${escaped}%,recipient_name.ilike.%${escaped}%,nomor_sertifikat.ilike.%${escaped}%`);
     }
 
     const { data, count, error } = await query

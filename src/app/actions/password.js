@@ -221,7 +221,7 @@ export async function changePasswordAction(prevState, formData) {
   if (!account) return { error: "Akun tidak ditemukan." };
 
   const validOld = await bcryptjs.compare(oldPassword, account.password_hash);
-  if (!validOld) return { error: "Password lama salah." });
+  if (!validOld) return { error: "Password lama salah." };
 
   // Update password
   const password_hash = await bcryptjs.hash(newPassword, 12);
