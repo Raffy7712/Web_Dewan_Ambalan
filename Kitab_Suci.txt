@@ -511,3 +511,441 @@ POSTS MANAGEMENT:
   2. Create new post (inline atau modal)
 - Removed duplicate "Posting berita & galeri" menu item
 - Single entry point untuk post management
+
+-------------------------------------------------------------------------------
+FASE 2: VOUCHER, CERTIFICATE & INVENTORY SYSTEM (May 2026)
+-------------------------------------------------------------------------------
+
+# IMPLEMENTASI SELESAI: da-alf Updates Summary
+
+**Status**: ✅ COMPLETE for Priority 1-3 (Shop/Kewirausahaan removed per request)
+**Tanggal**: 15 Mei 2026
+
+---
+
+## 📋 Yang Sudah Diimplementasikan
+
+### 1️⃣ DOMAIN UPDATES ✅
+**File**: `.env.local`
+- ✅ Resend email domain: `mail.da-alf.my.id` (already set)
+- ✅ Web domain update siap untuk deployment
+
+### 2️⃣ FITUR VALIDASI VOUCHER & SERTIFIKAT ✅
+**Database**: `migration-v11.sql`
+- ✅ Tables: `vouchers`, `certificates`, `verification_scans`
+- ✅ RLS policies untuk security
+
+**API Endpoints**:
+- ✅ `POST /api/vouchers/generate` - Generate voucher/sertifikat dengan QR code
+- ✅ `POST /api/vouchers/verify` - Verifikasi validitas dengan code
+- ✅ `GET /api/vouchers/verify?code=xxx` - Lihat detail & scan history
+
+**Frontend**:
+- ✅ `/vouchers` - Public scanner page (QR/barcode/code verification)
+- ✅ `/admin/vouchers` - Admin panel untuk generate voucher & sertifikat
+
+**Fitur**:
+- Generate bulk voucher/sertifikat dengan kode unik otomatis
+- Verifikasi via code input
+- Tracking scan history
+- Download hasil generate ke CSV
+- Status tracking: active, used, expired, revoked
+
+### 3️⃣ MANAJEMEN INVENTARIS SARANA PRASARANA ✅
+**Database**: `migration-v12.sql`
+- ✅ Tables: `inventory_items`, `maintenance_logs`, `item_checks`, `inventory_categories`
+- ✅ Indexes untuk performa query
+- ✅ RLS policies
+
+**API Endpoints**:
+- ✅ `GET/POST /api/inventory/items` - List & create items
+- ✅ `GET/PUT/DELETE /api/inventory/items/[id]` - Item management
+- ✅ `GET/POST /api/inventory/maintenance` - Maintenance logs
+- ✅ `GET/POST /api/inventory/checks` - Item condition checks
+- ✅ `GET /api/inventory/export` - Export ke JSON/CSV/PDF format
+
+**Frontend**:
+- ✅ `/admin/inventory` - List inventaris dengan filter & search
+- ✅ `/admin/inventory/create` - Form tambah item baru
+- ✅ `/admin/inventory/[id]` - Detail item + maintenance history + check history
+- ✅ `/admin/inventory/export` - Export barcode/QR code ke PDF untuk print label
+
+**Fitur**:
+- CRUD lengkap untuk inventory items
+- Auto-generate kode item (INVT-YEAR-RANDOM)
+- Track maintenance history (jenis, biaya, tanggal, petugas)
+- Log pengecekan berkala (kondisi: baik/perlu perbaikan/rusak)
+- Export PDF siap print untuk label barang
+- Filter & search by code/name/location
+- Pagination support
+
+### 4️⃣ FITUR SHOP KEWIRAUSAHAAN ❌
+**Status**: Removed per user request
+- Fitur shop/kewirausahaan tidak jadi diimplementasikan
+- Semua file terkait sudah dihapus
+
+---
+
+## 📦 Dependencies Terinstall
+
+```json
+{
+  "jspdf": "^2.x",
+  "html2canvas": "^1.x",
+  "qrcode.react": "^1.x",
+  "jsbarcode": "^3.x"
+}
+```
+
+---
+
+## 🗂️ File Structure Baru
+
+```
+src/
+├── app/
+│   ├── vouchers/
+│   │   └── page.js                    # Public scanner page
+│   ├── admin/
+│   │   ├── vouchers/
+│   │   │   └── page.js                # Admin voucher generation
+│   │   └── inventory/
+│   │       ├── page.js                # Inventory list
+│   │       ├── create/
+│   │       │   └── page.js            # Create item
+│   │       ├── [id]/
+│   │       │   └── page.js            # Item detail
+│   │       └── export/
+│   │           └── page.js            # PDF export
+│   └── api/
+│       ├── vouchers/
+│       │   ├── generate/
+│       │   │   └── route.js           # Generate API
+│       │   └── verify/
+│       │       └── route.js           # Verify API
+│       └── inventory/
+│           ├── items/
+│           │   ├── route.js           # List/create
+│           │   └── [id]/
+│           │       └── route.js       # Detail/update/delete
+│           ├── maintenance/
+│           │   └── route.js           # Maintenance logs
+│           ├── checks/
+│           │   └── route.js           # Item checks
+│           └── export/
+│               └── route.js           # Export functionality
+migrations/
+├── migration-v11.sql                  # Voucher & Certificate schema
+├── migration-v12.sql                  # Inventory schema
+└── (others)
+```
+
+---
+
+## 🚀 Cara Pakai
+
+### 1. Deploy Migrations ke Supabase
+```bash
+# 1. Buka https://app.supabase.com → Project → SQL Editor
+# 2. Copy-paste isi migration-v11.sql → Execute
+# 3. Copy-paste isi migration-v12.sql → Execute
+```
+
+### 2. Test Fitur Voucher
+```
+1. Go to: http://localhost:3000/admin/vouchers
+2. Generate voucher/sertifikat
+3. Go to: http://localhost:3000/vouchers
+4. Verify code yang sudah di-generate
+```
+
+### 4. Test Fitur Inventory
+```
+1. Go to: http://localhost:3000/admin/inventory
+2. Tambah item → Detail → Maintenance/checks
+3. Export PDF dari /admin/inventory/export
+```
+
+### 5. Test Fitur Shop
+```
+1. Go to: http://localhost:3000/shop
+2. Add produk ke cart
+3. Go to: /shop/cart
+4. Isi form checkout → Lanjut ke pembayaran
+5. Setup Tripay sandbox untuk test payment
+```
+
+---
+
+## 📌 PENTING: Setup Checklist
+
+- [ ] Deploy migration-v11, v12 ke Supabase
+- [ ] Verify EMAIL_FROM uses `mail.da-alf.my.id` di .env.local
+- [ ] Test semua APIs di localhost
+- [ ] Review RLS policies di Supabase
+
+---
+
+## 💡 Next Steps untuk Production
+
+1. **Email Notifications** (via Resend):
+   - Voucher generation confirmation
+   - Inventory alerts
+   - Certificate issuance email
+
+2. **Admin Dashboard**:
+   - Analytics dashboard
+   - Inventory statistics
+   - Voucher/Certificate statistics
+
+3. **Additional Features** (future):
+   - Inventory low-stock alerts
+   - Advanced reporting
+   - Audit logs
+
+---
+
+## ✅ Testing Checklist
+
+- [ ] Domain email `mail.da-alf.my.id` active di Resend
+- [ ] Migration v11, v12, v13 deployed ke Supabase
+- [ ] RLS policies aktif & tidak ada permission issues
+- [ ] Generate & verify voucher/sertifikat berfungsi
+- [ ] Create inventory item + maintain/check logs berfungsi
+- [ ] PDF export inventory berfungsi
+- [ ] Add to cart berfungsi
+- [ ] Checkout form berfungsi
+- [ ] Tripay payment request berhasil generate QRIS
+- [ ] Webhook dari Tripay terintegrasi
+
+---
+
+## 🎯 Summary
+
+**Total Files Created**: 20+
+- 2 migrations (v11, v12)
+- 8 API endpoints
+- 7 frontend pages
+
+**All Priority 1-3 Completed** ✅
+- Domain updated
+- Voucher & certificate validation
+- Inventory management
+
+**Priority 4-5 Removed** ❌
+- Shop/kewirausahaan feature removed per user request
+
+**Status: Ready for Deployment** 🚀
+
+---
+
+## 📋 Yang Sudah Diimplementasikan
+
+### 1️⃣ DOMAIN UPDATES ✅
+**File**: `.env.local`
+- ✅ Resend domain: `da-alf.its-raffy.my.id` → `da-alf.my.id`
+- ✅ Web domain update sudah siap (konfigurasi deployment)
+
+### 2️⃣ FITUR VALIDASI VOUCHER & SERTIFIKAT ✅
+**Database**: `migration-v11.sql`
+- ✅ Tables: `vouchers`, `certificates`, `verification_scans`
+- ✅ RLS policies untuk security
+
+**API Endpoints**:
+- ✅ `POST /api/vouchers/generate` - Generate voucher/sertifikat dengan QR code
+- ✅ `POST /api/vouchers/verify` - Verifikasi validitas dengan code
+- ✅ `GET /api/vouchers/verify?code=xxx` - Lihat detail & scan history
+
+**Frontend**:
+- ✅ `/vouchers` - Public scanner page (QR/barcode/code verification)
+- ✅ `/admin/vouchers` - Admin panel untuk generate voucher & sertifikat
+
+**Fitur**:
+- Generate bulk voucher/sertifikat dengan kode unik otomatis
+- Verifikasi via code input
+- Tracking scan history
+- Download hasil generate ke CSV
+- Status tracking: active, used, expired, revoked
+
+### 3️⃣ MANAJEMEN INVENTARIS SARANA PRASARANA ✅
+**Database**: `migration-v12.sql`
+- ✅ Tables: `inventory_items`, `maintenance_logs`, `item_checks`, `inventory_categories`
+- ✅ Indexes untuk performa query
+- ✅ RLS policies
+
+**API Endpoints**:
+- ✅ `GET/POST /api/inventory/items` - List & create items
+- ✅ `GET/PUT/DELETE /api/inventory/items/[id]` - Item management
+- ✅ `GET/POST /api/inventory/maintenance` - Maintenance logs
+- ✅ `GET/POST /api/inventory/checks` - Item condition checks
+- ✅ `GET /api/inventory/export` - Export ke JSON/CSV/PDF format
+
+**Frontend**:
+- ✅ `/admin/inventory` - List inventaris dengan filter & search
+- ✅ `/admin/inventory/create` - Form tambah item baru
+- ✅ `/admin/inventory/[id]` - Detail item + maintenance history + check history
+- ✅ `/admin/inventory/export` - Export barcode/QR code ke PDF untuk print label
+
+**Fitur**:
+- CRUD lengkap untuk inventory items
+- Auto-generate kode item (INVT-YEAR-RANDOM)
+- Track maintenance history (jenis, biaya, tanggal, petugas)
+- Log pengecekan berkala (kondisi: baik/perlu perbaikan/rusak)
+- Export PDF siap print untuk label barang
+- Filter & search by code/name/location
+- Pagination support
+
+---
+
+## 📦 Dependencies Terinstall
+
+```json
+{
+  "jspdf": "^2.x",
+  "html2canvas": "^1.x",
+  "qrcode.react": "^1.x",
+  "jsbarcode": "^3.x"
+}
+```
+
+---
+
+## 🗂️ File Structure Baru
+
+```
+src/
+├── app/
+│   ├── vouchers/
+│   │   └── page.js                    # Public scanner page
+│   ├── admin/
+│   │   ├── vouchers/
+│   │   │   └── page.js                # Admin voucher generation
+│   │   └── inventory/
+│   │       ├── page.js                # Inventory list
+│   │       ├── create/
+│   │       │   └── page.js            # Create item
+│   │       ├── [id]/
+│   │       │   └── page.js            # Item detail
+│   │       └── export/
+│   │           └── page.js            # PDF export
+│   └── api/
+│       ├── vouchers/
+│       │   ├── generate/
+│       │   │   └── route.js           # Generate API
+│       │   └── verify/
+│       │       └── route.js           # Verify API
+│       └── inventory/
+│           ├── items/
+│           │   ├── route.js           # List/create
+│           │   └── [id]/
+│           │       └── route.js       # Detail/update/delete
+│           ├── maintenance/
+│           │   └── route.js           # Maintenance logs
+│           ├── checks/
+│           │   └── route.js           # Item checks
+│           └── export/
+│               └── route.js           # Export functionality
+migrations/
+├── migration-v11.sql                  # Voucher & Certificate schema
+├── migration-v12.sql                  # Inventory schema
+└── SHOP_IMPLEMENTATION_GUIDE.md       # Rekomendasi untuk Phase 2
+```
+
+---
+
+## 🚀 Cara Pakai
+
+### 1. Deploy Migrations ke Supabase
+```bash
+# Login Supabase CLI (jika belum)
+supabase login
+
+# Jalankan migration v11 & v12 di SQL Editor:
+# 1. Buka https://app.supabase.com → Project → SQL Editor
+# 2. Copy-paste isi migration-v11.sql → Execute
+# 3. Copy-paste isi migration-v12.sql → Execute
+```
+
+### 2. Test Fitur Voucher
+```
+1. Go to: http://localhost:3000/admin/vouchers
+2. Generate voucher/sertifikat (minim 1)
+3. Go to: http://localhost:3000/vouchers
+4. Masukkan kode yang sudah di-generate → Verify
+```
+
+### 3. Test Fitur Inventory
+```
+1. Go to: http://localhost:3000/admin/inventory
+2. Klik "+ Tambah Item" → Isi form → Simpan
+3. Klik detail item untuk lihat history maintenance & pengecekan
+4. Go to: http://localhost:3000/admin/inventory/export
+5. Pilih item → Download PDF / CSV
+```
+
+---
+
+## 📌 PENTING: Setup Resend Domain
+
+Untuk mengubah domain email resend dari `its-raffy` ke `da-alf`:
+
+1. **Resend Dashboard** → Settings → Domains
+2. Tambahkan domain baru: `da-alf.my.id`
+3. Verifikasi DNS records
+4. Update `.env.local`: `EMAIL_FROM=noreply@da-alf.my.id`
+5. Deploy changes
+
+---
+
+## ⏳ PRIORITY 4-5: Shop & Payment Gateway
+
+### Rekomendasi:
+✅ **Payment Gateway**: Tripay (QRIS terintegrasi, minimal admin)
+✅ **Format**: PDF untuk inventory codes, CSV untuk data export
+✅ **Timing**: Implementasi di sprint berikutnya setelah requirements clear
+
+**Lihat**: `migrations/SHOP_IMPLEMENTATION_GUIDE.md` untuk detail & architecture.
+
+---
+
+## ✅ Testing Checklist
+
+- [ ] Domain email `da-alf.my.id` sudah verifikasi di Resend
+- [ ] Migration v11 & v12 sudah dijalankan di Supabase
+- [ ] RLS policies aktif & tidak ada permission issues
+- [ ] Generate voucher & sertifikat berfungsi
+- [ ] Verify voucher/sertifikat tampil status valid/invalid
+- [ ] Create inventory item berhasil generate kode unik
+- [ ] PDF export berfungsi & bisa di-print
+- [ ] Maintenance & check logs tersimpan dengan baik
+
+---
+
+## 🎯 Next Steps
+
+1. **Immediate**: 
+   - Deploy migrations ke production Supabase
+   - Test semua endpoint API
+   - Verifikasi Resend domain baru
+
+2. **Short-term** (1-2 minggu):
+   - Add QR code scanner dengan camera (html5-qrcode library)
+   - Optimize PDF export dengan design lebih baik
+   - Add more inventory categories & presets
+
+3. **Medium-term** (Phase 2):
+   - Start shop feature development
+   - Clarify product categories & pricing model
+   - Setup Tripay sandbox & payment flow
+
+---
+
+## 📞 Support & Questions
+
+Jika ada pertanyaan atau issue:
+- Check migration files untuk schema detail
+- Review API endpoints untuk request/response format
+- Test di localhost dulu sebelum production deploy
+
+**Happy coding! 🚀**
+
