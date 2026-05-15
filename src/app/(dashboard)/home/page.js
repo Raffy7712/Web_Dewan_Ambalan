@@ -1,4 +1,3 @@
-import React from "react";
 import Link from "next/link";
 import { TrendingUp, Zap, Users, Calendar } from "lucide-react";
 import {

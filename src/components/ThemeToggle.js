@@ -30,7 +30,7 @@ export default function ThemeToggle() {
     <button
       onClick={toggle}
       aria-label={dark ? "Aktifkan mode terang" : "Aktifkan mode gelap"}
-      className="p-2 rounded-lg text-purple-200 hover:text-white hover:bg-purple-700/50 dark:hover:bg-purple-800/50 transition-colors"
+      className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-muted)] transition-colors"
     >
       {dark ? <Sun size={18} /> : <Moon size={18} />}
     </button>

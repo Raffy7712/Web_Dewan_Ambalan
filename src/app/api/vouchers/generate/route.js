@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/api-auth";
 
+// POST /api/vouchers/generate - generate voucher/certificate (admin only)
 export async function POST(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { type, title, description, expires_at, quantity = 1 } = body;
 
@@ -20,16 +25,16 @@ export async function POST(request) {
       );
     }
 
+    // Cap quantity to prevent abuse
+    const qty = Math.min(Math.max(parseInt(quantity) || 1, 1), 25);
+
     const db = createAdminClient();
     const generated = [];
 
-    for (let i = 0; i < quantity; i++) {
-      // Generate unique code: e.g., VCH-2025-0001, CERT-2025-0001
-      const timestamp = Date.now();
+    for (let i = 0; i < qty; i++) {
       const random = Math.random().toString(36).substring(2, 8).toUpperCase();
       const code = `${type === "voucher" ? "VCH" : "CERT"}-${new Date().getFullYear()}-${random}`;
 
-      // Generate QR code data (will be encoded as JSON string)
       const qrData = JSON.stringify({
         type,
         code,
@@ -37,23 +42,20 @@ export async function POST(request) {
         generatedAt: new Date().toISOString(),
       });
 
-      // Prepare barcode (simplified: just use code for now)
-      const barcode = code;
-
-      const table = type === "voucher" ? "vouchers" : "certificates";
-
       if (type === "voucher") {
+        const insertPayload = {
+          code,
+          qr_code: qrData,
+          barcode: code,
+          title,
+          status: "active",
+        };
+        if (description) insertPayload.description = description;
+        if (expires_at) insertPayload.expires_at = expires_at;
+
         const { data, error } = await db
           .from("vouchers")
-          .insert({
-            code,
-            qr_code: qrData,
-            barcode,
-            title,
-            description,
-            expires_at,
-            status: "active",
-          })
+          .insert(insertPayload)
           .select()
           .single();
 
@@ -80,7 +82,7 @@ export async function POST(request) {
           .insert({
             code,
             qr_code: qrData,
-            barcode,
+            barcode: code,
             recipient_name,
             certificate_type,
             dewan_ambalan: dewan_ambalan || "Dewan Ambalan",

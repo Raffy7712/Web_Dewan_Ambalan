@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/api-auth";
 
-// GET /api/inventory/items - list all items with filters
+// GET /api/inventory/items - list all items with filters (admin only)
 export async function GET(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const condition = searchParams.get("condition");
@@ -44,8 +48,10 @@ export async function GET(request) {
     }
 
     if (search) {
+      // Escape special ilike characters
+      const escaped = search.replace(/%/g, "\\%").replace(/_/g, "\\_");
       query = query.or(
-        `code.ilike.%${search}%,name.ilike.%${search}%,location.ilike.%${search}%`
+        `code.ilike.%${escaped}%,name.ilike.%${escaped}%,location.ilike.%${escaped}%`
       );
     }
 
@@ -79,9 +85,12 @@ export async function GET(request) {
   }
 }
 
-// POST /api/inventory/items - create new item
+// POST /api/inventory/items - create new item (admin only)
 export async function POST(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const {
       name,
@@ -115,6 +124,7 @@ export async function POST(request) {
       name,
       condition: "baik",
       quantity: parseInt(quantity) || 1,
+      created_by: auth.id,
     };
     if (category_id) insertPayload.category_id = category_id;
     if (description) insertPayload.description = description;

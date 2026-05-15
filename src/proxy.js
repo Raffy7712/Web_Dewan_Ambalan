@@ -4,10 +4,14 @@ import { jwtVerify } from "jose";
 const SESSION_COOKIE = "da_session";
 const SESSION_ISSUER = "da-alf";
 const SESSION_AUDIENCE = "da-alf-web";
-const DEFAULT_SECRET = "da-alf-default-secret-please-change-me-32ch";
 
 function getSecretKey() {
-  return new TextEncoder().encode(process.env.AUTH_SECRET ?? DEFAULT_SECRET);
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) {
+    console.error("AUTH_SECRET is not set — auth middleware cannot verify sessions");
+    return new TextEncoder().encode("");
+  }
+  return new TextEncoder().encode(secret);
 }
 
 async function readSession(request) {

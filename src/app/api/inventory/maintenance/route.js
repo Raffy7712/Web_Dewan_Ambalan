@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/api-auth";
 
 // GET /api/inventory/maintenance?item_id=xxx - get maintenance logs for item
 export async function GET(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("item_id");
     const limit = parseInt(searchParams.get("limit") || "50");
@@ -51,9 +55,12 @@ export async function GET(request) {
   }
 }
 
-// POST /api/inventory/maintenance - create maintenance log
+// POST /api/inventory/maintenance - create maintenance log (admin only)
 export async function POST(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { item_id, maintenance_type, description, cost, notes } = body;
 
@@ -80,15 +87,18 @@ export async function POST(request) {
       );
     }
 
+    const insertPayload = {
+      item_id,
+      maintenance_type,
+      done_by: auth.id,
+    };
+    if (description) insertPayload.description = description;
+    if (cost != null && cost !== '') insertPayload.cost = parseFloat(cost);
+    if (notes) insertPayload.notes = notes;
+
     const { data, error } = await db
       .from("maintenance_logs")
-      .insert({
-        item_id,
-        maintenance_type,
-        description,
-        cost,
-        notes,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 

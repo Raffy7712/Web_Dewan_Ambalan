@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/api-auth";
 
-// GET /api/inventory/categories - list all categories
-export async function GET() {
+// GET /api/inventory/categories - list all categories (admin only)
+export async function GET(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const db = createAdminClient();
 
     const { data, error } = await db
@@ -32,9 +36,12 @@ export async function GET() {
   }
 }
 
-// POST /api/inventory/categories - create category
+// POST /api/inventory/categories - create category (admin only)
 export async function POST(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { name, description } = body;
 
@@ -47,9 +54,12 @@ export async function POST(request) {
 
     const db = createAdminClient();
 
+    const insertPayload = { name };
+    if (description) insertPayload.description = description;
+
     const { data, error } = await db
       .from("inventory_categories")
-      .insert({ name, description })
+      .insert(insertPayload)
       .select()
       .single();
 

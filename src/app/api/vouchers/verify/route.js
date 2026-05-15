@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/api-auth";
 
+// POST /api/vouchers/verify - public verification endpoint
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -56,7 +58,7 @@ export async function POST(request) {
       );
     }
 
-    // Check if expired (for vouchers only)
+    // Check validity
     let isValid = true;
     let validationMessage = "";
 
@@ -85,18 +87,18 @@ export async function POST(request) {
       }
     }
 
-    // Record the scan in verification_scans
+    // Record the scan
     const scanPayload = {
       scanned_at: new Date().toISOString(),
       verification_type,
-      ...(itemType === "voucher" && { voucher_id: item.id }),
-      ...(itemType === "certificate" && { certificate_id: item.id }),
       metadata: {
         userAgent: request.headers.get("user-agent"),
       },
     };
+    if (itemType === "voucher") scanPayload.voucher_id = item.id;
+    if (itemType === "certificate") scanPayload.certificate_id = item.id;
 
-    await db.from("verification_scans").insert(scanPayload).select();
+    await db.from("verification_scans").insert(scanPayload);
 
     return NextResponse.json({
       ok: true,
@@ -110,7 +112,7 @@ export async function POST(request) {
         description: item.description || null,
         status: item.status,
         ...(itemType === "voucher" && { expires_at: item.expires_at }),
-        ...(itemType === "certificate" && { 
+        ...(itemType === "certificate" && {
           recipient_name: item.recipient_name,
           issue_date: item.issue_date,
         }),
@@ -125,9 +127,12 @@ export async function POST(request) {
   }
 }
 
-// GET endpoint untuk lihat detail & scan history
-export async function GET(request, { params }) {
+// GET /api/vouchers/verify?code=xxx - get scan history (admin only)
+export async function GET(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code");
 

@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Save, Wrench, ClipboardCheck } from 'lucide-react';
 
 export default function InventoryDetailPage({ params }) {
   const router = useRouter();
-  const { id } = params;
+  const { id } = use(params);
   const [item, setItem] = useState(null);
   const [maintenance, setMaintenance] = useState([]);
   const [checks, setChecks] = useState([]);

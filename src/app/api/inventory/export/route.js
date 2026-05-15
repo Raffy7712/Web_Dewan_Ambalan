@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/api-auth";
 
-// GET /api/inventory/export/codes - export inventory item codes as JSON
-// This will be used by frontend to generate PDF with QR/barcode
+// GET /api/inventory/export - export inventory data (admin only)
 export async function GET(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const itemIds = searchParams.get("item_ids"); // comma-separated IDs or "all"
-    const format = searchParams.get("format") || "json"; // json, csv, pdf
+    const format = searchParams.get("format") || "json"; // json, csv
 
     if (!itemIds) {
       return NextResponse.json(
@@ -28,7 +31,10 @@ export async function GET(request) {
         inventory_categories(name),
         location,
         quantity,
-        unit
+        unit,
+        condition,
+        purchase_date,
+        purchase_price
       `
       );
 
@@ -63,8 +69,7 @@ export async function GET(request) {
     }
 
     if (format === "csv") {
-      // Generate CSV format
-      const headers = ["Code", "Name", "Category", "Location", "Quantity", "Unit"];
+      const headers = ["Code", "Name", "Category", "Location", "Quantity", "Unit", "Condition", "Purchase Date", "Purchase Price"];
       const rows = data.map((item) => [
         item.code,
         item.name,
@@ -72,19 +77,22 @@ export async function GET(request) {
         item.location || "N/A",
         item.quantity || 1,
         item.unit || "unit",
+        item.condition || "baik",
+        item.purchase_date || "",
+        item.purchase_price || "",
       ]);
 
+      const escapeCsv = (cell) => {
+        const str = String(cell);
+        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
       const csv = [
-        headers.join(","),
-        ...rows.map((row) =>
-          row
-            .map((cell) =>
-              typeof cell === "string" && cell.includes(",")
-                ? `"${cell}"`
-                : cell
-            )
-            .join(",")
-        ),
+        headers.map(escapeCsv).join(","),
+        ...rows.map((row) => row.map(escapeCsv).join(",")),
       ].join("\n");
 
       return new NextResponse(csv, {
@@ -92,24 +100,13 @@ export async function GET(request) {
         headers: {
           "Content-Type": "text/csv",
           "Content-Disposition":
-            'attachment; filename="inventory-codes.csv"',
+            'attachment; filename="inventory-export.csv"',
         },
       });
     }
 
-    // PDF format - return data for frontend PDF generation
-    if (format === "pdf") {
-      return NextResponse.json({
-        ok: true,
-        items: data,
-        count: data.length,
-        format: "pdf",
-        message: "Use this data with frontend PDF library (jsPDF + html2canvas)",
-      });
-    }
-
     return NextResponse.json(
-      { error: "Invalid format. Use 'json', 'csv', or 'pdf'" },
+      { error: "Invalid format. Use 'json' or 'csv'" },
       { status: 400 }
     );
   } catch (error) {

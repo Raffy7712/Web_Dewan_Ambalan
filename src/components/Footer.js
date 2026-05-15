@@ -1,13 +1,12 @@
 import Link from "next/link";
 import LogoImage from "./LogoImage";
 import { MapPin, Phone, Mail, Globe, ExternalLink } from "lucide-react";
-import { getCmsText, isAmbalanRegistrationEnabled } from "@/lib/cms";
+import { getCmsText } from "@/lib/cms";
 import { getSiteContact } from "@/lib/site-contact";
 
 export default async function Footer() {
   const { phone: contactPhone, email: contactEmail, websiteHref, websiteLabel, addressLine } =
     getSiteContact();
-  const showSeleksi = await isAmbalanRegistrationEnabled();
   const navLinks = [
     { href: "/home", label: "Beranda" },
     { href: "/berita", label: "Berita & Artikel" },

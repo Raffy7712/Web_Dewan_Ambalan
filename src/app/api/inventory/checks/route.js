@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/api-auth";
 
 // GET /api/inventory/checks?item_id=xxx - get check logs for item
 export async function GET(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("item_id");
     const limit = parseInt(searchParams.get("limit") || "50");
@@ -51,9 +55,12 @@ export async function GET(request) {
   }
 }
 
-// POST /api/inventory/checks - create check log
+// POST /api/inventory/checks - create check log (admin only)
 export async function POST(request) {
   try {
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { item_id, condition, notes, requires_maintenance = false } = body;
 
@@ -87,15 +94,18 @@ export async function POST(request) {
       );
     }
 
+    const insertPayload = {
+      item_id,
+      condition,
+      checked_by: auth.id,
+      requires_maintenance: Boolean(requires_maintenance),
+    };
+    if (notes) insertPayload.notes = notes;
+
     // Create check log and update item's last_checked
     const { data, error } = await db
       .from("item_checks")
-      .insert({
-        item_id,
-        condition,
-        notes,
-        requires_maintenance,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
@@ -113,6 +123,7 @@ export async function POST(request) {
       .update({
         condition,
         last_checked: new Date().toISOString(),
+        last_checked_by: auth.id,
       })
       .eq("id", item_id);
 

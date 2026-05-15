@@ -70,6 +70,14 @@ export default function AdminVouchersPage() {
   const handleDownloadCsv = () => {
     if (!generated?.items) return;
 
+    const escapeCsv = (cell) => {
+      const str = String(cell);
+      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
     const headers = ['Code', 'Title', 'Status', 'Created At'];
     const rows = generated.items.map((item) => [
       item.code,
@@ -79,8 +87,8 @@ export default function AdminVouchersPage() {
     ]);
 
     const csv = [
-      headers.join(','),
-      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+      headers.map(escapeCsv).join(','),
+      ...rows.map((row) => row.map(escapeCsv).join(',')),
     ].join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -145,7 +153,7 @@ export default function AdminVouchersPage() {
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 min="1"
-                max="100"
+                max="25"
                 className="w-full px-4 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
             </div>

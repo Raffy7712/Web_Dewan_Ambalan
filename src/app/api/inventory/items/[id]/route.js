@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
+import { requireAdmin } from "@/lib/api-auth";
 
-// GET /api/inventory/items/[id] - get single item
+// GET /api/inventory/items/[id] - get single item (admin only)
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const { id } = await params;
     const db = createAdminClient();
 
     const { data, error } = await db
@@ -51,10 +55,13 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT /api/inventory/items/[id] - update item
+// PUT /api/inventory/items/[id] - update item (admin only)
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const { id } = await params;
     const body = await request.json();
 
     // Only allow updating valid fields
@@ -66,8 +73,19 @@ export async function PUT(request, { params }) {
     const updatePayload = {};
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
-        // Skip empty strings for UUID/numeric fields
+        // Skip empty strings for UUID, numeric, and date fields
         if (field === "category_id" && body[field] === "") continue;
+        if (field === "purchase_price" && body[field] === "") continue;
+        if (field === "purchase_date" && body[field] === "") continue;
+        // Convert numeric fields
+        if (field === "quantity") {
+          updatePayload[field] = parseInt(body[field]) || 1;
+          continue;
+        }
+        if (field === "purchase_price" && body[field] != null) {
+          updatePayload[field] = parseFloat(body[field]);
+          continue;
+        }
         updatePayload[field] = body[field];
       }
     }
@@ -89,6 +107,7 @@ export async function PUT(request, { params }) {
       .single();
 
     if (error) {
+      console.error("Error updating item:", error);
       return NextResponse.json(
         { error: "Failed to update item" },
         { status: 500 }
@@ -108,10 +127,13 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE /api/inventory/items/[id] - delete item
+// DELETE /api/inventory/items/[id] - delete item (admin only)
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const auth = await requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const { id } = await params;
     const db = createAdminClient();
 
     const { error } = await db
