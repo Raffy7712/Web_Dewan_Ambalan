@@ -15,6 +15,8 @@ import {
   BookOpen,
   Mails,
   UserCog,
+  Ticket,
+  Package,
 } from "lucide-react";
 
 const modules = [
@@ -78,6 +80,18 @@ const modules = [
     title: "Agenda & arsip surat",
     description: "Surat masuk & keluar internal dewan (tidak dipublikasikan).",
     icon: Mails,
+  },
+  {
+    href: "/admin/vouchers",
+    title: "Voucher & sertifikat",
+    description: "Generate voucher dan sertifikat dengan kode unik, verifikasi, dan tracking.",
+    icon: Ticket,
+  },
+  {
+    href: "/admin/inventory",
+    title: "Inventaris sarpras",
+    description: "Kelola inventaris barang, riwayat perawatan, pengecekan berkala, dan export.",
+    icon: Package,
   },
   {
     href: "/admin/permissions",

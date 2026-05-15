@@ -14,24 +14,35 @@ import {
   UserCircle,
   Shield,
   Wallet,
+  ClipboardCheck,
+  UserPlus,
+  ChevronDown,
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
-const navLinks = [
+const publicNavLinks = [
   { href: "/home", label: "Beranda", icon: Home },
   { href: "/berita", label: "Berita", icon: Newspaper },
   { href: "/kegiatan", label: "Kegiatan", icon: CalendarDays },
   { href: "/anggota", label: "Struktur", icon: Users },
   { href: "/keuangan", label: "Keuangan", icon: Wallet },
   { href: "/galeri", label: "Galeri", icon: ImageIcon },
+  { href: "/daftar-ambalan", label: "Seleksi", icon: UserPlus },
+  { href: "/vouchers", label: "Voucher", icon: ClipboardCheck },
+];
+
+const adminOnlyLinks = [
+  { href: "/admin", label: "Admin", icon: Shield },
 ];
 
 export default function Navbar({ isAdmin = false }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+
+  // Admin sees all public links + admin link
   const visibleNavLinks = isAdmin
-    ? [...navLinks, { href: "/admin", label: "Admin", icon: Shield }]
-    : navLinks;
+    ? [...publicNavLinks, ...adminOnlyLinks]
+    : publicNavLinks;
 
   return (
     <nav className="sticky top-0 z-50 bg-[var(--surface-elevated)] border-b border-[var(--border-primary)] shadow-sm">
@@ -62,13 +73,18 @@ export default function Navbar({ isAdmin = false }) {
         <div className="hidden md:flex items-center gap-0.5 flex-1 justify-center">
           {visibleNavLinks.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
+            const isAdminLink = href === "/admin";
             return (
               <Link
                 key={href}
                 href={href}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                   active
-                    ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                    ? isAdminLink
+                      ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
+                      : "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                    : isAdminLink
+                    ? "text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                     : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
                 }`}
               >
@@ -108,6 +124,7 @@ export default function Navbar({ isAdmin = false }) {
         <div className="md:hidden bg-[var(--surface-elevated)] border-t border-[var(--border-primary)] px-4 py-3 flex flex-col gap-1">
           {visibleNavLinks.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
+            const isAdminLink = href === "/admin";
             return (
               <Link
                 key={href}
@@ -115,7 +132,11 @@ export default function Navbar({ isAdmin = false }) {
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   active
-                    ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                    ? isAdminLink
+                      ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
+                      : "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                    : isAdminLink
+                    ? "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20"
                     : "text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]"
                 }`}
               >
