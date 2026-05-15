@@ -70,19 +70,15 @@ CREATE POLICY "Vouchers readable by authenticated users" ON public.vouchers
 CREATE POLICY "Only creators can update own vouchers" ON public.vouchers
   FOR UPDATE USING (created_by = auth.uid());
 
-CREATE POLICY "Only admins can create vouchers" ON public.vouchers
-  FOR INSERT WITH CHECK (EXISTS (
-    SELECT 1 FROM public.roles WHERE user_id = auth.uid() AND role_name = 'admin'
-  ));
+CREATE POLICY "Anyone can create vouchers" ON public.vouchers
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- RLS Policies untuk certificates
 CREATE POLICY "Certificates readable by authenticated users" ON public.certificates
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Only admins can manage certificates" ON public.certificates
-  FOR ALL USING (EXISTS (
-    SELECT 1 FROM public.roles WHERE user_id = auth.uid() AND role_name = 'admin'
-  ));
+CREATE POLICY "Anyone authenticated can manage certificates" ON public.certificates
+  FOR ALL USING (auth.role() = 'authenticated');
 
 -- RLS Policies untuk verification_scans
 CREATE POLICY "Scans readable by authenticated users" ON public.verification_scans
@@ -90,31 +86,3 @@ CREATE POLICY "Scans readable by authenticated users" ON public.verification_sca
 
 CREATE POLICY "Authenticated users can create scans" ON public.verification_scans
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
--- Add permissions untuk module ini
-INSERT INTO permission_keys (key, label, module)
-VALUES
-  ('voucher.create', 'Buat voucher baru', 'voucher'),
-  ('voucher.view', 'Lihat daftar voucher', 'voucher'),
-  ('voucher.verify', 'Verifikasi voucher', 'voucher'),
-  ('certificate.create', 'Terbitkan sertifikat', 'certificate'),
-  ('certificate.view', 'Lihat daftar sertifikat', 'certificate'),
-  ('certificate.verify', 'Verifikasi sertifikat', 'certificate')
-ON CONFLICT (key) DO NOTHING;
-
--- Assign permissions ke roles
-INSERT INTO role_permissions (role, permission_key, allowed)
-VALUES
-  ('admin', 'voucher.create', true),
-  ('admin', 'voucher.view', true),
-  ('admin', 'voucher.verify', true),
-  ('admin', 'certificate.create', true),
-  ('admin', 'certificate.view', true),
-  ('admin', 'certificate.verify', true),
-  ('moderator', 'voucher.view', true),
-  ('moderator', 'voucher.verify', true),
-  ('moderator', 'certificate.view', true),
-  ('moderator', 'certificate.verify', true),
-  ('user', 'voucher.verify', true),
-  ('user', 'certificate.verify', true)
-ON CONFLICT (role, permission_key) DO NOTHING;

@@ -79,59 +79,29 @@ ALTER TABLE public.item_checks ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Categories readable by authenticated users" ON public.inventory_categories
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Only admins can modify categories" ON public.inventory_categories
-  FOR ALL USING (EXISTS (
-    SELECT 1 FROM public.roles WHERE user_id = auth.uid() AND role_name IN ('admin', 'moderator')
-  ));
+CREATE POLICY "Anyone authenticated can modify categories" ON public.inventory_categories
+  FOR ALL USING (auth.role() = 'authenticated');
 
 -- RLS Policies untuk inventory_items
 CREATE POLICY "Items readable by authenticated users" ON public.inventory_items
   FOR SELECT USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Creators can update own items" ON public.inventory_items
-  FOR UPDATE USING (created_by = auth.uid() OR EXISTS (
-    SELECT 1 FROM public.roles WHERE user_id = auth.uid() AND role_name IN ('admin', 'moderator')
-  ));
+  FOR UPDATE USING (created_by = auth.uid());
 
-CREATE POLICY "Only admins/moderators can create items" ON public.inventory_items
-  FOR INSERT WITH CHECK (EXISTS (
-    SELECT 1 FROM public.roles WHERE user_id = auth.uid() AND role_name IN ('admin', 'moderator')
-  ));
+CREATE POLICY "Authenticated users can create items" ON public.inventory_items
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- RLS Policies untuk maintenance_logs
 CREATE POLICY "Maintenance logs readable by authenticated users" ON public.maintenance_logs
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Only admins/moderators can create maintenance logs" ON public.maintenance_logs
-  FOR INSERT WITH CHECK (EXISTS (
-    SELECT 1 FROM public.roles WHERE user_id = auth.uid() AND role_name IN ('admin', 'moderator')
-  ));
+CREATE POLICY "Authenticated users can create maintenance logs" ON public.maintenance_logs
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- RLS Policies untuk item_checks
 CREATE POLICY "Item checks readable by authenticated users" ON public.item_checks
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Only admins/moderators can create item checks" ON public.item_checks
-  FOR INSERT WITH CHECK (EXISTS (
-    SELECT 1 FROM public.roles WHERE user_id = auth.uid() AND role_name IN ('admin', 'moderator')
-  ));
-
--- Add permissions
-INSERT INTO permission_keys (key, label, module)
-VALUES
-  ('inventory.manage', 'Kelola inventaris sarana prasarana', 'inventory'),
-  ('inventory.view', 'Lihat daftar inventaris', 'inventory'),
-  ('inventory.export', 'Export barcode inventaris', 'inventory')
-ON CONFLICT (key) DO NOTHING;
-
--- Assign permissions ke roles
-INSERT INTO role_permissions (role, permission_key, allowed)
-VALUES
-  ('admin', 'inventory.manage', true),
-  ('admin', 'inventory.view', true),
-  ('admin', 'inventory.export', true),
-  ('moderator', 'inventory.manage', true),
-  ('moderator', 'inventory.view', true),
-  ('moderator', 'inventory.export', true),
-  ('user', 'inventory.view', true)
-ON CONFLICT (role, permission_key) DO NOTHING;
+CREATE POLICY "Authenticated users can create item checks" ON public.item_checks
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
