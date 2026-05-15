@@ -83,7 +83,7 @@ const modules = [
   },
   {
     href: "/admin/vouchers",
-    title: "Voucher & sertifikat",
+    title: "Verifikasi & sertifikat",
     description: "Generate voucher dan sertifikat dengan kode unik, verifikasi, dan tracking.",
     icon: Ticket,
   },

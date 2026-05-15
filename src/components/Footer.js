@@ -1,6 +1,6 @@
 import Link from "next/link";
 import LogoImage from "./LogoImage";
-import { MapPin, Phone, Mail, Globe, ExternalLink, ClipboardCheck, UserPlus } from "lucide-react";
+import { MapPin, Phone, Mail, Globe, ExternalLink } from "lucide-react";
 import { getCmsText, isAmbalanRegistrationEnabled } from "@/lib/cms";
 import { getSiteContact } from "@/lib/site-contact";
 
@@ -14,7 +14,6 @@ export default async function Footer() {
     { href: "/kegiatan", label: "Jadwal Kegiatan" },
     { href: "/keuangan", label: "Transparansi Keuangan" },
     { href: "/anggota", label: "Struktur Dewan Ambalan" },
-    { href: "/daftar-ambalan", label: "Seleksi calon pengurus" },
     { href: "/galeri", label: "Galeri Foto" },
     { href: "/vouchers", label: "Verifikasi Voucher & Sertifikat" },
   ];

@@ -15,7 +15,6 @@ import {
   Shield,
   Wallet,
   ClipboardCheck,
-  UserPlus,
   ChevronDown,
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
@@ -27,8 +26,7 @@ const publicNavLinks = [
   { href: "/anggota", label: "Struktur", icon: Users },
   { href: "/keuangan", label: "Keuangan", icon: Wallet },
   { href: "/galeri", label: "Galeri", icon: ImageIcon },
-  { href: "/daftar-ambalan", label: "Seleksi", icon: UserPlus },
-  { href: "/vouchers", label: "Voucher", icon: ClipboardCheck },
+  { href: "/vouchers", label: "Verifikasi", icon: ClipboardCheck },
 ];
 
 const adminOnlyLinks = [
