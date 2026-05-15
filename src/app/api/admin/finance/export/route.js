@@ -28,8 +28,9 @@ export async function GET(request) {
     .order("month", { ascending: false });
 
   if (monthsError) {
+    console.error("finance export months:", monthsError.message);
     return NextResponse.json(
-      { error: "Gagal mengambil data: " + monthsError.message },
+      { error: "Gagal mengambil data keuangan" },
       { status: 500 },
     );
   }
@@ -51,8 +52,9 @@ export async function GET(request) {
     .order("tanggal", { ascending: true });
 
   if (txsError) {
+    console.error("finance export txs:", txsError.message);
     return NextResponse.json(
-      { error: "Gagal mengambil transaksi: " + txsError.message },
+      { error: "Gagal mengambil data transaksi" },
       { status: 500 },
     );
   }

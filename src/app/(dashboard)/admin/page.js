@@ -12,6 +12,7 @@ import {
   Users,
   BarChart3,
   Wallet,
+  BookOpen,
   Mails,
   UserCog,
   Ticket,
@@ -19,6 +20,12 @@ import {
 } from "lucide-react";
 
 const modules = [
+  {
+    href: "/admin/panduan",
+    title: "Panduan pengurus",
+    description: "Ringkasan cara pakai panel admin untuk pengurus baru.",
+    icon: BookOpen,
+  },
   {
     href: "/admin/analytics",
     title: "Traffic & statistik",

@@ -12,8 +12,8 @@ export async function GET(request) {
     const category = searchParams.get("category");
     const condition = searchParams.get("condition");
     const search = searchParams.get("search");
-    const limit = parseInt(searchParams.get("limit") || "50");
-    const offset = parseInt(searchParams.get("offset") || "0");
+    const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "50"), 1), 200);
+    const offset = Math.max(parseInt(searchParams.get("offset") || "0"), 0);
 
     const db = createAdminClient();
     let query = db
@@ -126,13 +126,28 @@ export async function POST(request) {
       quantity: parseInt(quantity) || 1,
       created_by: auth.id,
     };
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (category_id && !UUID_RE.test(category_id)) {
+      return NextResponse.json(
+        { error: "Invalid category_id format" },
+        { status: 400 }
+      );
+    }
     if (category_id) insertPayload.category_id = category_id;
     if (description) insertPayload.description = description;
     if (unit) insertPayload.unit = unit;
     if (location) insertPayload.location = location;
     if (purchase_date) insertPayload.purchase_date = purchase_date;
-    if (purchase_price != null && purchase_price !== '')
-      insertPayload.purchase_price = parseFloat(purchase_price);
+    if (purchase_price != null && purchase_price !== '') {
+      const parsed = parseFloat(purchase_price);
+      if (isNaN(parsed) || parsed < 0) {
+        return NextResponse.json(
+          { error: "Invalid purchase_price" },
+          { status: 400 }
+        );
+      }
+      insertPayload.purchase_price = parsed;
+    }
 
     const { data, error } = await db
       .from("inventory_items")

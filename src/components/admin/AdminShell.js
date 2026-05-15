@@ -13,6 +13,7 @@ import {
   Shield,
   Briefcase,
   Wallet,
+  GraduationCap,
   Mails,
   UserCog,
   Ticket,
@@ -21,6 +22,7 @@ import {
 
 const links = [
   { href: "/admin", label: "Ringkasan", icon: LayoutDashboard, end: true },
+  { href: "/admin/panduan", label: "Panduan pengurus", icon: GraduationCap },
   { href: "/admin/analytics", label: "Traffic", icon: BarChart3 },
   { href: "/admin/users", label: "Akun & blokir", icon: Users },
   { href: "/admin/management", label: "Manajemen admin", icon: UserCog },
@@ -98,7 +100,8 @@ export default function AdminShell({ children }) {
           </nav>
           <div className="p-3 text-[10px] text-[var(--text-muted)] border-t border-[var(--border-primary)]">
             Traffic &amp; secret env: lihat{" "}
-            <span className="font-mono">Kitab_Suci_Agent.txt</span> butir 12
+            <span className="font-mono">Kitab_Suci_Agent.txt</span> butir 12 ·
+            cara pakai panel: <span className="font-mono">/admin/panduan</span>
           </div>
         </aside>
 

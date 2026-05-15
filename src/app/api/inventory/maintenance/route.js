@@ -10,8 +10,8 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("item_id");
-    const limit = parseInt(searchParams.get("limit") || "50");
-    const offset = parseInt(searchParams.get("offset") || "0");
+    const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "50"), 1), 200);
+    const offset = Math.max(parseInt(searchParams.get("offset") || "0"), 0);
 
     if (!itemId) {
       return NextResponse.json(
@@ -93,7 +93,16 @@ export async function POST(request) {
       done_by: auth.id,
     };
     if (description) insertPayload.description = description;
-    if (cost != null && cost !== '') insertPayload.cost = parseFloat(cost);
+    if (cost != null && cost !== '') {
+      const parsedCost = parseFloat(cost);
+      if (isNaN(parsedCost) || parsedCost < 0) {
+        return NextResponse.json(
+          { error: "Invalid cost value" },
+          { status: 400 }
+        );
+      }
+      insertPayload.cost = parsedCost;
+    }
     if (notes) insertPayload.notes = notes;
 
     const { data, error } = await db

@@ -35,9 +35,9 @@ export async function GET(request) {
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error("vouchers xlsx export:", error.message);
       const ws = XLSX.utils.aoa_to_sheet([
-        ["Error", error.message],
-        ["Jalankan migration-v10.sql di Supabase jika tabel belum ada.", ""],
+        ["Keterangan", "Data tidak tersedia. Hubungi administrator."],
       ]);
       XLSX.utils.book_append_sheet(wb, ws, "Voucher");
       return;
@@ -79,9 +79,9 @@ export async function GET(request) {
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error("certificates xlsx export:", error.message);
       const ws = XLSX.utils.aoa_to_sheet([
-        ["Error", error.message],
-        ["Jalankan migration-v10.sql di Supabase jika tabel belum ada.", ""],
+        ["Keterangan", "Data tidak tersedia. Hubungi administrator."],
       ]);
       XLSX.utils.book_append_sheet(wb, ws, "Sertifikat");
       return;

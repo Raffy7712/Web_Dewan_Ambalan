@@ -9,6 +9,13 @@ export async function GET(request, { params }) {
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
+
+    // Validate UUID format
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(id)) {
+      return NextResponse.json({ error: "Invalid item ID" }, { status: 400 });
+    }
+
     const db = createAdminClient();
 
     const { data, error } = await db
@@ -62,6 +69,13 @@ export async function PUT(request, { params }) {
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
+
+    // Validate UUID format
+    const UUID_RE_PUT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE_PUT.test(id)) {
+      return NextResponse.json({ error: "Invalid item ID" }, { status: 400 });
+    }
+
     const body = await request.json();
 
     // Only allow updating valid fields
@@ -75,6 +89,7 @@ export async function PUT(request, { params }) {
       if (body[field] !== undefined) {
         // Skip empty strings for UUID, numeric, and date fields
         if (field === "category_id" && body[field] === "") continue;
+        if (field === "category_id" && body[field] && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body[field])) continue;
         if (field === "purchase_price" && body[field] === "") continue;
         if (field === "purchase_date" && body[field] === "") continue;
         // Convert numeric fields
@@ -83,7 +98,9 @@ export async function PUT(request, { params }) {
           continue;
         }
         if (field === "purchase_price" && body[field] != null) {
-          updatePayload[field] = parseFloat(body[field]);
+          const parsed = parseFloat(body[field]);
+          if (isNaN(parsed) || parsed < 0) continue;
+          updatePayload[field] = parsed;
           continue;
         }
         updatePayload[field] = body[field];
@@ -134,6 +151,13 @@ export async function DELETE(request, { params }) {
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
+
+    // Validate UUID format
+    const UUID_RE_DEL = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE_DEL.test(id)) {
+      return NextResponse.json({ error: "Invalid item ID" }, { status: 400 });
+    }
+
     const db = createAdminClient();
 
     const { error } = await db

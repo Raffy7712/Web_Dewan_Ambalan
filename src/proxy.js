@@ -4,12 +4,13 @@ import { jwtVerify } from "jose";
 const SESSION_COOKIE = "da_session";
 const SESSION_ISSUER = "da-alf";
 const SESSION_AUDIENCE = "da-alf-web";
+const DEFAULT_SECRET = "da-alf-default-secret-please-change-me-32ch";
 
 function getSecretKey() {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret) {
-    console.error("AUTH_SECRET is not set — auth middleware cannot verify sessions");
-    return new TextEncoder().encode("");
+  const secret = process.env.AUTH_SECRET ?? DEFAULT_SECRET;
+  if (process.env.NODE_ENV === "production" && secret === DEFAULT_SECRET) {
+    console.error("AUTH_SECRET must be set in production — proxy cannot verify sessions safely");
+    return new TextEncoder().encode(""); // will fail all JWT verifications in production
   }
   return new TextEncoder().encode(secret);
 }
@@ -45,8 +46,6 @@ function schedulePageViewLog(request, event) {
     body: JSON.stringify({ path: pathname }),
   }).catch(() => {});
 
-  // Must call as event.waitUntil(p) — extracting waitUntil loses `this` and throws
-  // (e.g. Cannot read properties of undefined reading Symbol(waitUntil)).
   if (event && typeof event.waitUntil === "function") {
     event.waitUntil(promise);
   } else {
@@ -61,6 +60,8 @@ export async function proxy(request, event) {
   const needsAuthGate =
     pathname === "/login" ||
     pathname === "/register" ||
+    pathname === "/lupa-password" ||
+    pathname === "/reset-password" ||
     pathname.startsWith("/profil") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/keuangan") ||
@@ -73,10 +74,18 @@ export async function proxy(request, event) {
 
   const session = await readSession(request);
 
-  if ((pathname === "/login" || pathname === "/register") && session) {
+  // Redirect logged-in users away from auth pages
+  if (
+    (pathname === "/login" ||
+      pathname === "/register" ||
+      pathname === "/lupa-password" ||
+      pathname === "/reset-password") &&
+    session
+  ) {
     return NextResponse.redirect(new URL("/home", request.url));
   }
 
+  // Require login for protected routes
   if (
     (pathname.startsWith("/profil") ||
       pathname.startsWith("/admin") ||
@@ -90,6 +99,7 @@ export async function proxy(request, event) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Admin-only routes
   if (pathname.startsWith("/admin") && session?.role !== "admin") {
     return NextResponse.redirect(new URL("/anggota", request.url));
   }

@@ -502,6 +502,9 @@ export async function togglePostStatusAction(postId) {
 }
 
 export async function getAllAdminPostsAction() {
+  const session = await getSession();
+  if (!session || session.role !== "admin") return [];
+
   const db = createAdminClient();
   const { data, error } = await db
     .from("posts")

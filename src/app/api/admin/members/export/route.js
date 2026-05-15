@@ -30,8 +30,9 @@ export async function GET(request) {
     .order("display_name", { ascending: true });
 
   if (membersError) {
+    console.error("members export:", membersError.message);
     return NextResponse.json(
-      { error: "Gagal mengambil data: " + membersError.message },
+      { error: "Gagal mengambil data anggota" },
       { status: 500 },
     );
   }

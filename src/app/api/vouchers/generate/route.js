@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/api-auth";
 
@@ -18,11 +19,22 @@ export async function POST(request) {
       );
     }
 
-    if (!title) {
+    if (!title || title.length > 200) {
       return NextResponse.json(
-        { error: "title is required" },
+        { error: "title is required (max 200 chars)" },
         { status: 400 }
       );
+    }
+
+    // Validate expires_at for vouchers
+    if (type === "voucher" && expires_at) {
+      const d = new Date(expires_at);
+      if (isNaN(d.getTime())) {
+        return NextResponse.json(
+          { error: "Invalid expires_at date" },
+          { status: 400 },
+        );
+      }
     }
 
     // Cap quantity to prevent abuse
@@ -32,7 +44,8 @@ export async function POST(request) {
     const generated = [];
 
     for (let i = 0; i < qty; i++) {
-      const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+      // Use crypto.randomBytes for cryptographically secure random code
+      const random = crypto.randomBytes(4).toString("hex").toUpperCase();
       const code = `${type === "voucher" ? "VCH" : "CERT"}-${new Date().getFullYear()}-${random}`;
 
       const qrData = JSON.stringify({
@@ -50,8 +63,8 @@ export async function POST(request) {
           title,
           status: "active",
         };
-        if (description) insertPayload.description = description;
-        if (expires_at) insertPayload.expires_at = expires_at;
+        if (description) insertPayload.description = String(description).slice(0, 500);
+        if (expires_at) insertPayload.expires_at = new Date(expires_at).toISOString();
 
         const { data, error } = await db
           .from("vouchers")
@@ -60,10 +73,10 @@ export async function POST(request) {
           .single();
 
         if (error) {
-          console.error(`Error creating ${type}:`, error);
+          console.error("Error creating voucher:", error.message);
           return NextResponse.json(
-            { error: `Failed to create ${type}: ${error.message}` },
-            { status: 500 }
+            { error: "Failed to create voucher" },
+            { status: 500 },
           );
         }
 
@@ -73,7 +86,7 @@ export async function POST(request) {
         if (!recipient_name || !certificate_type) {
           return NextResponse.json(
             { error: "recipient_name and certificate_type are required for certificates" },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -83,7 +96,7 @@ export async function POST(request) {
             code,
             qr_code: qrData,
             barcode: code,
-            recipient_name,
+            recipient_name: String(recipient_name).slice(0, 200),
             certificate_type,
             dewan_ambalan: dewan_ambalan || "Dewan Ambalan",
             status: "issued",
@@ -92,10 +105,10 @@ export async function POST(request) {
           .single();
 
         if (error) {
-          console.error(`Error creating ${type}:`, error);
+          console.error("Error creating certificate:", error.message);
           return NextResponse.json(
-            { error: `Failed to create ${type}: ${error.message}` },
-            { status: 500 }
+            { error: "Failed to create certificate" },
+            { status: 500 },
           );
         }
 
@@ -113,7 +126,7 @@ export async function POST(request) {
     console.error("Error in voucher/certificate generation:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
