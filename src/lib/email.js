@@ -402,3 +402,56 @@ export async function sendAccountRoleChangedEmail(to, displayName, newRole) {
     })
     .catch((e) => console.error("sendAccountRoleChangedEmail:", e.message));
 }
+
+/** Notifikasi ketika ada login dari perangkat/IP baru. */
+export async function sendNewDeviceLoginEmail(to, displayName, deviceName, ipAddress) {
+  if (skipIfNoResend()) return;
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  
+  // Format IP for display (mask last octet)
+  const ipParts = ipAddress.split(".");
+  const maskedIp = ipParts.length === 4 
+    ? `${ipParts.slice(0, 3).join(".")}.***`
+    : ipAddress;
+
+  await resend.emails
+    .send({
+      from: FROM,
+      to,
+      subject: `[${SITE_NAME}] Login dari perangkat baru`,
+      html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+        <h2 style="color:#047857">${SITE_NAME}</h2>
+        <p style="color:#555">Halo <strong>${escapeEmailHtml(displayName)}</strong>,</p>
+        <p style="color:#555">Akunmu baru saja login dari <strong>perangkat baru</strong>:</p>
+        
+        <div style="background:#f0fdf4;border-left:4px solid #059669;padding:12px;margin:12px 0;border-radius:4px">
+          <p style="color:#155e75;margin:4px 0;font-size:13px">
+            <strong>Perangkat:</strong> ${escapeEmailHtml(deviceName)}
+          </p>
+          <p style="color:#155e75;margin:4px 0;font-size:13px">
+            <strong>Alamat IP:</strong> ${maskedIp}
+          </p>
+          <p style="color:#155e75;margin:4px 0;font-size:13px">
+            <strong>Waktu:</strong> ${new Date().toLocaleString("id-ID")}
+          </p>
+        </div>
+
+        <p style="color:#555"><strong>Bukan kamu?</strong> Segera lakukan:</p>
+        <ol style="color:#555;margin-left:20px">
+          <li>Reset password dari <a href="${base}/lupa-password">halaman lupa password</a></li>
+          <li>Hubungi pembina atau humas jika terus terjadi login mencurigakan</li>
+        </ol>
+
+        <p style="color:#888;font-size:12px;font-style:italic">
+          Jika ini adalah login normal kamu, tidak perlu melakukan tindakan apapun. Kami akan mempercayai perangkat ini untuk login berikutnya.
+        </p>
+        
+        <a href="${base}/profil" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Kelola perangkat terpercaya</a>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>
+        <p style="color:#aaa;font-size:12px">${SITE_NAME}</p>
+      </div>
+    `,
+    })
+    .catch((e) => console.error("sendNewDeviceLoginEmail:", e.message));
+}

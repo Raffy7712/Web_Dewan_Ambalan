@@ -185,12 +185,12 @@ export default async function LandingPage() {
     <div className="flex flex-col min-h-screen bg-[var(--surface-app)] text-[var(--text-primary)]">
       {/* ── Navbar ── */}
       <header className="sticky top-0 z-50 bg-slate-950 border-b border-slate-800 shadow-md">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2 sm:gap-4">
+          <Link href="/" className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
             <div className="w-8 h-8 rounded-md bg-emerald-600 overflow-hidden flex items-center justify-center">
               <LogoImage size={32} />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <p className="text-emerald-300/90 text-[10px] sm:text-[11px] font-semibold tracking-wide leading-none">
                 {brandEyebrow}
               </p>
@@ -213,22 +213,22 @@ export default async function LandingPage() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center px-4 py-1.5 rounded-full border border-slate-600 text-slate-200 hover:border-emerald-500 hover:text-white text-sm font-medium transition-colors"
+              className="px-2 sm:px-4 py-1.5 rounded-full border border-slate-600 text-slate-200 hover:border-emerald-500 hover:text-white text-xs sm:text-sm font-medium transition-colors"
             >
               Masuk
             </Link>
             {registrationEnabled ? (
               <Link
                 href="/register"
-                className="inline-flex items-center px-4 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors"
+                className="px-2 sm:px-4 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold transition-colors"
               >
                 Buat Akun
               </Link>
             ) : (
-              <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-slate-700 text-slate-200 text-sm font-semibold">
+              <span className="px-2 sm:px-4 py-1.5 rounded-full bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold">
                 Registrasi Ditutup
               </span>
             )}
@@ -237,49 +237,49 @@ export default async function LandingPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-slate-950 text-white min-h-[78vh] px-4 py-16 md:py-24 flex items-center">
+      <section className="relative overflow-hidden bg-slate-950 text-white min-h-[60vh] sm:min-h-[70vh] md:min-h-[78vh] px-3 sm:px-4 py-12 sm:py-16 md:py-24 flex items-center">
         <img
           src="/logo.png"
           alt=""
-          className="absolute right-[-8rem] top-1/2 h-[34rem] w-[34rem] -translate-y-1/2 object-contain opacity-20 md:right-[-2rem] md:h-[42rem] md:w-[42rem]"
+          className="absolute -right-16 sm:-right-8 md:right-[-2rem] top-1/2 h-64 sm:h-80 md:h-[42rem] w-64 sm:w-80 md:w-[42rem] -translate-y-1/2 object-contain opacity-10 sm:opacity-15 md:opacity-20"
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.98),rgba(6,78,59,0.88),rgba(120,53,15,0.58))]" />
 
         <div className="relative max-w-5xl mx-auto w-full">
-          <div className="inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-400/40 text-emerald-200 text-xs font-semibold px-4 py-1.5 rounded-full mb-4 tracking-wide">
+          <div className="inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-400/40 text-emerald-200 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-2 sm:mb-4 tracking-wide">
             <Shield size={12} />
-            {brandEyebrow}
+            <span className="line-clamp-1">{brandEyebrow}</span>
           </div>
 
-          <p className="text-emerald-100/90 text-base md:text-lg font-medium tracking-tight mb-4 max-w-3xl">
+          <p className="text-emerald-100/90 text-sm sm:text-base md:text-lg font-medium tracking-tight mb-3 sm:mb-4 max-w-3xl">
             {brandDewan}
           </p>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6 tracking-tight max-w-3xl text-white">
+          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4 sm:mb-6 tracking-tight max-w-3xl text-white">
             {heroTitle}
           </h1>
 
-          <p className="text-emerald-50/80 text-base md:text-lg max-w-2xl mb-10 leading-relaxed">
+          <p className="text-emerald-50/80 text-sm sm:text-base md:text-lg max-w-2xl mb-6 sm:mb-10 leading-relaxed">
             {heroSubtitle}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
             {registrationEnabled ? (
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors shadow-lg shadow-emerald-950/50"
+                className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-colors shadow-lg shadow-emerald-950/50"
               >
                 Buat Akun Portal
                 <ChevronRight size={16} />
               </Link>
             ) : (
-              <span className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-slate-700 text-slate-100 font-bold text-sm">
+              <span className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full bg-slate-700 text-slate-100 font-bold text-xs sm:text-sm">
                 Registrasi Ditutup
               </span>
             )}
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full border-2 border-emerald-400/80 text-emerald-100 hover:border-white hover:text-white font-bold text-sm transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full border-2 border-emerald-400/80 text-emerald-100 hover:border-white hover:text-white font-bold text-xs sm:text-sm transition-colors"
             >
               Sudah Anggota? Masuk
             </Link>
@@ -288,18 +288,18 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Stats ── */}
-      <section className="bg-[var(--surface-elevated)] dark:bg-slate-900 border-b border-[var(--border-primary)] py-10 px-4">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="bg-[var(--surface-elevated)] dark:bg-slate-900 border-b border-[var(--border-primary)] py-8 sm:py-10 px-3 sm:px-4">
+        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {stats.map(({ angka, label, icon: Icon }) => (
-            <div key={label} className="text-center py-4">
+            <div key={label} className="text-center py-3 sm:py-4">
               <Icon
-                size={22}
-                className="mx-auto mb-2 text-emerald-600 dark:text-emerald-400"
+                size={20}
+                className="mx-auto mb-1.5 sm:mb-2 text-emerald-600 dark:text-emerald-400"
               />
-              <p className="text-2xl md:text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
+              <p className="text-xl sm:text-2xl md:text-3xl font-extrabold text-emerald-700 dark:text-emerald-300">
                 {angka}
               </p>
-              <p className="text-[var(--text-secondary)] text-xs mt-0.5">
+              <p className="text-[var(--text-secondary)] text-[10px] sm:text-xs mt-0.5">
                 {label}
               </p>
             </div>
@@ -310,23 +310,23 @@ export default async function LandingPage() {
       {/* ── Tentang ── */}
       <section
         id="tentang"
-        className="py-16 px-4 bg-[var(--surface-app)]"
+        className="py-12 sm:py-16 px-3 sm:px-4 bg-[var(--surface-app)]"
       >
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8 sm:gap-12 items-start md:items-center">
           <div>
             <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-xs uppercase tracking-widest mb-2">
               Tentang Kami
             </p>
-            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-[var(--text-primary)]">
+            <h2 className="text-2xl sm:text-2.5xl md:text-3xl font-bold mb-4 text-[var(--text-primary)]">
               {tentangTitle}
             </h2>
-            <p className="text-[var(--text-secondary)] leading-relaxed mb-4 text-sm">
+            <p className="text-[var(--text-secondary)] leading-relaxed mb-3 sm:mb-4 text-sm">
               {tentangP1}
             </p>
-            <p className="text-[var(--text-secondary)] leading-relaxed mb-6 text-sm">
+            <p className="text-[var(--text-secondary)] leading-relaxed mb-5 sm:mb-6 text-sm">
               {tentangP2}
             </p>
-            <ul className="flex flex-col gap-2.5">
+            <ul className="flex flex-col gap-2 sm:gap-2.5">
               {[
                 "Kwartir Ranting Bantarkawung",
                 "Kwartir Cabang Brebes, Kwartir Daerah Jawa Tengah",
@@ -334,9 +334,9 @@ export default async function LandingPage() {
               ].map((item) => (
                 <li
                   key={item}
-                  className="flex items-center gap-2 text-sm text-[var(--text-primary)]"
+                  className="flex items-start gap-2 text-xs sm:text-sm text-[var(--text-primary)]"
                 >
-                  <span className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0">
+                  <span className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <ChevronRight
                       size={10}
                       className="text-emerald-600 dark:text-emerald-400"
@@ -348,7 +348,7 @@ export default async function LandingPage() {
             </ul>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2 sm:gap-3">
             {tentangFeatures.length > 0
               ? tentangFeatures.map(({ icon: Icon, judul, desc, color, bg, iconBg }, i) => (
                   <div key={judul + i} className={`rounded-xl p-4 border ${bg}`}>
@@ -371,40 +371,40 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Program Unggulan ── */}
-      <section id="program" className="py-16 px-4 bg-[var(--surface-elevated)] dark:bg-slate-900">
+      <section id="program" className="py-12 sm:py-16 px-3 sm:px-4 bg-[var(--surface-elevated)] dark:bg-slate-900">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8 sm:mb-10">
             <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-xs uppercase tracking-widest mb-2">
               Program Ambalan
             </p>
-            <h2 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
+            <h2 className="text-2xl sm:text-2.5xl md:text-3xl font-bold text-[var(--text-primary)]">
               Program Dewan Ambalan
             </h2>
-            <p className="text-sm text-[var(--text-secondary)] max-w-2xl mx-auto mt-2 leading-relaxed">
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] max-w-2xl mx-auto mt-2 sm:mt-3 leading-relaxed">
               {programLead}
             </p>
           </div>
-          <div className="grid sm:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {displayPrograms.map(({ icon: Icon, judul, desc, tag, id }) => (
               <div
                 key={id}
-                className="rounded-2xl border border-[var(--border-primary)] bg-[var(--surface-app)] dark:bg-slate-950 p-6 hover:shadow-lg hover:shadow-emerald-900/10 dark:hover:shadow-emerald-950/40 transition-shadow"
+                className="rounded-2xl border border-[var(--border-primary)] bg-[var(--surface-app)] dark:bg-slate-950 p-4 sm:p-6 hover:shadow-lg hover:shadow-emerald-900/10 dark:hover:shadow-emerald-950/40 transition-shadow"
               >
-                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center mb-3 sm:mb-4">
                   <Icon
                     size={22}
                     className="text-emerald-700 dark:text-emerald-400"
                   />
                 </div>
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-bold text-[var(--text-primary)] text-sm">
+                  <h3 className="font-bold text-[var(--text-primary)] text-xs sm:text-sm">
                     {judul}
                   </h3>
-                  <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full font-semibold">
+                  <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">
                     {tag}
                   </span>
                 </div>
-                <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+                <p className="text-[var(--text-secondary)] text-xs sm:text-sm leading-relaxed">
                   {desc}
                 </p>
               </div>
@@ -438,23 +438,23 @@ export default async function LandingPage() {
       {recentPosts.length > 0 && (
         <section className="py-16 px-4 bg-[var(--surface-app)]">
           <div className="max-w-5xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
               <div>
                 <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-xs uppercase tracking-widest mb-1">
                   Dari Lapangan
                 </p>
-                <h2 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
+                <h2 className="text-2xl sm:text-2.5xl md:text-3xl font-bold text-[var(--text-primary)]">
                   Postingan Terbaru
                 </h2>
               </div>
               <Link
                 href="/berita"
-                className="flex items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400 font-semibold hover:underline"
+                className="flex items-center gap-1 text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 font-semibold hover:underline flex-shrink-0"
               >
                 Lihat semua <ChevronRight size={14} />
               </Link>
             </div>
-            <div className="grid sm:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {recentPosts.map((p) => {
                 const cat = categoryConfig[p.category];
                 return (
@@ -464,7 +464,7 @@ export default async function LandingPage() {
                     className="group bg-[var(--surface-elevated)] dark:bg-slate-900 border border-[var(--border-primary)] rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-emerald-900/10 dark:hover:shadow-emerald-950/30 transition-shadow"
                   >
                     {p.cover_image_url ? (
-                      <div className="w-full h-44 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                      <div className="w-full h-40 sm:h-44 bg-slate-100 dark:bg-slate-800 overflow-hidden">
                         <img
                           src={getDisplayUrl(p.cover_image_url)}
                           alt={p.title}
@@ -472,13 +472,13 @@ export default async function LandingPage() {
                         />
                       </div>
                     ) : (
-                      <div className="w-full h-44 bg-gradient-to-br from-emerald-100 to-slate-200 dark:from-emerald-900/30 dark:to-slate-800 flex items-center justify-center">
+                      <div className="w-full h-40 sm:h-44 bg-gradient-to-br from-emerald-100 to-slate-200 dark:from-emerald-900/30 dark:to-slate-800 flex items-center justify-center">
                         <span className="text-emerald-400 dark:text-emerald-800 text-4xl font-black opacity-40">
                           {p.title[0]}
                         </span>
                       </div>
                     )}
-                    <div className="p-4">
+                    <div className="p-3 sm:p-4">
                       {cat && (
                         <span
                           className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${cat.cls}`}
@@ -486,11 +486,11 @@ export default async function LandingPage() {
                           {cat.label}
                         </span>
                       )}
-                      <h3 className="font-bold text-[var(--text-primary)] text-sm mt-2 leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors line-clamp-2">
+                      <h3 className="font-bold text-[var(--text-primary)] text-xs sm:text-sm mt-2 leading-snug group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors line-clamp-2">
                         {p.title}
                       </h3>
                       {p.description && (
-                        <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-2">
+                        <p className="text-[10px] sm:text-xs text-[var(--text-secondary)] mt-1 line-clamp-2">
                           {p.description}
                         </p>
                       )}
@@ -509,11 +509,11 @@ export default async function LandingPage() {
       {/* ── CTA ── */}
       <section
         id="kontak"
-        className="py-16 px-4 bg-[var(--surface-elevated)] dark:bg-slate-900"
+        className="py-12 sm:py-16 px-3 sm:px-4 bg-[var(--surface-elevated)] dark:bg-slate-900"
       >
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-4">{ctaTitle}</h2>
-          <p className="text-[var(--text-secondary)] mb-8 text-sm md:text-base leading-relaxed">
+          <h2 className="text-2xl sm:text-2.5xl md:text-3xl font-bold text-[var(--text-primary)] mb-3 sm:mb-4">{ctaTitle}</h2>
+          <p className="text-[var(--text-secondary)] mb-6 sm:mb-8 text-xs sm:text-sm md:text-base leading-relaxed px-2">
             Daftarkan dirimu dan jadilah bagian dari keluarga besar Dewan Ambalan
             Pramuka Penegak SMK Al Furqon Bantarkawung masa bakti 2026-2027. Portal
             ini untuk anggota penegak, calon pengurus, dan masyarakat — pendaftaran
@@ -522,17 +522,17 @@ export default async function LandingPage() {
           {registrationEnabled ? (
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-full transition-colors shadow-lg text-base"
+              className="inline-flex items-center gap-2 px-6 sm:px-10 py-2.5 sm:py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-full transition-colors shadow-lg text-xs sm:text-base"
             >
               Buat akun portal pramuka
-              <ChevronRight size={18} />
+              <ChevronRight size={16} className="sm:w-[18px] sm:h-[18px]" />
             </Link>
           ) : (
-            <p className="inline-flex items-center gap-2 px-10 py-4 bg-slate-700 text-slate-100 font-bold rounded-full text-base">
+            <p className="inline-flex items-center gap-2 px-6 sm:px-10 py-2.5 sm:py-4 bg-slate-700 text-slate-100 font-bold rounded-full text-xs sm:text-base">
               Pendaftaran Akun Sedang Ditutup
             </p>
           )}
-          <p className="mt-4 text-[var(--text-muted)] text-sm">
+          <p className="mt-3 sm:mt-4 text-[var(--text-muted)] text-xs sm:text-sm">
             Sudah punya akun?{" "}
             <Link
               href="/login"
@@ -544,7 +544,7 @@ export default async function LandingPage() {
         </div>
 
         {/* Contact info strip */}
-        <div className="max-w-3xl mx-auto mt-12 grid sm:grid-cols-3 gap-4">
+        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 px-2">
           {[
             { icon: MapPin, text: contact.addressLine },
             { icon: Phone, text: contact.phone },
@@ -552,7 +552,7 @@ export default async function LandingPage() {
           ].map(({ icon: Icon, text }) => (
             <div
               key={text}
-              className="flex items-center gap-2.5 bg-[var(--surface-app)] dark:bg-slate-950 border border-[var(--border-primary)] rounded-xl px-4 py-3 text-sm text-[var(--text-secondary)]"
+              className="flex items-center gap-2 bg-[var(--surface-app)] dark:bg-slate-950 border border-[var(--border-primary)] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-[var(--text-secondary)]"
             >
               <Icon
                 size={16}

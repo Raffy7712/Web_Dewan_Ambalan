@@ -6,7 +6,7 @@ import {
   createSessionCookie,
   getSession as readFreshSession,
 } from "@/lib/auth-session";
-import { sendWelcomeEmail, sendStaffNewRegistrationNotification } from "@/lib/email";
+import { sendWelcomeEmail, sendStaffNewRegistrationNotification, sendNewDeviceLoginEmail } from "@/lib/email";
 import { getStaffEmails } from "@/lib/queries";
 import { isRegistrationEnabled } from "@/lib/cms";
 import { getClientIp } from "@/lib/request-ip";
@@ -20,9 +20,17 @@ import {
   consumeRegisterOtpEmail,
   consumeRegisterVerifyIp,
 } from "@/lib/rate-limit";
+import {
+  checkTrustedIp,
+  recordLoginSession,
+  trustDevice,
+  createNewIpAlert,
+  markAlertEmailSent,
+  parseUserAgent,
+} from "@/lib/device-verify";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
-import { redirect } from "next/navigation";
+import { redirect, headers } from "next/navigation";
 
 function hashOtp(otp) {
   return crypto.createHash("sha256").update(otp).digest("hex");
@@ -103,6 +111,30 @@ export async function loginAction(prevState, formData) {
   if (!valid) {
     recordLoginFailure(ip);
     return { error: "Username/email atau password salah." };
+  }
+
+  // Get user agent for device fingerprinting
+  const headersList = headers();
+  const userAgent = headersList.get("user-agent") || "Unknown";
+  const deviceName = parseUserAgent(userAgent);
+
+  // Check if IP is trusted
+  const { trusted } = await checkTrustedIp(account.id, ip);
+
+  // Record login session
+  await recordLoginSession(account.id, ip, userAgent, trusted);
+
+  // If not trusted, send notification email
+  if (!trusted) {
+    const alert = await createNewIpAlert(account.id, ip);
+    if (alert) {
+      try {
+        await sendNewDeviceLoginEmail(account.email, account.display_name, deviceName, ip);
+        await markAlertEmailSent(alert.id);
+      } catch (e) {
+        console.error("Error sending new device email:", e);
+      }
+    }
   }
 
   await createSessionCookie(account);
