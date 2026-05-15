@@ -109,20 +109,24 @@ export async function POST(request) {
 
     const db = createAdminClient();
 
+    // Build insert payload — only include non-empty values
+    const insertPayload = {
+      code,
+      name,
+      condition: "baik",
+      quantity: parseInt(quantity) || 1,
+    };
+    if (category_id) insertPayload.category_id = category_id;
+    if (description) insertPayload.description = description;
+    if (unit) insertPayload.unit = unit;
+    if (location) insertPayload.location = location;
+    if (purchase_date) insertPayload.purchase_date = purchase_date;
+    if (purchase_price != null && purchase_price !== '')
+      insertPayload.purchase_price = parseFloat(purchase_price);
+
     const { data, error } = await db
       .from("inventory_items")
-      .insert({
-        code,
-        name,
-        category_id,
-        description,
-        quantity,
-        unit,
-        location,
-        purchase_date,
-        purchase_price,
-        condition: "baik",
-      })
+      .insert(insertPayload)
       .select()
       .single();
 

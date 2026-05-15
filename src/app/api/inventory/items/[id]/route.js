@@ -57,11 +57,33 @@ export async function PUT(request, { params }) {
     const { id } = params;
     const body = await request.json();
 
+    // Only allow updating valid fields
+    const allowedFields = [
+      "name", "category_id", "description", "quantity",
+      "unit", "condition", "location", "purchase_date",
+      "purchase_price", "last_checked",
+    ];
+    const updatePayload = {};
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        // Skip empty strings for UUID/numeric fields
+        if (field === "category_id" && body[field] === "") continue;
+        updatePayload[field] = body[field];
+      }
+    }
+
+    if (Object.keys(updatePayload).length === 0) {
+      return NextResponse.json(
+        { error: "No valid fields to update" },
+        { status: 400 }
+      );
+    }
+
     const db = createAdminClient();
 
     const { data, error } = await db
       .from("inventory_items")
-      .update(body)
+      .update(updatePayload)
       .eq("id", id)
       .select()
       .single();

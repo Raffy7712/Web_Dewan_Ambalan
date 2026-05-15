@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
@@ -9,6 +9,7 @@ export default function CreateInventoryPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     category_id: '',
@@ -19,6 +20,22 @@ export default function CreateInventoryPage() {
     purchase_date: '',
     purchase_price: '',
   });
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/inventory/categories');
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data.categories || []);
+      }
+    } catch {
+      // Categories are optional, no need to block
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,16 +51,22 @@ export default function CreateInventoryPage() {
     setError(null);
 
     try {
+      // Build payload — only include non-empty values
+      const payload = {
+        name: formData.name,
+        quantity: parseInt(formData.quantity) || 1,
+        unit: formData.unit || 'unit',
+      };
+      if (formData.category_id) payload.category_id = formData.category_id;
+      if (formData.description) payload.description = formData.description;
+      if (formData.location) payload.location = formData.location;
+      if (formData.purchase_date) payload.purchase_date = formData.purchase_date;
+      if (formData.purchase_price) payload.purchase_price = parseFloat(formData.purchase_price);
+
       const res = await fetch('/api/inventory/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          quantity: parseInt(formData.quantity),
-          purchase_price: formData.purchase_price
-            ? parseFloat(formData.purchase_price)
-            : null,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -103,14 +126,19 @@ export default function CreateInventoryPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className={labelClass}>Kategori</label>
-              <input
-                type="text"
+              <select
                 name="category_id"
                 value={formData.category_id}
                 onChange={handleChange}
-                placeholder="Contoh: Furniture"
                 className={inputClass}
-              />
+              >
+                <option value="">Tanpa kategori</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className={labelClass}>Unit</label>
