@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import * as XLSX from "xlsx";
 import { createAdminClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/api-auth";
 
@@ -10,7 +11,7 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const itemIds = searchParams.get("item_ids"); // comma-separated IDs or "all"
-    const format = searchParams.get("format") || "json"; // json, csv
+    const format = searchParams.get("format") || "json"; // json, csv, xlsx
 
     if (!itemIds) {
       return NextResponse.json(
@@ -105,8 +106,52 @@ export async function GET(request) {
       });
     }
 
+    if (format === "xlsx") {
+      const wb = XLSX.utils.book_new();
+      const xlsxRows = data.map((item) => ({
+        Kode: item.code,
+        Nama: item.name,
+        Kategori: item.inventory_categories?.name || "Tidak berkategori",
+        Lokasi: item.location || "-",
+        Jumlah: item.quantity || 1,
+        Satuan: item.unit || "unit",
+        Kondisi: item.condition || "baik",
+        "Tanggal Pembelian": item.purchase_date || "-",
+        "Harga Pembelian": item.purchase_price ? Number(item.purchase_price) : 0,
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(
+        xlsxRows.length > 0 ? xlsxRows : [{ Keterangan: "Belum ada data inventaris" }],
+      );
+      ws["!cols"] = [
+        { wch: 14 }, // Kode
+        { wch: 30 }, // Nama
+        { wch: 20 }, // Kategori
+        { wch: 18 }, // Lokasi
+        { wch: 8 },  // Jumlah
+        { wch: 8 },  // Satuan
+        { wch: 15 }, // Kondisi
+        { wch: 16 }, // Tanggal
+        { wch: 15 }, // Harga
+      ];
+      XLSX.utils.book_append_sheet(wb, ws, "Inventaris");
+
+      const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+      const d = new Date();
+      const filename = `inventaris_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}.xlsx`;
+
+      return new NextResponse(buf, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "Content-Disposition": `attachment; filename="${filename}"`,
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
     return NextResponse.json(
-      { error: "Invalid format. Use 'json' or 'csv'" },
+      { error: "Invalid format. Use 'json', 'csv', or 'xlsx'" },
       { status: 400 }
     );
   } catch (error) {

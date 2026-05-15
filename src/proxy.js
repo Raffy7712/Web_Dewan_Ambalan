@@ -63,6 +63,7 @@ export async function proxy(request, event) {
     pathname === "/register" ||
     pathname.startsWith("/profil") ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/keuangan") ||
     pathname.startsWith("/daftar-ambalan") ||
     pathname.startsWith("/vouchers");
 
@@ -79,6 +80,7 @@ export async function proxy(request, event) {
   if (
     (pathname.startsWith("/profil") ||
       pathname.startsWith("/admin") ||
+      pathname.startsWith("/keuangan") ||
       pathname.startsWith("/daftar-ambalan") ||
       pathname.startsWith("/vouchers")) &&
     !session

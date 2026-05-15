@@ -179,7 +179,7 @@ export default function InventoryExportPage() {
           Export Kode Inventaris
         </h1>
         <p className="text-sm text-[var(--text-secondary)]">
-          Pilih item dan export ke PDF untuk print label atau CSV untuk data.
+          Pilih item dan export ke PDF untuk print label, Excel untuk laporan data, atau CSV.
         </p>
       </div>
 
@@ -262,6 +262,13 @@ export default function InventoryExportPage() {
               <FileText size={16} />
               Download PDF
             </button>
+            <a
+              href={`/api/inventory/export?item_ids=${selectedItems.size === items.length && items.length > 0 ? 'all' : Array.from(selectedItems).join(',')}&format=xlsx`}
+              className={`w-full inline-flex items-center justify-center gap-2 bg-[var(--surface-app)] border border-[var(--border-primary)] hover:border-emerald-500 text-[var(--text-primary)] font-medium py-2.5 px-4 rounded-lg transition-colors text-sm ${selectedItems.size === 0 ? 'opacity-50 pointer-events-none' : ''}`}
+            >
+              <FileSpreadsheet size={16} />
+              Download Excel
+            </a>
             <button
               onClick={handleDownloadCSV}
               disabled={selectedItems.size === 0}

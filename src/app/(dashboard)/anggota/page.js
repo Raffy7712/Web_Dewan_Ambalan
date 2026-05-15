@@ -4,7 +4,7 @@ import { getSession } from "@/app/actions/auth";
 import { getAllActiveAccountsForAdmin } from "@/lib/admin-queries";
 import { getCmsText, isAmbalanRegistrationEnabled } from "@/lib/cms";
 import { getAvatarUrl, getInitials } from "@/lib/avatar";
-import { Users, UserPlus, Settings } from "lucide-react";
+import { Users, UserPlus, Settings, FileSpreadsheet } from "lucide-react";
 import AnggotaAdminPanel from "./AnggotaAdminPanel";
 
 function Avatar({ name, url }) {
@@ -89,12 +89,20 @@ export default async function AnggotaPage() {
             </p>
           </div>
           {isAdmin && (
-            <Link
-              href="/admin/jabatan"
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-            >
-              <Settings size={16} /> Kelola Jabatan
-            </Link>
+            <div className="flex items-center gap-2">
+              <a
+                href="/api/admin/members/export"
+                className="flex items-center gap-2 bg-[var(--surface-app)] border border-[var(--border-primary)] hover:border-emerald-500 text-[var(--text-primary)] px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              >
+                <FileSpreadsheet size={16} /> Export Excel
+              </a>
+              <Link
+                href="/admin/jabatan"
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              >
+                <Settings size={16} /> Kelola Jabatan
+              </Link>
+            </div>
           )}
         </div>
       </section>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { FileSpreadsheet } from 'lucide-react';
 
 export default function AdminVouchersPage() {
   const [type, setType] = useState('voucher');
@@ -99,14 +100,39 @@ export default function AdminVouchersPage() {
     a.click();
   };
 
+  const linkBtnClass =
+    "inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors";
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
-          Voucher & Sertifikat
+          Verifikasi & Sertifikat
         </h1>
         <p className="text-sm text-[var(--text-secondary)]">
           Generate voucher dan sertifikat dengan kode unik untuk verifikasi.
+        </p>
+      </div>
+
+      {/* Export */}
+      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+          <FileSpreadsheet size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+          Unduh Excel (.xlsx)
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <a href="/api/admin/vouchers/export?scope=voucher" className={linkBtnClass}>
+            Voucher
+          </a>
+          <a href="/api/admin/vouchers/export?scope=certificate" className={linkBtnClass}>
+            Sertifikat
+          </a>
+          <a href="/api/admin/vouchers/export?scope=both" className={linkBtnClass}>
+            Semua (2 lembar)
+          </a>
+        </div>
+        <p className="text-[11px] text-[var(--text-muted)] w-full">
+          Unduhan memakai sesi login Anda (cookie). Buka tautan di tab yang sama setelah login sebagai admin.
         </p>
       </div>
 

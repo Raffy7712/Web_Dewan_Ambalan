@@ -98,11 +98,18 @@ export default function InventoryListPage() {
               Tambah Item
             </Link>
             <Link
-              href="/admin/inventory/export"
+              href="/api/inventory/export?item_ids=all&format=xlsx"
               className="inline-flex items-center gap-2 bg-[var(--surface-app)] border border-[var(--border-primary)] hover:border-emerald-500 text-[var(--text-primary)] font-medium py-2 px-4 rounded-lg text-sm transition-colors"
             >
               <Download size={16} />
-              Export
+              Export Excel
+            </Link>
+            <Link
+              href="/admin/inventory/export"
+              className="inline-flex items-center gap-2 bg-[var(--surface-app)] border border-[var(--border-primary)] hover:border-emerald-500 text-[var(--text-secondary)] font-medium py-2 px-3 rounded-lg text-sm transition-colors"
+              title="Print label PDF"
+            >
+              Label PDF
             </Link>
           </div>
         </div>

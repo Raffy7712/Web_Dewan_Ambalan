@@ -21,6 +21,7 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  FileSpreadsheet,
 } from "lucide-react";
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => ({
@@ -110,7 +111,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
         <div className="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
           <Wallet size={22} />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
             Laporan keuangan ambalan
           </h1>
@@ -126,6 +127,23 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
             .
           </p>
         </div>
+      </div>
+
+      {/* Export */}
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+          <FileSpreadsheet size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+          Unduh Excel (.xlsx)
+        </div>
+        <a
+          href="/api/admin/finance/export"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+        >
+          Laporan keuangan
+        </a>
+        <p className="text-[11px] text-[var(--text-muted)] w-full">
+          Berisi 2 lembar: ringkasan per periode & detail seluruh transaksi.
+        </p>
       </div>
 
       {(createState?.error ||
