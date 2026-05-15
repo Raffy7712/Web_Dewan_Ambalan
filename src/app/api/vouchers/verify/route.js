@@ -18,16 +18,30 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { code, verification_type = "code" } = body;
+    const { code, nomor_sertifikat, verification_type = "code" } = body;
 
-    if (!code || typeof code !== "string" || code.length > 50) {
+    if ((!code && !nomor_sertifikat) || (code && typeof code !== "string") || (nomor_sertifikat && typeof nomor_sertifikat !== "string")) {
       return NextResponse.json(
-        { error: "code is required (max 50 chars)" },
+        { error: "code atau nomor_sertifikat diperlukan" },
         { status: 400 },
       );
     }
 
-    if (!["qr", "barcode", "code"].includes(verification_type)) {
+    if (code && code.length > 50) {
+      return NextResponse.json(
+        { error: "code max 50 chars" },
+        { status: 400 },
+      );
+    }
+
+    if (nomor_sertifikat && nomor_sertifikat.length > 100) {
+      return NextResponse.json(
+        { error: "nomor_sertifikat max 100 chars" },
+        { status: 400 },
+      );
+    }
+
+    if (!["qr", "barcode", "code", "nomor_surat"].includes(verification_type)) {
       return NextResponse.json(
         { error: "Invalid verification_type" },
         { status: 400 },
@@ -36,30 +50,44 @@ export async function POST(request) {
 
     const db = createAdminClient();
 
-    // Try to find as voucher first — select only needed columns
+    // Jika verifikasi via nomor_sertifikat, langsung cari di certificates
     let item = null;
     let itemType = null;
 
-    const { data: voucherData } = await db
-      .from("vouchers")
-      .select("id, code, title, description, status, expires_at")
-      .eq("code", code)
-      .single();
-
-    if (voucherData) {
-      item = voucherData;
-      itemType = "voucher";
-    } else {
-      // Try certificate
+    if (nomor_sertifikat) {
+      // Verifikasi via nomor surat — hanya untuk sertifikat
       const { data: certData } = await db
         .from("certificates")
-        .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date")
-        .eq("code", code)
+        .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date, description, issuer_detail")
+        .eq("nomor_sertifikat", nomor_sertifikat)
         .single();
 
       if (certData) {
         item = certData;
         itemType = "certificate";
+      }
+    } else {
+      // Verifikasi via code — cek voucher dulu, lalu sertifikat
+      const { data: voucherData } = await db
+        .from("vouchers")
+        .select("id, code, title, description, status, expires_at")
+        .eq("code", code)
+        .single();
+
+      if (voucherData) {
+        item = voucherData;
+        itemType = "voucher";
+      } else {
+        const { data: certData } = await db
+          .from("certificates")
+          .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date, description, issuer_detail")
+          .eq("code", code)
+          .single();
+
+        if (certData) {
+          item = certData;
+          itemType = "certificate";
+        }
       }
     }
 
@@ -127,6 +155,8 @@ export async function POST(request) {
           certificate_type: item.certificate_type,
           dewan_ambalan: item.dewan_ambalan || null,
           issue_date: item.issue_date,
+          description: item.description || null,
+          issuer_detail: item.issuer_detail || null,
         }),
       },
     });
