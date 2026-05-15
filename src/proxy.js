@@ -7,10 +7,14 @@ const SESSION_AUDIENCE = "da-alf-web";
 const DEFAULT_SECRET = "da-alf-default-secret-please-change-me-32ch";
 
 function getSecretKey() {
-  const secret = process.env.AUTH_SECRET ?? DEFAULT_SECRET;
-  if (process.env.NODE_ENV === "production" && secret === DEFAULT_SECRET) {
-    console.error("AUTH_SECRET must be set in production — proxy cannot verify sessions safely");
-    return new TextEncoder().encode(""); // will fail all JWT verifications in production
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("AUTH_SECRET must be set in production — proxy cannot verify sessions safely");
+    }
+    // Dev only fallback — never use in production
+    console.warn("AUTH_SECRET not set, using default dev secret. DO NOT use in production.");
+    return new TextEncoder().encode(DEFAULT_SECRET);
   }
   return new TextEncoder().encode(secret);
 }

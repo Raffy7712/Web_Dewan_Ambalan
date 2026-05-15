@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/api-auth";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // GET /api/inventory/items - list all items with filters (admin only)
 export async function GET(request) {
@@ -40,6 +43,9 @@ export async function GET(request) {
       );
 
     if (category) {
+      if (!UUID_RE.test(category)) {
+        return NextResponse.json({ error: "Invalid category ID" }, { status: 400 });
+      }
       query = query.eq("category_id", category);
     }
 
@@ -110,11 +116,8 @@ export async function POST(request) {
       );
     }
 
-    // Generate code: INVT-YEAR-RANDOM
-    const code = `INVT-${new Date().getFullYear()}-${Math.random()
-      .toString(36)
-      .substring(2, 8)
-      .toUpperCase()}`;
+    // Generate code: INVT-YEAR-RANDOM (cryptographically secure)
+    const code = `INVT-${new Date().getFullYear()}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
 
     const db = createAdminClient();
 

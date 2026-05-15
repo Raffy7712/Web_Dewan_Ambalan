@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/api-auth";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // GET /api/inventory/checks?item_id=xxx - get check logs for item
 export async function GET(request) {
   try {
@@ -16,6 +18,13 @@ export async function GET(request) {
     if (!itemId) {
       return NextResponse.json(
         { error: "item_id is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!UUID_RE.test(itemId)) {
+      return NextResponse.json(
+        { error: "Invalid item_id format" },
         { status: 400 }
       );
     }
@@ -67,6 +76,13 @@ export async function POST(request) {
     if (!item_id || !condition) {
       return NextResponse.json(
         { error: "item_id and condition are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!UUID_RE.test(item_id)) {
+      return NextResponse.json(
+        { error: "Invalid item_id format" },
         { status: 400 }
       );
     }

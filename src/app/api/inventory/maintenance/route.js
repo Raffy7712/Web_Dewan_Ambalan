@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase";
 import { requireAdmin } from "@/lib/api-auth";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const VALID_MAINTENANCE_TYPES = ["cleaning", "repair", "replacement", "calibration"];
+
 // GET /api/inventory/maintenance?item_id=xxx - get maintenance logs for item
 export async function GET(request) {
   try {
@@ -16,6 +19,13 @@ export async function GET(request) {
     if (!itemId) {
       return NextResponse.json(
         { error: "item_id is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!UUID_RE.test(itemId)) {
+      return NextResponse.json(
+        { error: "Invalid item_id format" },
         { status: 400 }
       );
     }
@@ -67,6 +77,20 @@ export async function POST(request) {
     if (!item_id || !maintenance_type) {
       return NextResponse.json(
         { error: "item_id and maintenance_type are required" },
+        { status: 400 }
+      );
+    }
+
+    if (!UUID_RE.test(item_id)) {
+      return NextResponse.json(
+        { error: "Invalid item_id format" },
+        { status: 400 }
+      );
+    }
+
+    if (!VALID_MAINTENANCE_TYPES.includes(maintenance_type)) {
+      return NextResponse.json(
+        { error: "Invalid maintenance_type" },
         { status: 400 }
       );
     }

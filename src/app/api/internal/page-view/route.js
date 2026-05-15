@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase";
 import { getClientIpFromHeaders } from "@/lib/request-ip";
 import { consumePageViewIp, rateLimitMessage } from "@/lib/rate-limit";
@@ -17,7 +18,7 @@ export async function POST(request) {
   }
 
   const header = request.headers.get("x-da-internal");
-  if (!header || header !== secret) {
+  if (!header || header.length !== secret.length || !crypto.timingSafeEqual(Buffer.from(header), Buffer.from(secret))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

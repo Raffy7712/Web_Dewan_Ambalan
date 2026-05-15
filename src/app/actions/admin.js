@@ -42,7 +42,9 @@ const CMS_PAGE_PERMISSION_MAP = {
 };
 
 function cmsPermissionKeyForPage(page_key) {
-  return CMS_PAGE_PERMISSION_MAP[page_key] ?? "content.landing.manage";
+  const key = CMS_PAGE_PERMISSION_MAP[page_key];
+  if (!key) return null; // Reject unknown page keys instead of defaulting
+  return key;
 }
 
 function revalidatePathsAfterCmsChange(page_key) {
@@ -349,6 +351,7 @@ export async function saveCmsEntryAction(prevState, formData) {
   }
 
   const permissionKey = cmsPermissionKeyForPage(page_key);
+  if (!permissionKey) return { error: "Page key tidak valid." };
   const session = await ensurePermission(permissionKey);
   if (!session) return { error: "Tidak punya izin untuk menyimpan konten." };
 
@@ -386,7 +389,9 @@ export async function deleteCmsEntryAction(prevState, formData) {
 
   if (fetchErr || !row) return { error: "Entri tidak ditemukan." };
 
-  const session = await ensurePermission(cmsPermissionKeyForPage(row.page_key));
+  const permKey = cmsPermissionKeyForPage(row.page_key);
+  if (!permKey) return { error: "Page key entri tidak valid." };
+  const session = await ensurePermission(permKey);
   if (!session) return { error: "Tidak punya izin untuk menghapus konten ini." };
 
   const { error } = await db.from("cms_entries").delete().eq("id", entryId);
@@ -410,7 +415,9 @@ export async function toggleCmsPublishedAction(prevState, formData) {
 
   if (fetchErr || !row) return { error: "Entri tidak ditemukan." };
 
-  const session = await ensurePermission(cmsPermissionKeyForPage(row.page_key));
+  const permKey = cmsPermissionKeyForPage(row.page_key);
+  if (!permKey) return { error: "Page key entri tidak valid." };
+  const session = await ensurePermission(permKey);
   if (!session) return { error: "Tidak punya izin mengubah status publikasi." };
 
   const { error } = await db
@@ -540,6 +547,18 @@ export async function setRolePermissionAction(prevState, formData) {
   }
 
   const db = createAdminClient();
+
+  // Validate permission_key exists in the permission_keys table
+  const { data: validKey } = await db
+    .from("permission_keys")
+    .select("key")
+    .eq("key", permission_key)
+    .maybeSingle();
+
+  if (!validKey) {
+    return { error: "Permission key tidak valid." };
+  }
+
   const { error } = await db.from("role_permissions").upsert(
     { role, permission_key, allowed },
     { onConflict: "role,permission_key" },

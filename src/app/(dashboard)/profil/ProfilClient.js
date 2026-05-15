@@ -1,8 +1,9 @@
 'use client';
 
 import { useActionState, useEffect, useState } from 'react';
-import { Edit2, Lock, Mail, Briefcase, Calendar, LogOut } from 'lucide-react';
+import { Edit2, Lock, Mail, Briefcase, Calendar, LogOut, CheckCircle, AlertTriangle } from 'lucide-react';
 import { updateProfileAction, logoutAction } from '@/app/actions/auth';
+import { changePasswordAction } from '@/app/actions/password';
 import { getAvatarUrl } from '@/lib/avatar';
 import { useRouter } from 'next/navigation';
 
@@ -12,12 +13,20 @@ export default function ProfilClient({ account }) {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [displayName, setDisplayName] = useState(account.display_name ?? '');
   const [updateState, updateAction, updatePending] = useActionState(updateProfileAction, null);
+  const [pwState, pwAction, pwPending] = useActionState(changePasswordAction, null);
 
   useEffect(() => {
     if (updateState?.success) {
       router.refresh();
     }
   }, [updateState, router]);
+
+  useEffect(() => {
+    if (pwState?.success) {
+      const timer = setTimeout(() => setShowPasswordModal(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [pwState]);
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('id-ID', {
@@ -26,6 +35,8 @@ export default function ProfilClient({ account }) {
       day: 'numeric'
     });
   };
+
+  const inputClass = "w-full px-4 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-emerald-500";
 
   return (
     <main className="min-h-screen bg-[var(--surface-app)] text-[var(--text-primary)]">
@@ -163,7 +174,7 @@ export default function ProfilClient({ account }) {
                     onChange={(e) => setDisplayName(e.target.value)}
                     maxLength={80}
                     required
-                    className="w-full px-4 py-2 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-muted)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className={inputClass}
                   />
                 </div>
                 <div className="flex gap-3">
@@ -190,50 +201,74 @@ export default function ProfilClient({ account }) {
           </div>
         )}
 
-        {/* Ubah Password Modal */}
+        {/* Ubah Password Modal — functional */}
         {showPasswordModal && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-lg max-w-md w-full p-6 border border-slate-200 dark:border-slate-800">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Ubah Password</h2>
-              <div className="space-y-4 mb-6">
+            <div className="bg-[var(--surface-elevated)] rounded-lg max-w-md w-full p-6 border border-[var(--border-primary)]">
+              <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-1">Ubah Password</h2>
+              <p className="text-sm text-[var(--text-secondary)] mb-4">Masukkan password lama dan password baru Anda.</p>
+              
+              {pwState?.error && (
+                <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 rounded-lg p-3 mb-4">
+                  <AlertTriangle size={16} className="text-red-500 shrink-0" />
+                  <p className="text-sm text-red-700 dark:text-red-300">{pwState.error}</p>
+                </div>
+              )}
+              {pwState?.success && (
+                <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 rounded-lg p-3 mb-4">
+                  <CheckCircle size={16} className="text-emerald-500 shrink-0" />
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300">{pwState.success}</p>
+                </div>
+              )}
+
+              <form action={pwAction} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Password Lama</label>
-                  <input 
-                    type="password" 
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Password Lama</label>
+                  <input
+                    name="old_password"
+                    type="password"
                     placeholder="Masukkan password lama"
-                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    required
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Password Baru</label>
-                  <input 
-                    type="password" 
-                    placeholder="Masukkan password baru"
-                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Password Baru</label>
+                  <input
+                    name="new_password"
+                    type="password"
+                    placeholder="Minimal 8 karakter, huruf + angka"
+                    required
+                    className={inputClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Konfirmasi Password</label>
-                  <input 
-                    type="password" 
-                    placeholder="Konfirmasi password baru"
-                    className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Konfirmasi Password Baru</label>
+                  <input
+                    name="confirm_password"
+                    type="password"
+                    placeholder="Ulangi password baru"
+                    required
+                    className={inputClass}
                   />
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setShowPasswordModal(false)}
-                  className="flex-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-900 dark:text-white py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Batal
-                </button>
-                <button 
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Simpan
-                </button>
-              </div>
+                <div className="flex gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordModal(false)}
+                    className="flex-1 bg-[var(--surface-muted)] hover:opacity-90 text-[var(--text-primary)] py-2 rounded-lg font-semibold transition-colors border border-[var(--border-primary)]"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={pwPending}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold transition-colors disabled:opacity-60"
+                  >
+                    {pwPending ? 'Menyimpan...' : 'Simpan'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

@@ -225,13 +225,7 @@ export async function sendVerificationAction(prevState, formData) {
   } catch (error) {
     const message = String(error?.message || error || "Gagal mengirim email.");
     console.error("sendVerificationAction email error:", message);
-    if (message.includes("domain is not verified")) {
-      return {
-        error:
-          "Gagal mengirim email. Domain pengirim belum diverifikasi di Resend. Periksa EMAIL_FROM dan status domain di dashboard Resend.",
-      };
-    }
-    return { error: "Gagal mengirim email. Cek kembali alamat email kamu." };
+    return { error: "Gagal mengirim email. Cek kembali alamat email kamu atau coba lagi nanti." };
   }
 
   consumeRegisterOtpIp(ip);

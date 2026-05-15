@@ -11,6 +11,7 @@ import {
   consumeResetPasswordIp,
   rateLimitMessage,
 } from "@/lib/rate-limit";
+import { getSession } from "./auth";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
 import { redirect } from "next/navigation";
@@ -180,4 +181,61 @@ export async function resetPasswordAction(prevState, formData) {
   }
 
   redirect("/login?reset=success");
+}
+
+// ─── Change Password from Profile (with old password) ────────────────────────
+
+export async function changePasswordAction(prevState, formData) {
+  const session = await getSession();
+  if (!session) return { error: "Sesi tidak valid. Silakan login ulang." };
+
+  const oldPassword = formData.get("old_password")?.toString() ?? "";
+  const newPassword = formData.get("new_password")?.toString() ?? "";
+  const confirmPassword = formData.get("confirm_password")?.toString() ?? "";
+
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    return { error: "Semua field wajib diisi." };
+  }
+
+  if (newPassword.length < 8) {
+    return { error: "Password baru minimal 8 karakter." };
+  }
+
+  if (!/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
+    return { error: "Password baru wajib berisi huruf dan angka." };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: "Password baru dan konfirmasi tidak cocok." };
+  }
+
+  const db = createAdminClient();
+
+  // Verify old password
+  const { data: account } = await db
+    .from("accounts")
+    .select("id, password_hash, email, display_name")
+    .eq("id", session.id)
+    .maybeSingle();
+
+  if (!account) return { error: "Akun tidak ditemukan." };
+
+  const validOld = await bcryptjs.compare(oldPassword, account.password_hash);
+  if (!validOld) return { error: "Password lama salah." });
+
+  // Update password
+  const password_hash = await bcryptjs.hash(newPassword, 12);
+  const { error: updateErr } = await db
+    .from("accounts")
+    .update({ password_hash })
+    .eq("id", session.id);
+
+  if (updateErr) return { error: "Gagal memperbarui password. Coba lagi." };
+
+  // Send notification email
+  if (account.email) {
+    sendPasswordChangedEmail(account.email, account.display_name ?? "Pengguna").catch(() => {});
+  }
+
+  return { success: "Password berhasil diubah!" };
 }
