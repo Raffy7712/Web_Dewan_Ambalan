@@ -18,7 +18,7 @@ export async function GET(request, { params }) {
     const db = createAdminClient();
     const { data, error } = await db
       .from("certificates")
-      .select("id, code, qr_code, barcode, nomor_sertifikat, recipient_name, certificate_type, dewan_ambalan, status, issue_date, created_at, updated_at")
+      .select("id, code, qr_code, barcode, nomor_sertifikat, recipient_name, certificate_type, dewan_ambalan, description, status, issue_date, created_at, updated_at")
       .eq("id", id)
       .single();
 
@@ -45,7 +45,7 @@ export async function PUT(request, { params }) {
     }
 
     const body = await request.json();
-    const allowedFields = ["recipient_name", "certificate_type", "dewan_ambalan", "status", "nomor_sertifikat"];
+    const allowedFields = ["recipient_name", "certificate_type", "dewan_ambalan", "status", "nomor_sertifikat", "description"];
     const updatePayload = {};
 
     for (const field of allowedFields) {
@@ -58,6 +58,9 @@ export async function PUT(request, { params }) {
         }
         if (field === "nomor_sertifikat" && String(body[field]).length > 100) {
           return NextResponse.json({ error: "nomor_sertifikat max 100 chars" }, { status: 400 });
+        }
+        if (field === "description" && String(body[field]).length > 1000) {
+          return NextResponse.json({ error: "description max 1000 chars" }, { status: 400 });
         }
         updatePayload[field] = body[field];
       }

@@ -88,7 +88,7 @@ export async function POST(request) {
 
         generated.push(data);
       } else {
-        const { recipient_name, certificate_type, dewan_ambalan, nomor_sertifikat } = body;
+        const { recipient_name, certificate_type, dewan_ambalan, nomor_sertifikat, description: certDesc } = body;
         if (!recipient_name || !certificate_type) {
           return NextResponse.json(
             { error: "recipient_name dan certificate_type wajib diisi untuk sertifikat" },
@@ -120,6 +120,11 @@ export async function POST(request) {
         // Add nomor_sertifikat if provided
         if (nomor_sertifikat) {
           insertPayload.nomor_sertifikat = String(nomor_sertifikat).slice(0, 100);
+        }
+
+        // Add description if provided
+        if (certDesc) {
+          insertPayload.description = String(certDesc).slice(0, 1000);
         }
 
         const { data, error } = await db

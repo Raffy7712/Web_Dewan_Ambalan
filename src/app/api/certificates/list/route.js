@@ -18,7 +18,7 @@ export async function GET(request) {
     const db = createAdminClient();
     let query = db
       .from("certificates")
-      .select("id, code, nomor_sertifikat, recipient_name, certificate_type, dewan_ambalan, status, issue_date, created_at", { count: "exact" });
+      .select("id, code, nomor_sertifikat, recipient_name, certificate_type, dewan_ambalan, description, status, issue_date, created_at", { count: "exact" });
 
     if (status) {
       query = query.eq("status", status);

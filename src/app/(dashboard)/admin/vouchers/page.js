@@ -220,6 +220,7 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
         certificate_type: item.certificate_type || '',
         dewan_ambalan: item.dewan_ambalan || '',
         nomor_sertifikat: item.nomor_sertifikat || '',
+        description: item.description || '',
         status: item.status || 'issued',
       });
     }
@@ -265,6 +266,11 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
           <div>
             <label className={labelClass}>Dewan Ambalan</label>
             <input type="text" value={form.dewan_ambalan} onChange={(e) => setForm({ ...form, dewan_ambalan: e.target.value })} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Deskripsi / Alasan Penerbitan</label>
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Jelaskan nama penerima dan alasan sertifikat ini diterbitkan..." rows={3} maxLength={1000} className={inputClass} />
+            <p className="text-[11px] text-[var(--text-muted)] mt-1">Contoh: &quot;Diberikan kepada Ahmad atas pencapaian Lulus SKU Penegak Bantara&quot;</p>
           </div>
           <div>
             <label className={labelClass}>Status</label>
@@ -334,6 +340,12 @@ function CertificateDetailModal({ item, open, onClose }) {
             <span className="text-sm text-[var(--text-secondary)]">Jenis</span>
             <span className="text-sm text-[var(--text-primary)]">{item.certificate_type}</span>
           </div>
+          {item.description && (
+            <div className="pt-1">
+              <span className="text-sm text-[var(--text-secondary)] block mb-1">Deskripsi</span>
+              <p className="text-sm text-[var(--text-primary)] bg-[var(--surface-muted)] rounded-lg p-3 leading-relaxed">{item.description}</p>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-sm text-[var(--text-secondary)]">Status</span>
             <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(item.status)}`}>{getStatusLabel(item.status)}</span>
@@ -374,6 +386,7 @@ export default function AdminVouchersPage() {
   const [certificateType, setCertificateType] = useState('');
   const [dewanAmbalan, setDewanAmbalan] = useState('');
   const [nomorSertifikat, setNomorSertifikat] = useState('');
+  const [certDescription, setCertDescription] = useState('');
   const [genLoading, setGenLoading] = useState(false);
   const [genError, setGenError] = useState(null);
   const [generated, setGenerated] = useState(null);
@@ -467,6 +480,7 @@ export default function AdminVouchersPage() {
           certificate_type: certificateType,
           dewan_ambalan: dewanAmbalan,
           nomor_sertifikat: nomorSertifikat || null,
+          description: certDescription || null,
         }),
       };
       const res = await fetch('/api/vouchers/generate', {
@@ -479,7 +493,7 @@ export default function AdminVouchersPage() {
       setGenerated(data);
       showToast(`Berhasil membuat ${data.count} ${type === 'certificate' ? 'sertifikat' : 'voucher'}`);
       if (type === 'voucher') { setTitle(''); setDescription(''); setExpiresAt(''); }
-      else { setRecipientName(''); setCertificateType(''); setDewanAmbalan(''); setNomorSertifikat(''); }
+      else { setRecipientName(''); setCertificateType(''); setDewanAmbalan(''); setNomorSertifikat(''); setCertDescription(''); }
       setQuantity(1);
     } catch (err) { setGenError('Error: ' + err.message); }
     finally { setGenLoading(false); }
@@ -630,8 +644,8 @@ export default function AdminVouchersPage() {
                       <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Contoh: Diskon 20% Produk Unggulan" required className={inputClass} />
                     </div>
                     <div>
-                      <label className={labelClass}>Deskripsi</label>
-                      <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Detail voucher..." rows="3" className={inputClass} />
+                      <label className={labelClass}>Deskripsi / Alasan Penerbitan</label>
+                      <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Jelaskan nama dan alasan voucher ini diterbitkan..." rows="3" className={inputClass} />
                     </div>
                     <div>
                       <label className={labelClass}>Kadaluarsa</label>
@@ -659,6 +673,11 @@ export default function AdminVouchersPage() {
                     <div>
                       <label className={labelClass}>Dewan Ambalan</label>
                       <input type="text" value={dewanAmbalan} onChange={(e) => setDewanAmbalan(e.target.value)} placeholder="Nama dewan ambalan penerbit" className={inputClass} />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Deskripsi / Alasan Penerbitan</label>
+                      <textarea value={certDescription} onChange={(e) => setCertDescription(e.target.value)} placeholder="Jelaskan nama penerima dan alasan sertifikat ini diterbitkan..." rows={3} maxLength={1000} className={inputClass} />
+                      <p className="text-[11px] text-[var(--text-muted)] mt-1">Contoh: &quot;Diberikan kepada Ahmad atas pencapaian Lulus SKU Penegak Bantara&quot;</p>
                     </div>
                   </>
                 )}
