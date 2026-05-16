@@ -16,6 +16,7 @@ import {
   Mails,
   UserCog,
   Ticket,
+  Award,
   Package,
 } from "lucide-react";
 
@@ -83,9 +84,15 @@ const modules = [
   },
   {
     href: "/admin/vouchers",
-    title: "Verifikasi & sertifikat",
-    description: "Generate voucher dan sertifikat dengan kode unik, verifikasi, dan tracking.",
+    title: "Voucher",
+    description: "Generate dan kelola voucher dengan kode unik, verifikasi, dan tracking.",
     icon: Ticket,
+  },
+  {
+    href: "/admin/certificates",
+    title: "Sertifikat",
+    description: "Generate dan kelola sertifikat, QR code, nomor sertifikat, dan verifikasi publik.",
+    icon: Award,
   },
   {
     href: "/admin/inventory",
