@@ -123,7 +123,7 @@ export async function POST(request) {
     }
 
     if (!item) {
-      return NextResponse.json({ error: "Tidak ditemukan", valid: false }, { status: 404 });
+      return NextResponse.json({ error: "Tidak ditemukan", valid: false, _v: 2 }, { status: 404 });
     }
 
     // ── Check validity ──
