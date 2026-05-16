@@ -4,12 +4,12 @@ import { requireAdmin } from "@/lib/api-auth";
 import { rateLimitConsume, rateLimitMessage } from "@/lib/rate-limit";
 import { getClientIpFromHeaders } from "@/lib/request-ip";
 
-// POST /api/vouchers/verify - public verification endpoint (rate-limited)
+// POST /api/verification - public verification endpoint (rate-limited)
 export async function POST(request) {
   try {
     // Rate limit: 30 verifications per IP per minute
     const ip = getClientIpFromHeaders(request.headers);
-    const rl = rateLimitConsume(`voucher-verify:${ip}`, 30, 60 * 1000);
+    const rl = rateLimitConsume(`verification:${ip}`, 30, 60 * 1000);
     if (!rl.ok) {
       return NextResponse.json(
         { error: rateLimitMessage(rl.retryAfterMs) },
@@ -50,7 +50,9 @@ export async function POST(request) {
 
     const db = createAdminClient();
 
-    // Jika verifikasi via nomor_sertifikat, langsung cari di certificates
+    // Select columns — safe: only columns that exist in migration v11+
+    const certSelect = "id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date, description";
+
     let item = null;
     let itemType = null;
 
@@ -58,7 +60,7 @@ export async function POST(request) {
       // Verifikasi via nomor surat — hanya untuk sertifikat
       const { data: certData } = await db
         .from("certificates")
-        .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date, description, issuer_detail")
+        .select(certSelect)
         .eq("nomor_sertifikat", nomor_sertifikat)
         .single();
 
@@ -80,7 +82,7 @@ export async function POST(request) {
       } else {
         const { data: certData } = await db
           .from("certificates")
-          .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date, description, issuer_detail")
+          .select(certSelect)
           .eq("code", code)
           .single();
 
@@ -93,7 +95,7 @@ export async function POST(request) {
 
     if (!item) {
       return NextResponse.json(
-        { error: "Item not found", valid: false },
+        { error: "Tidak ditemukan", valid: false },
         { status: 404 },
       );
     }
@@ -156,12 +158,11 @@ export async function POST(request) {
           dewan_ambalan: item.dewan_ambalan || null,
           issue_date: item.issue_date,
           description: item.description || null,
-          issuer_detail: item.issuer_detail || null,
         }),
       },
     });
   } catch (error) {
-    console.error("Error in voucher/certificate verification:", error);
+    console.error("Error in verification:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -169,7 +170,7 @@ export async function POST(request) {
   }
 }
 
-// GET /api/vouchers/verify?code=xxx - get scan history (admin only)
+// GET /api/verification?code=xxx - get scan history (admin only)
 export async function GET(request) {
   try {
     const auth = await requireAdmin(request);
@@ -187,7 +188,7 @@ export async function GET(request) {
 
     const db = createAdminClient();
 
-    // Find item — select only needed columns
+    // Find item — select only columns that exist
     let item = null;
     let itemType = null;
 
@@ -203,7 +204,7 @@ export async function GET(request) {
     } else {
       const { data: certData } = await db
         .from("certificates")
-        .select("id, code, nomor_sertifikat, certificate_type, recipient_name, status, issue_date")
+        .select("id, code, nomor_sertifikat, certificate_type, recipient_name, status, issue_date, description")
         .eq("code", code)
         .single();
 
@@ -238,7 +239,7 @@ export async function GET(request) {
       total_scans: scans?.length || 0,
     });
   } catch (error) {
-    console.error("Error fetching voucher/certificate details:", error);
+    console.error("Error fetching verification details:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

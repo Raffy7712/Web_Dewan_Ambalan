@@ -34,7 +34,7 @@ export default function VoucherScannerPage() {
     setError(null);
 
     try {
-      const res = await fetch('/api/vouchers/verify', {
+      const res = await fetch('/api/verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -200,6 +200,11 @@ export default function VoucherScannerPage() {
                 {scanned.item.dewan_ambalan && (
                   <p className="text-[var(--text-secondary)]">
                     <span className="font-medium text-[var(--text-primary)]">Dewan Ambalan:</span> {scanned.item.dewan_ambalan}
+                  </p>
+                )}
+                {scanned.item.description && (
+                  <p className="text-[var(--text-secondary)]">
+                    <span className="font-medium text-[var(--text-primary)]">Deskripsi:</span> {scanned.item.description}
                   </p>
                 )}
               </>
