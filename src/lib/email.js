@@ -1,7 +1,8 @@
 import { Resend } from "resend";
 
-// Lazy-init Resend client — don't throw at module level to prevent build failure
+// Lazy-init Resend client — won't throw at module level / build time
 let _resend = null;
+
 function getResend() {
   if (!_resend) {
     if (!process.env.RESEND_API_KEY) {
@@ -14,14 +15,6 @@ function getResend() {
   return _resend;
 }
 
-// Backward compat — proxy to lazy client
-const resend = new Proxy({}, {
-  get(_, prop) {
-    const client = getResend();
-    const val = client[prop];
-    return typeof val === "function" ? val.bind(client) : val;
-  },
-});
 const FROM = process.env.EMAIL_FROM?.trim() || "Dewan Ambalan <noreply@smkalfurqon.sch.id>";
 const SITE_NAME = "Dewan Ambalan SMK Al Furqon Bantarkawung";
 
@@ -34,6 +27,11 @@ function escapeEmailHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
+function skipIfNoResend() {
+  if (!process.env.RESEND_API_KEY) return true;
+  return false;
+}
+
 /**
  * Send OTP for password reset.
  * @param {string} to - recipient email
@@ -41,6 +39,7 @@ function escapeEmailHtml(s) {
  * @param {string} displayName - user's display name
  */
 export async function sendOtpEmail(to, otp, displayName) {
+  const resend = getResend();
   const { data, error } = await resend.emails.send({
     from: FROM,
     to,
@@ -91,6 +90,7 @@ export async function sendNewCommentNotification(staff, comment) {
       ? comment.content.slice(0, 120) + "..."
       : comment.content;
 
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -139,6 +139,7 @@ export async function sendNewPostNotification(users, post) {
     ? escapeEmailHtml(post.description)
     : "";
 
+  const resend = getResend();
   // Send in one batch (Resend supports multiple "to" addresses)
   await resend.emails
     .send({
@@ -174,6 +175,7 @@ export async function sendNewAmbalanApplicationNotification(staff, detail) {
 
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -205,15 +207,11 @@ export async function sendNewAmbalanApplicationNotification(staff, detail) {
     );
 }
 
-function skipIfNoResend() {
-  if (!process.env.RESEND_API_KEY) return true;
-  return false;
-}
-
 /** Setelah reset password berhasil (peringatan keamanan). */
 export async function sendPasswordChangedEmail(to, displayName) {
   if (skipIfNoResend()) return;
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -238,6 +236,7 @@ export async function sendAccountBannedEmail(to, displayName, reason) {
   if (skipIfNoResend()) return;
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const r = reason ? `<p style="color:#555"><strong>Catatan admin:</strong> ${escapeEmailHtml(reason)}</p>` : "";
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -262,6 +261,7 @@ export async function sendAccountBannedEmail(to, displayName, reason) {
 export async function sendAccountUnbannedEmail(to, displayName) {
   if (skipIfNoResend()) return;
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -285,6 +285,7 @@ export async function sendAccountUnbannedEmail(to, displayName) {
 export async function sendAmbalanReceivedEmail(to, displayName, period) {
   if (skipIfNoResend()) return;
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -311,6 +312,7 @@ export async function sendStaffNewRegistrationNotification(staff, user) {
   const recipients = staff.map((s) => s.email).filter(Boolean);
   if (!recipients.length) return;
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -341,6 +343,7 @@ export async function sendStaffFinancePublishedNotification(staff, detail) {
   const recipients = staff.map((s) => s.email).filter(Boolean);
   if (!recipients.length) return;
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -362,6 +365,7 @@ export async function sendStaffFinancePublishedNotification(staff, detail) {
 }
 
 export async function sendWelcomeEmail(to, displayName) {
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -398,6 +402,7 @@ export async function sendAccountRoleChangedEmail(to, displayName, newRole) {
     user: "Anggota",
   }[newRole] ?? newRole;
 
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -422,13 +427,14 @@ export async function sendAccountRoleChangedEmail(to, displayName, newRole) {
 export async function sendNewDeviceLoginEmail(to, displayName, deviceName, ipAddress) {
   if (skipIfNoResend()) return;
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  
+
   // Format IP for display (mask last octet)
   const ipParts = ipAddress.split(".");
-  const maskedIp = ipParts.length === 4 
+  const maskedIp = ipParts.length === 4
     ? `${ipParts.slice(0, 3).join(".")}.***`
     : ipAddress;
 
+  const resend = getResend();
   await resend.emails
     .send({
       from: FROM,
@@ -439,7 +445,7 @@ export async function sendNewDeviceLoginEmail(to, displayName, deviceName, ipAdd
         <h2 style="color:#047857">${SITE_NAME}</h2>
         <p style="color:#555">Halo <strong>${escapeEmailHtml(displayName)}</strong>,</p>
         <p style="color:#555">Akunmu baru saja login dari <strong>perangkat baru</strong>:</p>
-        
+
         <div style="background:#f0fdf4;border-left:4px solid #059669;padding:12px;margin:12px 0;border-radius:4px">
           <p style="color:#155e75;margin:4px 0;font-size:13px">
             <strong>Perangkat:</strong> ${escapeEmailHtml(deviceName)}
@@ -461,7 +467,7 @@ export async function sendNewDeviceLoginEmail(to, displayName, deviceName, ipAdd
         <p style="color:#888;font-size:12px;font-style:italic">
           Jika ini adalah login normal kamu, tidak perlu melakukan tindakan apapun. Kami akan mempercayai perangkat ini untuk login berikutnya.
         </p>
-        
+
         <a href="${base}/profil" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Kelola perangkat terpercaya</a>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>
         <p style="color:#aaa;font-size:12px">${SITE_NAME}</p>
