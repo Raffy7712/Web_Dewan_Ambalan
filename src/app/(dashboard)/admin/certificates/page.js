@@ -170,8 +170,8 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
             </select>
           </div>
           <div>
-            <label className={labelClass}>Dewan Ambalan</label>
-            <input type="text" value={form.dewan_ambalan} onChange={(e) => setForm({ ...form, dewan_ambalan: e.target.value })} className={inputClass} />
+            <label className={labelClass}>Penerbit</label>
+            <input type="text" value={form.dewan_ambalan} onChange={(e) => setForm({ ...form, dewan_ambalan: e.target.value })} placeholder="Nama penerbit sertifikat" className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Deskripsi / Alasan Penerbitan</label>
@@ -489,8 +489,8 @@ export default function AdminCertificatesPage() {
                   </select>
                 </div>
                 <div>
-                  <label className={labelClass}>Dewan Ambalan</label>
-                  <input type="text" value={dewanAmbalan} onChange={(e) => setDewanAmbalan(e.target.value)} placeholder="Nama dewan ambalan penerbit" className={inputClass} />
+                  <label className={labelClass}>Penerbit</label>
+                  <input type="text" value={dewanAmbalan} onChange={(e) => setDewanAmbalan(e.target.value)} placeholder="Nama penerbit sertifikat" className={inputClass} />
                 </div>
                 <div>
                   <label className={labelClass}>Deskripsi / Alasan Penerbitan</label>

@@ -90,7 +90,7 @@ export async function GET(request) {
       "No. Sertifikat": r.nomor_sertifikat ?? "",
       "Nama Penerima": r.recipient_name ?? "",
       "Jenis Sertifikat": r.certificate_type ?? "",
-      "Dewan Ambalan": r.dewan_ambalan ?? "",
+      "Penerbit": r.dewan_ambalan ?? "",
       Status: r.status ?? "",
       "Dibuat": r.created_at
         ? new Date(r.created_at).toLocaleDateString("id-ID")

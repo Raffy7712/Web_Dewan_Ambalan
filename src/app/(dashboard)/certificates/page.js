@@ -200,7 +200,7 @@ export default function CertificateVerificationPage() {
             </p>
             {scanned.item.dewan_ambalan && (
               <p className="text-[var(--text-secondary)]">
-                <span className="font-medium text-[var(--text-primary)]">Dewan Ambalan:</span> {scanned.item.dewan_ambalan}
+                <span className="font-medium text-[var(--text-primary)]">Penerbit:</span> {scanned.item.dewan_ambalan}
               </p>
             )}
             {scanned.item.description && (
