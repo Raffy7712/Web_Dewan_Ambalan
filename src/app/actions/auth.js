@@ -70,7 +70,7 @@ export async function loginAction(prevState, formData) {
 
   let accountQuery = db
     .from("accounts")
-    .select("id, display_name, username, password_hash, role, is_active, banned");
+    .select("id, display_name, username, email, password_hash, role, is_active, banned");
 
   if (looksLikeEmail) {
     accountQuery = accountQuery.eq("email", input);

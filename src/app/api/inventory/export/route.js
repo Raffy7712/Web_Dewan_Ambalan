@@ -40,7 +40,14 @@ export async function GET(request) {
       );
 
     if (itemIds !== "all") {
-      const ids = itemIds.split(",").map((id) => id.trim());
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const ids = itemIds.split(",").map((id) => id.trim()).filter((id) => UUID_RE.test(id));
+      if (ids.length === 0) {
+        return NextResponse.json(
+          { error: "No valid item IDs provided" },
+          { status: 400 }
+        );
+      }
       query = query.in("id", ids);
     }
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import { getSession } from "@/lib/auth-session";
+import { requireAdmin } from "@/lib/api-auth";
 import { createAdminClient } from "@/lib/supabase";
 
 function filenameStem() {
@@ -12,10 +12,8 @@ function filenameStem() {
 }
 
 export async function GET(request) {
-  const session = await getSession();
-  if (!session || session.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const auth = await requireAdmin(request);
+  if (auth instanceof NextResponse) return auth;
 
   const { searchParams } = new URL(request.url);
   const scope = searchParams.get("scope") ?? "both";

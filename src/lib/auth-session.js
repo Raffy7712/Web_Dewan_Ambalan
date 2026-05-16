@@ -9,12 +9,10 @@ const SESSION_ISSUER = "da-alf";
 const SESSION_AUDIENCE = "da-alf-web";
 const MAX_AGE = 60 * 60 * 24 * 7;
 
-const DEFAULT_SECRET = "da-alf-default-secret-please-change-me-32ch";
-
 function getSecretKey() {
-  const secret = process.env.AUTH_SECRET ?? DEFAULT_SECRET;
-  if (process.env.NODE_ENV === "production" && secret === DEFAULT_SECRET) {
-    throw new Error("AUTH_SECRET wajib diganti di production.");
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) {
+    throw new Error("AUTH_SECRET wajib diset. Session tidak dapat dibuat tanpa secret key.");
   }
   return new TextEncoder().encode(secret);
 }

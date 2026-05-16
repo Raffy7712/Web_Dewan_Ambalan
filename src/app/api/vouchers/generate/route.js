@@ -136,7 +136,7 @@ export async function POST(request) {
         if (error) {
           console.error("Error creating certificate:", error.message);
           return NextResponse.json(
-            { error: "Failed to create certificate: " + error.message },
+            { error: "Failed to create certificate" },
             { status: 500 },
           );
         }

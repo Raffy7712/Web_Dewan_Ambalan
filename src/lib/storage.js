@@ -20,6 +20,24 @@ export const BUCKET_MEDIA = "post-media";
 
 // ─── Upload helpers ───────────────────────────────────────────────────────────
 
+const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
+
+const ALLOWED_MEDIA_TYPES = [
+  ...ALLOWED_IMAGE_TYPES,
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+];
+
+const MAX_AVATAR_SIZE = 2 * 1024 * 1024; // 2 MB
+const MAX_MEDIA_SIZE = 25 * 1024 * 1024; // 25 MB
+
+
 /**
  * Upload profile picture.
  * @param {File} file - File object from <input type="file">
@@ -27,7 +45,16 @@ export const BUCKET_MEDIA = "post-media";
  * @returns {{ url: string } | { error: string }}
  */
 export async function uploadAvatar(file, userId) {
-  const ext = file.name.split(".").pop();
+  // Validate file type
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return { error: "Format file tidak didukung. Gunakan JPG, PNG, GIF, atau WebP." };
+  }
+  // Validate file size
+  if (file.size > MAX_AVATAR_SIZE) {
+    return { error: "Ukuran file terlalu besar. Maksimal 2 MB." };
+  }
+
+  const ext = file.name.split(".").pop()?.replace(/[^\w.-]/g, "") || "jpg";
   const path = `${userId}/avatar.${ext}`;
 
   const { error } = await supabase.storage
@@ -48,7 +75,16 @@ export async function uploadAvatar(file, userId) {
  * @returns {{ url: string, mediaType: string } | { error: string }}
  */
 export async function uploadPostMedia(file, postId, index = 0) {
-  const ext = file.name.split(".").pop();
+  // Validate file type
+  if (!ALLOWED_MEDIA_TYPES.includes(file.type)) {
+    return { error: "Format file tidak didukung. Gunakan JPG, PNG, GIF, WebP, MP4, WebM, atau MOV." };
+  }
+  // Validate file size
+  if (file.size > MAX_MEDIA_SIZE) {
+    return { error: "Ukuran file terlalu besar. Maksimal 25 MB." };
+  }
+
+  const ext = file.name.split(".").pop()?.replace(/[^\w.-]/g, "") || "bin";
   const mediaType = file.type.startsWith("video/") ? "video" : "image";
   const path = `${postId}/${index}-${Date.now()}.${ext}`;
 
@@ -66,6 +102,15 @@ export async function uploadPostMedia(file, postId, index = 0) {
  * Upload post media dari Server Action (service role).
  */
 export async function uploadPostMediaServer(file, postId, index = 0) {
+  // Validate file type
+  if (!ALLOWED_MEDIA_TYPES.includes(file.type)) {
+    return { error: "Format file tidak didukung. Gunakan JPG, PNG, GIF, WebP, MP4, WebM, atau MOV." };
+  }
+  // Validate file size
+  if (file.size > MAX_MEDIA_SIZE) {
+    return { error: "Ukuran file terlalu besar. Maksimal 25 MB." };
+  }
+
   const admin = createAdminClient();
   const ext = file.name.split(".").pop()?.replace(/[^\w.-]/g, "") || "bin";
   const mediaType = file.type.startsWith("video/") ? "video" : "image";

@@ -4,17 +4,10 @@ import { jwtVerify } from "jose";
 const SESSION_COOKIE = "da_session";
 const SESSION_ISSUER = "da-alf";
 const SESSION_AUDIENCE = "da-alf-web";
-const DEFAULT_SECRET = "da-alf-default-secret-please-change-me-32ch";
-
 function getSecretKey() {
   const secret = process.env.AUTH_SECRET;
   if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("AUTH_SECRET must be set in production — proxy cannot verify sessions safely");
-    }
-    // Dev only fallback — never use in production
-    console.warn("AUTH_SECRET not set, using default dev secret. DO NOT use in production.");
-    return new TextEncoder().encode(DEFAULT_SECRET);
+    throw new Error("AUTH_SECRET must be set. Middleware cannot verify sessions safely without it.");
   }
   return new TextEncoder().encode(secret);
 }
@@ -57,7 +50,7 @@ function schedulePageViewLog(request, event) {
   }
 }
 
-export async function proxy(request, event) {
+export async function middleware(request, event) {
   const { pathname } = request.nextUrl;
   schedulePageViewLog(request, event);
 

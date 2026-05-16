@@ -33,7 +33,7 @@ export async function sendOtpEmail(to, otp, displayName) {
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
         <h2 style="color:#6d28d9;margin-bottom:8px">${SITE_NAME}</h2>
-        <p style="color:#555">Halo <strong>${displayName}</strong>,</p>
+        <p style="color:#555">Halo <strong>${escapeEmailHtml(displayName)}</strong>,</p>
         <p style="color:#555">Kami menerima permintaan reset password untuk akunmu. Gunakan kode OTP berikut:</p>
 
         <div style="background:#f5f3ff;border:2px solid #7c3aed;border-radius:12px;
@@ -85,10 +85,10 @@ export async function sendNewCommentNotification(staff, comment) {
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
         <h2 style="color:#6d28d9;margin-bottom:4px">${SITE_NAME}</h2>
         <p style="color:#888;font-size:12px">Notifikasi Staff</p>
-        <p style="color:#555">Ada komentar baru dari <strong>${comment.authorName}</strong> pada postingan:</p>
-        <p style="color:#6d28d9;font-weight:bold">"${comment.postTitle}"</p>
+        <p style="color:#555">Ada komentar baru dari <strong>${escapeEmailHtml(comment.authorName)}</strong> pada postingan:</p>
+        <p style="color:#6d28d9;font-weight:bold">"${escapeEmailHtml(comment.postTitle)}"</p>
         <blockquote style="background:#f5f3ff;border-left:4px solid #7c3aed;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0">
-          <p style="margin:0;color:#374151">${preview}</p>
+          <p style="margin:0;color:#374151">${escapeEmailHtml(preview)}</p>
         </blockquote>
         <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/berita/${comment.postSlug}"
            style="display:inline-block;background:#6d28d9;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px">
@@ -355,7 +355,7 @@ export async function sendWelcomeEmail(to, displayName) {
       html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
         <h2 style="color:#6d28d9">${SITE_NAME}</h2>
-        <p style="color:#555">Halo <strong>${displayName}</strong>, selamat bergabung!</p>
+        <p style="color:#555">Halo <strong>${escapeEmailHtml(displayName)}</strong>, selamat bergabung!</p>
         <p style="color:#555">
           Akunmu berhasil dibuat. Kamu sekarang bisa login dan menikmati semua fitur
           portal Dewan Ambalan SMK Al Furqon Bantarkawung.
