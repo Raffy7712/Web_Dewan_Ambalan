@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ClipboardCheck, CheckCircle, XCircle, History, ArrowLeft, Award, Download, QrCode, Copy } from 'lucide-react';
 import Link from 'next/link';
 import { QRCodeCanvas } from 'qrcode.react';
@@ -69,20 +69,18 @@ export default function VoucherScannerPage() {
   };
 
   // Check if code param exists in URL on mount
-  useState(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const codeParam = params.get('code');
-      if (codeParam) {
-        setCode(codeParam);
-        // Auto-verify
-        setTimeout(() => {
-          const form = document.getElementById('verify-form');
-          if (form) form.requestSubmit();
-        }, 300);
-      }
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const codeParam = params.get('code');
+    if (codeParam) {
+      setCode(codeParam);
+      // Auto-verify after a short delay
+      setTimeout(() => {
+        const form = document.getElementById('verify-form');
+        if (form) form.requestSubmit();
+      }, 300);
     }
-  });
+  }, []);
 
   const verifyUrl = scanned?.item?.code
     ? `${typeof window !== 'undefined' ? window.location.origin : 'https://da-alf.web.id'}/vouchers?code=${scanned.item.code}`
