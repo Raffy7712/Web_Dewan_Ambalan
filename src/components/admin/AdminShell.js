@@ -17,6 +17,7 @@ import {
   Mails,
   UserCog,
   Ticket,
+  Award,
   Package,
 } from "lucide-react";
 
@@ -32,7 +33,8 @@ const links = [
   { href: "/admin/programs", label: "Program unggulan", icon: Sparkles },
   { href: "/admin/content", label: "Content CMS", icon: FileText },
   { href: "/admin/agenda-surat", label: "Agenda & arsip surat", icon: Mails },
-  { href: "/admin/vouchers", label: "Verifikasi & sertifikat", icon: Ticket },
+  { href: "/admin/vouchers", label: "Voucher", icon: Ticket },
+  { href: "/admin/certificates", label: "Sertifikat", icon: Award },
   { href: "/admin/inventory", label: "Inventaris", icon: Package },
   { href: "/admin/permissions", label: "Role & izin", icon: Shield },
   { href: "/admin/jabatan", label: "Struktur jabatan", icon: Briefcase },

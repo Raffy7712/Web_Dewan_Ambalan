@@ -1,30 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ClipboardCheck, CheckCircle, XCircle, History, ArrowLeft, Award, Download, QrCode, Copy } from 'lucide-react';
+import { ClipboardCheck, CheckCircle, XCircle, History, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { QRCodeCanvas } from 'qrcode.react';
 
-/* ── QR Code Download Helper ────────────────────────────── */
-function downloadQRCode(canvasContainer, filename) {
-  const canvas = canvasContainer?.querySelector('canvas');
-  if (!canvas) return;
-  const url = canvas.toDataURL('image/png', 1.0);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-export default function VoucherScannerPage() {
+export default function VoucherVerificationPage() {
   const [scanned, setScanned] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [scanHistory, setScanHistory] = useState([]);
   const [code, setCode] = useState('');
-  const qrRef = useRef(null);
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -37,16 +22,19 @@ export default function VoucherScannerPage() {
       const res = await fetch('/api/verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: code.trim(),
-          verification_type: 'code',
-        }),
+        body: JSON.stringify({ code: code.trim() }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Verification failed');
+        setError(data.error || 'Verifikasi gagal');
+        return;
+      }
+
+      // Hanya tampilkan jika tipe voucher
+      if (data.type && data.type !== 'voucher') {
+        setError('Kode ini bukan voucher. Untuk verifikasi sertifikat, gunakan halaman Verifikasi Sertifikat.');
         return;
       }
 
@@ -74,17 +62,12 @@ export default function VoucherScannerPage() {
     const codeParam = params.get('code');
     if (codeParam) {
       setCode(codeParam);
-      // Auto-verify after a short delay
       setTimeout(() => {
-        const form = document.getElementById('verify-form');
+        const form = document.getElementById('verify-voucher-form');
         if (form) form.requestSubmit();
       }, 300);
     }
   }, []);
-
-  const verifyUrl = scanned?.item?.code
-    ? `${typeof window !== 'undefined' ? window.location.origin : 'https://da-alf.web.id'}/vouchers?code=${scanned.item.code}`
-    : '';
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 md:py-8">
@@ -105,27 +88,27 @@ export default function VoucherScannerPage() {
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
-              Verifikasi Voucher & Sertifikat
+              Verifikasi Voucher
             </h1>
           </div>
         </div>
         <p className="text-sm text-[var(--text-secondary)]">
-          Masukkan kode voucher atau sertifikat untuk memverifikasi validitasnya. Sertifikat diterbitkan oleh Dewan Ambalan untuk anggota Pramuka.
+          Masukkan kode voucher untuk memverifikasi validitasnya. Voucher diterbitkan oleh Dewan Ambalan.
         </p>
       </div>
 
       {/* Code Input */}
       <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6 mb-6">
-        <form id="verify-form" onSubmit={handleVerify}>
+        <form id="verify-voucher-form" onSubmit={handleVerify}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-              Kode Voucher/Sertifikat
+              Kode Voucher
             </label>
             <input
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Contoh: CERT-2026-ABC123"
+              placeholder="Contoh: VCH-2026-ABC123"
               className="w-full px-4 py-2.5 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             />
           </div>
@@ -134,7 +117,7 @@ export default function VoucherScannerPage() {
             disabled={loading}
             className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-sm"
           >
-            {loading ? 'Memverifikasi...' : 'Verifikasi'}
+            {loading ? 'Memverifikasi...' : 'Verifikasi Voucher'}
           </button>
         </form>
       </div>
@@ -176,48 +159,22 @@ export default function VoucherScannerPage() {
               <span className="font-medium text-[var(--text-primary)]">Pesan:</span> {scanned.message}
             </p>
             <p className="text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-primary)]">Tipe:</span> {scanned.type === 'voucher' ? 'Voucher' : 'Sertifikat'}
+              <span className="font-medium text-[var(--text-primary)]">Tipe:</span> Voucher
             </p>
             <p className="text-[var(--text-secondary)]">
               <span className="font-medium text-[var(--text-primary)]">Kode:</span> <span className="font-mono text-emerald-600 dark:text-emerald-400">{scanned.item.code}</span>
             </p>
-
-            {scanned.type === 'certificate' && (
-              <>
-                {scanned.item.nomor_sertifikat && (
-                  <p className="text-[var(--text-secondary)]">
-                    <span className="font-medium text-[var(--text-primary)]">No. Sertifikat:</span> <span className="font-medium">{scanned.item.nomor_sertifikat}</span>
-                  </p>
-                )}
-                <p className="text-[var(--text-secondary)]">
-                  <span className="font-medium text-[var(--text-primary)]">Nama:</span> {scanned.item.recipient_name}
-                </p>
-                <p className="text-[var(--text-secondary)]">
-                  <span className="font-medium text-[var(--text-primary)]">Jenis:</span> {scanned.item.certificate_type}
-                </p>
-                {scanned.item.dewan_ambalan && (
-                  <p className="text-[var(--text-secondary)]">
-                    <span className="font-medium text-[var(--text-primary)]">Dewan Ambalan:</span> {scanned.item.dewan_ambalan}
-                  </p>
-                )}
-                {scanned.item.description && (
-                  <p className="text-[var(--text-secondary)]">
-                    <span className="font-medium text-[var(--text-primary)]">Deskripsi:</span> {scanned.item.description}
-                  </p>
-                )}
-              </>
-            )}
-
-            {scanned.type === 'voucher' && (
+            <p className="text-[var(--text-secondary)]">
+              <span className="font-medium text-[var(--text-primary)]">Nama:</span> {scanned.item.title}
+            </p>
+            {scanned.item.description && (
               <p className="text-[var(--text-secondary)]">
-                <span className="font-medium text-[var(--text-primary)]">Nama:</span> {scanned.item.title}
+                <span className="font-medium text-[var(--text-primary)]">Deskripsi:</span> {scanned.item.description}
               </p>
             )}
-
             <p className="text-[var(--text-secondary)]">
               <span className="font-medium text-[var(--text-primary)]">Status:</span> {scanned.item.status}
             </p>
-
             {scanned.item.expires_at && (
               <p className="text-[var(--text-secondary)]">
                 <span className="font-medium text-[var(--text-primary)]">Kadaluarsa:</span>{' '}
@@ -225,27 +182,6 @@ export default function VoucherScannerPage() {
               </p>
             )}
           </div>
-
-          {/* QR Code for verified certificate */}
-          {scanned.valid && scanned.type === 'certificate' && (
-            <div className="mt-5 pt-4 border-t border-emerald-200 dark:border-emerald-800/40">
-              <div className="flex items-center gap-2 mb-3">
-                <QrCode size={16} className="text-emerald-600 dark:text-emerald-400" />
-                <p className="text-sm font-semibold text-[var(--text-primary)]">QR Code Verifikasi</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div ref={qrRef} className="inline-block p-3 bg-white rounded-lg border border-[var(--border-primary)]">
-                  <QRCodeCanvas value={verifyUrl} size={160} level="M" includeMargin={false} bgColor="#ffffff" fgColor="#000000" />
-                </div>
-                <button
-                  onClick={() => downloadQRCode(qrRef.current, `QR-${scanned.item.code}.png`)}
-                  className="mt-3 inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
-                >
-                  <Download size={14} /> Download QR
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
 
