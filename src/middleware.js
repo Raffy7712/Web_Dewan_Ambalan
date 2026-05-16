@@ -62,8 +62,7 @@ export async function middleware(request, event) {
     pathname.startsWith("/profil") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/keuangan") ||
-    pathname.startsWith("/daftar-ambalan") ||
-    pathname.startsWith("/vouchers");
+    pathname.startsWith("/daftar-ambalan");
 
   if (!needsAuthGate) {
     return NextResponse.next();
@@ -87,8 +86,7 @@ export async function middleware(request, event) {
     (pathname.startsWith("/profil") ||
       pathname.startsWith("/admin") ||
       pathname.startsWith("/keuangan") ||
-      pathname.startsWith("/daftar-ambalan") ||
-      pathname.startsWith("/vouchers")) &&
+      pathname.startsWith("/daftar-ambalan")) &&
     !session
   ) {
     const loginUrl = new URL("/login", request.url);
