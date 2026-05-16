@@ -1,12 +1,27 @@
 import { Resend } from "resend";
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error(
-    "RESEND_API_KEY belum diset. Email tidak dapat dikirim tanpa kunci API Resend.",
-  );
+// Lazy-init Resend client — don't throw at module level to prevent build failure
+let _resend = null;
+function getResend() {
+  if (!_resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error(
+        "RESEND_API_KEY belum diset. Email tidak dapat dikirim tanpa kunci API Resend.",
+      );
+    }
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return _resend;
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Backward compat — proxy to lazy client
+const resend = new Proxy({}, {
+  get(_, prop) {
+    const client = getResend();
+    const val = client[prop];
+    return typeof val === "function" ? val.bind(client) : val;
+  },
+});
 const FROM = process.env.EMAIL_FROM?.trim() || "Dewan Ambalan <noreply@smkalfurqon.sch.id>";
 const SITE_NAME = "Dewan Ambalan SMK Al Furqon Bantarkawung";
 
