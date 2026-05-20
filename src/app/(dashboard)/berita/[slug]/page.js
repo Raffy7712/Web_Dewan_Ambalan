@@ -61,13 +61,8 @@ const levelLabel = {
 };
 
 export async function generateStaticParams() {
-  try {
-    const posts = await getPosts({ limit: 50 });
-    return posts.map((p) => ({ slug: p.slug }));
-  } catch {
-    // DB unavailable at build time — skip static generation
-    return [];
-  }
+  const posts = await getPosts({ limit: 50 });
+  return posts.map((p) => ({ slug: p.slug }));
 }
 
 export default async function PostDetailPage({ params }) {

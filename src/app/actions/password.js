@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase";
+import { query, getClient } from "@/lib/db";
 import { sendOtpEmail, sendPasswordChangedEmail } from "@/lib/email";
 import { getClientIp } from "@/lib/request-ip";
 import {
@@ -11,7 +11,6 @@ import {
   consumeResetPasswordIp,
   rateLimitMessage,
 } from "@/lib/rate-limit";
-import { getSession } from "./auth";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
 import { redirect } from "next/navigation";
@@ -44,14 +43,18 @@ export async function requestOtpAction(prevState, formData) {
   if (!pIp.ok) return { error: rateLimitMessage(pIp.retryAfterMs) };
   if (!pEm.ok) return { error: rateLimitMessage(pEm.retryAfterMs) };
 
-  const db = createAdminClient();
-
   // Find account by email
-  const { data: account } = await db
-    .from("accounts")
-    .select("id, display_name, email, is_active")
-    .eq("email", email)
-    .maybeSingle();
+  let account;
+  try {
+    const result = await query(
+      "SELECT id, display_name, email, is_active FROM accounts WHERE email = $1",
+      [email]
+    );
+    account = result.rows[0] ?? null;
+  } catch (err) {
+    // Silently ignore — prevent email enumeration
+    account = null;
+  }
 
   // Always show success to prevent email enumeration attacks
   if (!account || !account.is_active) {
@@ -62,27 +65,26 @@ export async function requestOtpAction(prevState, formData) {
   }
 
   // Invalidate old unused tokens for this email
-  await db
-    .from("otp_tokens")
-    .delete()
-    .eq("email", email)
-    .eq("type", "password_reset")
-    .is("used_at", null);
+  try {
+    await query(
+      "DELETE FROM otp_tokens WHERE email = $1 AND type = $2 AND used_at IS NULL",
+      [email, "password_reset"]
+    );
+  } catch (err) {
+    // Non-critical, continue
+  }
 
   const otp = generateOTP();
   const token_hash = hashOTP(otp);
   const expires_at = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000).toISOString();
 
-  const { error: insertErr } = await db.from("otp_tokens").insert({
-    account_id: account.id,
-    email,
-    token_hash,
-    expires_at,
-    type: "password_reset",
-  });
-
-  if (insertErr) {
-    console.error("OTP insert error:", insertErr.message);
+  try {
+    await query(
+      "INSERT INTO otp_tokens (account_id, email, token_hash, expires_at, type) VALUES ($1, $2, $3, $4, $5)",
+      [account.id, email, token_hash, expires_at, "password_reset"]
+    );
+  } catch (err) {
+    console.error("OTP insert error:", err.message);
     return { error: "Gagal membuat kode OTP. Coba lagi." };
   }
 
@@ -131,18 +133,19 @@ export async function resetPasswordAction(prevState, formData) {
   const rl = consumeResetPasswordIp(ip);
   if (!rl.ok) return { error: rateLimitMessage(rl.retryAfterMs) };
 
-  const db = createAdminClient();
   const token_hash = hashOTP(otp);
 
   // Find valid, unused token
-  const { data: token } = await db
-    .from("otp_tokens")
-    .select("id, account_id, expires_at, used_at")
-    .eq("email", email)
-    .eq("token_hash", token_hash)
-    .eq("type", "password_reset")
-    .is("used_at", null)
-    .maybeSingle();
+  let token;
+  try {
+    const tokenResult = await query(
+      "SELECT id, account_id, expires_at, used_at FROM otp_tokens WHERE email = $1 AND token_hash = $2 AND type = $3 AND used_at IS NULL",
+      [email, token_hash, "password_reset"]
+    );
+    token = tokenResult.rows[0] ?? null;
+  } catch (err) {
+    return { error: "Kode OTP salah atau tidak ditemukan." };
+  }
 
   if (!token) {
     return { error: "Kode OTP salah atau tidak ditemukan." };
@@ -152,28 +155,41 @@ export async function resetPasswordAction(prevState, formData) {
     return { error: "Kode OTP sudah kadaluarsa. Minta kode baru." };
   }
 
-  // Mark token as used
-  await db
-    .from("otp_tokens")
-    .update({ used_at: new Date().toISOString() })
-    .eq("id", token.id);
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
 
-  // Update password
-  const password_hash = await bcryptjs.hash(password, 12);
-  const { error: updateErr } = await db
-    .from("accounts")
-    .update({ password_hash })
-    .eq("id", token.account_id);
+    // Mark token as used
+    await client.query(
+      "UPDATE otp_tokens SET used_at = $1 WHERE id = $2",
+      [new Date().toISOString(), token.id]
+    );
 
-  if (updateErr) {
+    // Update password
+    const password_hash = await bcryptjs.hash(password, 12);
+    await client.query(
+      "UPDATE accounts SET password_hash = $1 WHERE id = $2",
+      [password_hash, token.account_id]
+    );
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
     return { error: "Gagal memperbarui password. Coba lagi." };
+  } finally {
+    client.release();
   }
 
-  const { data: acc } = await db
-    .from("accounts")
-    .select("email, display_name")
-    .eq("id", token.account_id)
-    .maybeSingle();
+  let acc;
+  try {
+    const accResult = await query(
+      "SELECT email, display_name FROM accounts WHERE id = $1",
+      [token.account_id]
+    );
+    acc = accResult.rows[0] ?? null;
+  } catch (err) {
+    acc = null;
+  }
   if (acc?.email) {
     sendPasswordChangedEmail(acc.email, acc.display_name ?? "Pengguna").catch(
       () => {},
@@ -181,61 +197,4 @@ export async function resetPasswordAction(prevState, formData) {
   }
 
   redirect("/login?reset=success");
-}
-
-// ─── Change Password from Profile (with old password) ────────────────────────
-
-export async function changePasswordAction(prevState, formData) {
-  const session = await getSession();
-  if (!session) return { error: "Sesi tidak valid. Silakan login ulang." };
-
-  const oldPassword = formData.get("old_password")?.toString() ?? "";
-  const newPassword = formData.get("new_password")?.toString() ?? "";
-  const confirmPassword = formData.get("confirm_password")?.toString() ?? "";
-
-  if (!oldPassword || !newPassword || !confirmPassword) {
-    return { error: "Semua field wajib diisi." };
-  }
-
-  if (newPassword.length < 8) {
-    return { error: "Password baru minimal 8 karakter." };
-  }
-
-  if (!/[A-Za-z]/.test(newPassword) || !/\d/.test(newPassword)) {
-    return { error: "Password baru wajib berisi huruf dan angka." };
-  }
-
-  if (newPassword !== confirmPassword) {
-    return { error: "Password baru dan konfirmasi tidak cocok." };
-  }
-
-  const db = createAdminClient();
-
-  // Verify old password
-  const { data: account } = await db
-    .from("accounts")
-    .select("id, password_hash, email, display_name")
-    .eq("id", session.id)
-    .maybeSingle();
-
-  if (!account) return { error: "Akun tidak ditemukan." };
-
-  const validOld = await bcryptjs.compare(oldPassword, account.password_hash);
-  if (!validOld) return { error: "Password lama salah." };
-
-  // Update password
-  const password_hash = await bcryptjs.hash(newPassword, 12);
-  const { error: updateErr } = await db
-    .from("accounts")
-    .update({ password_hash })
-    .eq("id", session.id);
-
-  if (updateErr) return { error: "Gagal memperbarui password. Coba lagi." };
-
-  // Send notification email
-  if (account.email) {
-    sendPasswordChangedEmail(account.email, account.display_name ?? "Pengguna").catch(() => {});
-  }
-
-  return { success: "Password berhasil diubah!" };
 }

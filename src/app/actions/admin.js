@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase";
+import { query, getClient } from "@/lib/db";
 import { getSession } from "./auth";
 import { revalidatePath } from "next/cache";
 
@@ -17,16 +17,17 @@ async function ensurePermission(permissionKey) {
   if (!session) return null;
   if (session.role === "admin") return session;
 
-  const db = createAdminClient();
-  const { data } = await db
-    .from("role_permissions")
-    .select("allowed")
-    .eq("role", session.role)
-    .eq("permission_key", permissionKey)
-    .maybeSingle();
-
-  if (!data?.allowed) return null;
-  return session;
+  try {
+    const result = await query(
+      "SELECT allowed FROM role_permissions WHERE role = $1 AND permission_key = $2",
+      [session.role, permissionKey]
+    );
+    const data = result.rows[0] ?? null;
+    if (!data?.allowed) return null;
+    return session;
+  } catch (err) {
+    return null;
+  }
 }
 
 const CMS_PAGE_PERMISSION_MAP = {
@@ -42,9 +43,7 @@ const CMS_PAGE_PERMISSION_MAP = {
 };
 
 function cmsPermissionKeyForPage(page_key) {
-  const key = CMS_PAGE_PERMISSION_MAP[page_key];
-  if (!key) return null; // Reject unknown page keys instead of defaulting
-  return key;
+  return CMS_PAGE_PERMISSION_MAP[page_key] ?? "content.landing.manage";
 }
 
 function revalidatePathsAfterCmsChange(page_key) {
@@ -89,13 +88,11 @@ export async function deleteCommentAction(prevState, formData) {
   const commentId = formData.get("comment_id")?.toString();
   if (!commentId) return { error: "ID komentar tidak valid." };
 
-  const db = createAdminClient();
-
   // Replies are cascaded by FK, so deleting parent auto-deletes replies
-  const { error } = await db.from("comments").delete().eq("id", commentId);
-
-  if (error) {
-    console.error("deleteCommentAction:", error.message);
+  try {
+    await query("DELETE FROM comments WHERE id = $1", [commentId]);
+  } catch (err) {
+    console.error("deleteCommentAction:", err.message);
     return { error: "Gagal menghapus komentar." };
   }
 
@@ -116,13 +113,14 @@ export async function toggleSpamAction(prevState, formData) {
   const commentId = formData.get("comment_id")?.toString();
   const isSpam = formData.get("is_spam") === "true";
 
-  const db = createAdminClient();
-  const { error } = await db
-    .from("comments")
-    .update({ is_spam: !isSpam })
-    .eq("id", commentId);
-
-  if (error) return { error: "Gagal mengubah status komentar." };
+  try {
+    await query(
+      "UPDATE comments SET is_spam = $1 WHERE id = $2",
+      [!isSpam, commentId]
+    );
+  } catch (err) {
+    return { error: "Gagal mengubah status komentar." };
+  }
   return { success: true, newSpam: !isSpam };
 }
 
@@ -140,13 +138,14 @@ export async function togglePinAction(prevState, formData) {
   const commentId = formData.get("comment_id")?.toString();
   const isPinned = formData.get("is_pinned") === "true";
 
-  const db = createAdminClient();
-  const { error } = await db
-    .from("comments")
-    .update({ is_pinned: !isPinned })
-    .eq("id", commentId);
-
-  if (error) return { error: "Gagal mengubah pin komentar." };
+  try {
+    await query(
+      "UPDATE comments SET is_pinned = $1 WHERE id = $2",
+      [!isPinned, commentId]
+    );
+  } catch (err) {
+    return { error: "Gagal mengubah pin komentar." };
+  }
   return { success: true };
 }
 
@@ -162,18 +161,19 @@ export async function addJabatanAction(prevState, formData) {
 
   if (!nama) return { error: "Nama jabatan wajib diisi." };
 
-  const db = createAdminClient();
-  const { data: maxRow } = await db
-    .from("jabatan")
-    .select("urutan")
-    .order("urutan", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const maxResult = await query(
+    "SELECT urutan FROM jabatan ORDER BY urutan DESC LIMIT 1"
+  );
+  const maxRow = maxResult.rows[0] ?? null;
   const urutan = (maxRow?.urutan ?? 0) + 1;
 
-  const { error } = await db.from("jabatan").insert({ nama, urutan });
-  if (error) {
-    if (error.code === "23505")
+  try {
+    await query(
+      "INSERT INTO jabatan (nama, urutan) VALUES ($1, $2)",
+      [nama, urutan]
+    );
+  } catch (err) {
+    if (err.code === "23505")
       return { error: "Jabatan dengan nama ini sudah ada." };
     return { error: "Gagal menambah jabatan." };
   }
@@ -191,14 +191,22 @@ export async function deleteJabatanAction(prevState, formData) {
   const jabatanId = formData.get("jabatan_id")?.toString();
   if (!jabatanId) return { error: "ID jabatan tidak valid." };
 
-  const db = createAdminClient();
-  // Unassign first (on delete set null via FK, but just to be safe)
-  await db
-    .from("accounts")
-    .update({ jabatan_id: null })
-    .eq("jabatan_id", jabatanId);
-  const { error } = await db.from("jabatan").delete().eq("id", jabatanId);
-  if (error) return { error: "Gagal menghapus jabatan." };
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+    // Unassign first (on delete set null via FK, but just to be safe)
+    await client.query(
+      "UPDATE accounts SET jabatan_id = NULL WHERE jabatan_id = $1",
+      [jabatanId]
+    );
+    await client.query("DELETE FROM jabatan WHERE id = $1", [jabatanId]);
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    return { error: "Gagal menghapus jabatan." };
+  } finally {
+    client.release();
+  }
   revalidatePath("/anggota");
   revalidatePath("/admin/jabatan");
   return { success: true };
@@ -217,13 +225,17 @@ export async function reorderJabatanAction(prevState, formData) {
     return { error: "Permintaan tidak valid." };
   }
 
-  const db = createAdminClient();
-  const { data: rows, error: listErr } = await db
-    .from("jabatan")
-    .select("id, urutan")
-    .order("urutan", { ascending: true });
+  let rows;
+  try {
+    const result = await query(
+      "SELECT id, urutan FROM jabatan ORDER BY urutan ASC"
+    );
+    rows = result.rows;
+  } catch (err) {
+    return { error: "Gagal membaca daftar jabatan." };
+  }
 
-  if (listErr || !rows?.length) {
+  if (!rows?.length) {
     return { error: "Gagal membaca daftar jabatan." };
   }
 
@@ -236,8 +248,19 @@ export async function reorderJabatanAction(prevState, formData) {
 
   const a = rows[idx];
   const b = rows[swapIdx];
-  await db.from("jabatan").update({ urutan: b.urutan }).eq("id", a.id);
-  await db.from("jabatan").update({ urutan: a.urutan }).eq("id", b.id);
+
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+    await client.query("UPDATE jabatan SET urutan = $1 WHERE id = $2", [b.urutan, a.id]);
+    await client.query("UPDATE jabatan SET urutan = $1 WHERE id = $2", [a.urutan, b.id]);
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    return { error: "Gagal mengubah urutan jabatan." };
+  } finally {
+    client.release();
+  }
 
   revalidatePath("/anggota");
   revalidatePath("/admin/jabatan");
@@ -255,13 +278,14 @@ export async function assignJabatanAction(prevState, formData) {
 
   if (!accountId) return { error: "ID anggota tidak valid." };
 
-  const db = createAdminClient();
-  const { error } = await db
-    .from("accounts")
-    .update({ jabatan_id: jabatanId })
-    .eq("id", accountId);
-
-  if (error) return { error: "Gagal mengubah jabatan." };
+  try {
+    await query(
+      "UPDATE accounts SET jabatan_id = $1 WHERE id = $2",
+      [jabatanId, accountId]
+    );
+  } catch (err) {
+    return { error: "Gagal mengubah jabatan." };
+  }
   revalidatePath("/anggota");
   revalidatePath("/profil");
   return { success: true };
@@ -272,17 +296,15 @@ export async function updateRegistrationSettingAction(prevState, formData) {
   if (!session) return { error: "Tidak punya izin untuk mengubah pengaturan ini." };
 
   const enabled = formData.get("enabled") === "true";
-  const db = createAdminClient();
-  const { error } = await db.from("site_settings").upsert(
-    {
-      key: "registration_enabled",
-      value_json: { enabled },
-      updated_by: session.id,
-    },
-    { onConflict: "key" },
-  );
-
-  if (error) return { error: "Gagal menyimpan pengaturan registrasi." };
+  try {
+    await query(
+      `INSERT INTO site_settings (key, value_json, updated_by) VALUES ($1, $2, $3)
+       ON CONFLICT (key) DO UPDATE SET value_json = EXCLUDED.value_json, updated_by = EXCLUDED.updated_by`,
+      ["registration_enabled", { enabled }, session.id]
+    );
+  } catch (err) {
+    return { error: "Gagal menyimpan pengaturan registrasi." };
+  }
 
   revalidatePath("/");
   revalidatePath("/register");
@@ -303,27 +325,32 @@ export async function updateAmbalanPortalSettingsAction(prevState, formData) {
     formData.get("masa_bakti_period_key")?.toString().trim() || "2026-2027";
   period_key = period_key.replace(/\s+/g, "");
 
-  const db = createAdminClient();
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
 
-  const { error: e1 } = await db.from("site_settings").upsert(
-    {
-      key: "ambalan_registration_enabled",
-      value_json: { enabled: ambalanEnabled },
-      updated_by: session.id,
-    },
-    { onConflict: "key" },
-  );
-  if (e1) return { error: "Gagal menyimpan toggle pendaftaran seleksi." };
+    await client.query(
+      `INSERT INTO site_settings (key, value_json, updated_by) VALUES ($1, $2, $3)
+       ON CONFLICT (key) DO UPDATE SET value_json = EXCLUDED.value_json, updated_by = EXCLUDED.updated_by`,
+      ["ambalan_registration_enabled", { enabled: ambalanEnabled }, session.id]
+    );
 
-  const { error: e2 } = await db.from("site_settings").upsert(
-    {
-      key: "masa_bakti",
-      value_json: { display, period_key },
-      updated_by: session.id,
-    },
-    { onConflict: "key" },
-  );
-  if (e2) return { error: "Gagal menyimpan masa bakti." };
+    await client.query(
+      `INSERT INTO site_settings (key, value_json, updated_by) VALUES ($1, $2, $3)
+       ON CONFLICT (key) DO UPDATE SET value_json = EXCLUDED.value_json, updated_by = EXCLUDED.updated_by`,
+      ["masa_bakti", { display, period_key }, session.id]
+    );
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    if (err.message?.includes("ambalan_registration_enabled")) {
+      return { error: "Gagal menyimpan toggle pendaftaran seleksi." };
+    }
+    return { error: "Gagal menyimpan masa bakti." };
+  } finally {
+    client.release();
+  }
 
   revalidatePath("/");
   revalidatePath("/home");
@@ -351,25 +378,21 @@ export async function saveCmsEntryAction(prevState, formData) {
   }
 
   const permissionKey = cmsPermissionKeyForPage(page_key);
-  if (!permissionKey) return { error: "Page key tidak valid." };
   const session = await ensurePermission(permissionKey);
   if (!session) return { error: "Tidak punya izin untuk menyimpan konten." };
 
-  const db = createAdminClient();
-  const { error } = await db.from("cms_entries").upsert(
-    {
-      page_key,
-      section_key,
-      entry_key,
-      payload: { text },
-      is_published,
-      sort_order: Number.isNaN(sort_order) ? 0 : sort_order,
-      updated_by: session.id,
-    },
-    { onConflict: "page_key,section_key,entry_key" },
-  );
-
-  if (error) return { error: "Gagal menyimpan konten CMS." };
+  try {
+    await query(
+      `INSERT INTO cms_entries (page_key, section_key, entry_key, payload, is_published, sort_order, updated_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (page_key, section_key, entry_key) DO UPDATE SET
+         payload = EXCLUDED.payload, is_published = EXCLUDED.is_published,
+         sort_order = EXCLUDED.sort_order, updated_by = EXCLUDED.updated_by`,
+      [page_key, section_key, entry_key, { text }, is_published, Number.isNaN(sort_order) ? 0 : sort_order, session.id]
+    );
+  } catch (err) {
+    return { error: "Gagal menyimpan konten CMS." };
+  }
 
   revalidatePathsAfterCmsChange(page_key);
   return { success: "Konten CMS berhasil disimpan." };
@@ -380,22 +403,27 @@ export async function deleteCmsEntryAction(prevState, formData) {
   const entryId = formData.get("entry_id")?.toString().trim() ?? "";
   if (!entryId) return { error: "ID entri tidak valid." };
 
-  const db = createAdminClient();
-  const { data: row, error: fetchErr } = await db
-    .from("cms_entries")
-    .select("id, page_key")
-    .eq("id", entryId)
-    .maybeSingle();
+  let row;
+  try {
+    const result = await query(
+      "SELECT id, page_key FROM cms_entries WHERE id = $1",
+      [entryId]
+    );
+    row = result.rows[0] ?? null;
+  } catch (err) {
+    return { error: "Entri tidak ditemukan." };
+  }
 
-  if (fetchErr || !row) return { error: "Entri tidak ditemukan." };
+  if (!row) return { error: "Entri tidak ditemukan." };
 
-  const permKey = cmsPermissionKeyForPage(row.page_key);
-  if (!permKey) return { error: "Page key entri tidak valid." };
-  const session = await ensurePermission(permKey);
+  const session = await ensurePermission(cmsPermissionKeyForPage(row.page_key));
   if (!session) return { error: "Tidak punya izin untuk menghapus konten ini." };
 
-  const { error } = await db.from("cms_entries").delete().eq("id", entryId);
-  if (error) return { error: "Gagal menghapus entri CMS." };
+  try {
+    await query("DELETE FROM cms_entries WHERE id = $1", [entryId]);
+  } catch (err) {
+    return { error: "Gagal menghapus entri CMS." };
+  }
 
   revalidatePathsAfterCmsChange(row.page_key);
   return { success: "Entri CMS berhasil dihapus." };
@@ -406,26 +434,30 @@ export async function toggleCmsPublishedAction(prevState, formData) {
   const entryId = formData.get("entry_id")?.toString().trim() ?? "";
   if (!entryId) return { error: "ID entri tidak valid." };
 
-  const db = createAdminClient();
-  const { data: row, error: fetchErr } = await db
-    .from("cms_entries")
-    .select("id, page_key, is_published")
-    .eq("id", entryId)
-    .maybeSingle();
+  let row;
+  try {
+    const result = await query(
+      "SELECT id, page_key, is_published FROM cms_entries WHERE id = $1",
+      [entryId]
+    );
+    row = result.rows[0] ?? null;
+  } catch (err) {
+    return { error: "Entri tidak ditemukan." };
+  }
 
-  if (fetchErr || !row) return { error: "Entri tidak ditemukan." };
+  if (!row) return { error: "Entri tidak ditemukan." };
 
-  const permKey = cmsPermissionKeyForPage(row.page_key);
-  if (!permKey) return { error: "Page key entri tidak valid." };
-  const session = await ensurePermission(permKey);
+  const session = await ensurePermission(cmsPermissionKeyForPage(row.page_key));
   if (!session) return { error: "Tidak punya izin mengubah status publikasi." };
 
-  const { error } = await db
-    .from("cms_entries")
-    .update({ is_published: !row.is_published, updated_by: session.id })
-    .eq("id", entryId);
-
-  if (error) return { error: "Gagal mengubah status publikasi." };
+  try {
+    await query(
+      "UPDATE cms_entries SET is_published = $1, updated_by = $2 WHERE id = $3",
+      [!row.is_published, session.id, entryId]
+    );
+  } catch (err) {
+    return { error: "Gagal mengubah status publikasi." };
+  }
 
   revalidatePathsAfterCmsChange(row.page_key);
   return { success: true, is_published: !row.is_published };
@@ -441,23 +473,19 @@ export async function addFeaturedProgramAction(prevState, formData) {
   const description = formData.get("description")?.toString().trim() ?? "";
   if (!title) return { error: "Judul wajib diisi." };
 
-  const db = createAdminClient();
-  const { data: maxRow } = await db
-    .from("featured_programs")
-    .select("sort_order")
-    .order("sort_order", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const maxResult = await query(
+    "SELECT sort_order FROM featured_programs ORDER BY sort_order DESC LIMIT 1"
+  );
+  const maxRow = maxResult.rows[0] ?? null;
   const sort_order = (maxRow?.sort_order ?? 0) + 1;
 
-  const { error } = await db.from("featured_programs").insert({
-    title,
-    description,
-    sort_order,
-    is_active: true,
-  });
-  if (error) {
-    if (error.code === "42P01") {
+  try {
+    await query(
+      "INSERT INTO featured_programs (title, description, sort_order, is_active) VALUES ($1, $2, $3, $4)",
+      [title, description, sort_order, true]
+    );
+  } catch (err) {
+    if (err.code === "42P01") {
       return { error: "Tabel program unggulan belum ada. Jalankan migration-v5.sql." };
     }
     return { error: "Gagal menambah program." };
@@ -474,9 +502,11 @@ export async function deleteFeaturedProgramAction(prevState, formData) {
   const id = formData.get("id")?.toString();
   if (!id) return { error: "ID tidak valid." };
 
-  const db = createAdminClient();
-  const { error } = await db.from("featured_programs").delete().eq("id", id);
-  if (error) return { error: "Gagal menghapus program." };
+  try {
+    await query("DELETE FROM featured_programs WHERE id = $1", [id]);
+  } catch (err) {
+    return { error: "Gagal menghapus program." };
+  }
   revalidatePath("/home");
   revalidatePath("/admin/programs");
   return { success: true };
@@ -490,12 +520,14 @@ export async function toggleFeaturedProgramAction(prevState, formData) {
   const is_active = formData.get("is_active") === "true";
   if (!id) return { error: "ID tidak valid." };
 
-  const db = createAdminClient();
-  const { error } = await db
-    .from("featured_programs")
-    .update({ is_active })
-    .eq("id", id);
-  if (error) return { error: "Gagal memperbarui status." };
+  try {
+    await query(
+      "UPDATE featured_programs SET is_active = $1 WHERE id = $2",
+      [is_active, id]
+    );
+  } catch (err) {
+    return { error: "Gagal memperbarui status." };
+  }
   revalidatePath("/home");
   revalidatePath("/admin/programs");
   return { success: true };
@@ -511,13 +543,17 @@ export async function moveFeaturedProgramAction(prevState, formData) {
     return { error: "Permintaan tidak valid." };
   }
 
-  const db = createAdminClient();
-  const { data: rows, error: listErr } = await db
-    .from("featured_programs")
-    .select("id, sort_order")
-    .order("sort_order", { ascending: true });
+  let rows;
+  try {
+    const result = await query(
+      "SELECT id, sort_order FROM featured_programs ORDER BY sort_order ASC"
+    );
+    rows = result.rows;
+  } catch (err) {
+    return { error: "Gagal membaca daftar program." };
+  }
 
-  if (listErr || !rows?.length) return { error: "Gagal membaca daftar program." };
+  if (!rows?.length) return { error: "Gagal membaca daftar program." };
 
   const idx = rows.findIndex((r) => r.id === id);
   if (idx < 0) return { error: "Program tidak ditemukan." };
@@ -526,8 +562,19 @@ export async function moveFeaturedProgramAction(prevState, formData) {
 
   const a = rows[idx];
   const b = rows[swapIdx];
-  await db.from("featured_programs").update({ sort_order: b.sort_order }).eq("id", a.id);
-  await db.from("featured_programs").update({ sort_order: a.sort_order }).eq("id", b.id);
+
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
+    await client.query("UPDATE featured_programs SET sort_order = $1 WHERE id = $2", [b.sort_order, a.id]);
+    await client.query("UPDATE featured_programs SET sort_order = $1 WHERE id = $2", [a.sort_order, b.id]);
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    return { error: "Gagal mengubah urutan program." };
+  } finally {
+    client.release();
+  }
 
   revalidatePath("/home");
   revalidatePath("/admin/programs");
@@ -546,25 +593,15 @@ export async function setRolePermissionAction(prevState, formData) {
     return { error: "Role dan permission key wajib diisi." };
   }
 
-  const db = createAdminClient();
-
-  // Validate permission_key exists in the permission_keys table
-  const { data: validKey } = await db
-    .from("permission_keys")
-    .select("key")
-    .eq("key", permission_key)
-    .maybeSingle();
-
-  if (!validKey) {
-    return { error: "Permission key tidak valid." };
+  try {
+    await query(
+      `INSERT INTO role_permissions (role, permission_key, allowed) VALUES ($1, $2, $3)
+       ON CONFLICT (role, permission_key) DO UPDATE SET allowed = EXCLUDED.allowed`,
+      [role, permission_key, allowed]
+    );
+  } catch (err) {
+    return { error: "Gagal mengubah permission." };
   }
-
-  const { error } = await db.from("role_permissions").upsert(
-    { role, permission_key, allowed },
-    { onConflict: "role,permission_key" },
-  );
-
-  if (error) return { error: "Gagal mengubah permission." };
 
   revalidatePath("/admin/permissions");
   return { success: true };

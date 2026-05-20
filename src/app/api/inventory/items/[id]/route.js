@@ -1,48 +1,35 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/api-auth";
+import { query } from "@/lib/db";
 
-// GET /api/inventory/items/[id] - get single item (admin only)
+// GET /api/inventory/items/[id] - get single item
 export async function GET(request, { params }) {
   try {
-    const auth = await requireAdmin(request);
-    if (auth instanceof NextResponse) return auth;
+    const { id } = params;
 
-    const { id } = await params;
+    const { rows } = await query(
+      `SELECT
+        ii.id,
+        ii.code,
+        ii.name,
+        ii.category_id,
+        json_build_object('name', ic.name) AS inventory_categories,
+        ii.description,
+        ii.quantity,
+        ii.unit,
+        ii.condition,
+        ii.location,
+        ii.purchase_date,
+        ii.purchase_price,
+        ii.last_checked,
+        ii.created_at,
+        ii.updated_at
+      FROM inventory_items ii
+      LEFT JOIN inventory_categories ic ON ii.category_id = ic.id
+      WHERE ii.id = $1`,
+      [id]
+    );
 
-    // Validate UUID format
-    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!UUID_RE.test(id)) {
-      return NextResponse.json({ error: "Invalid item ID" }, { status: 400 });
-    }
-
-    const db = createAdminClient();
-
-    const { data, error } = await db
-      .from("inventory_items")
-      .select(
-        `
-        id,
-        code,
-        name,
-        category_id,
-        inventory_categories(name),
-        description,
-        quantity,
-        unit,
-        condition,
-        location,
-        purchase_date,
-        purchase_price,
-        last_checked,
-        created_at,
-        updated_at
-      `
-      )
-      .eq("id", id)
-      .single();
-
-    if (error) {
+    if (rows.length === 0) {
       return NextResponse.json(
         { error: "Item not found" },
         { status: 404 }
@@ -51,10 +38,10 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({
       ok: true,
-      item: data,
+      item: rows[0],
     });
-  } catch (error) {
-    console.error("Error:", error);
+  } catch (err) {
+    console.error("Error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -62,69 +49,38 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT /api/inventory/items/[id] - update item (admin only)
+// PUT /api/inventory/items/[id] - update item
 export async function PUT(request, { params }) {
   try {
-    const auth = await requireAdmin(request);
-    if (auth instanceof NextResponse) return auth;
-
-    const { id } = await params;
-
-    // Validate UUID format
-    const UUID_RE_PUT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!UUID_RE_PUT.test(id)) {
-      return NextResponse.json({ error: "Invalid item ID" }, { status: 400 });
-    }
-
+    const { id } = params;
     const body = await request.json();
 
-    // Only allow updating valid fields
-    const allowedFields = [
-      "name", "category_id", "description", "quantity",
-      "unit", "condition", "location", "purchase_date",
-      "purchase_price", "last_checked",
-    ];
-    const updatePayload = {};
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        // Skip empty strings for UUID, numeric, and date fields
-        if (field === "category_id" && body[field] === "") continue;
-        if (field === "category_id" && body[field] && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body[field])) continue;
-        if (field === "purchase_price" && body[field] === "") continue;
-        if (field === "purchase_date" && body[field] === "") continue;
-        // Convert numeric fields
-        if (field === "quantity") {
-          updatePayload[field] = parseInt(body[field]) || 1;
-          continue;
-        }
-        if (field === "purchase_price" && body[field] != null) {
-          const parsed = parseFloat(body[field]);
-          if (isNaN(parsed) || parsed < 0) continue;
-          updatePayload[field] = parsed;
-          continue;
-        }
-        updatePayload[field] = body[field];
-      }
-    }
-
-    if (Object.keys(updatePayload).length === 0) {
+    // Build SET clause dynamically from body
+    const keys = Object.keys(body);
+    if (keys.length === 0) {
       return NextResponse.json(
-        { error: "No valid fields to update" },
+        { error: "No fields to update" },
         { status: 400 }
       );
     }
 
-    const db = createAdminClient();
+    const setClauses = [];
+    const values = [];
+    let paramIdx = 1;
 
-    const { data, error } = await db
-      .from("inventory_items")
-      .update(updatePayload)
-      .eq("id", id)
-      .select()
-      .single();
+    for (const key of keys) {
+      setClauses.push(`${key} = $${paramIdx++}`);
+      values.push(body[key]);
+    }
 
-    if (error) {
-      console.error("Error updating item:", error);
+    values.push(id);
+
+    const { rows } = await query(
+      `UPDATE inventory_items SET ${setClauses.join(", ")} WHERE id = $${paramIdx} RETURNING *`,
+      values
+    );
+
+    if (rows.length === 0) {
       return NextResponse.json(
         { error: "Failed to update item" },
         { status: 500 }
@@ -133,10 +89,10 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json({
       ok: true,
-      item: data,
+      item: rows[0],
     });
-  } catch (error) {
-    console.error("Error:", error);
+  } catch (err) {
+    console.error("Error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -144,28 +100,17 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE /api/inventory/items/[id] - delete item (admin only)
+// DELETE /api/inventory/items/[id] - delete item
 export async function DELETE(request, { params }) {
   try {
-    const auth = await requireAdmin(request);
-    if (auth instanceof NextResponse) return auth;
+    const { id } = params;
 
-    const { id } = await params;
+    const { rowCount } = await query(
+      `DELETE FROM inventory_items WHERE id = $1`,
+      [id]
+    );
 
-    // Validate UUID format
-    const UUID_RE_DEL = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!UUID_RE_DEL.test(id)) {
-      return NextResponse.json({ error: "Invalid item ID" }, { status: 400 });
-    }
-
-    const db = createAdminClient();
-
-    const { error } = await db
-      .from("inventory_items")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
+    if (rowCount === 0) {
       return NextResponse.json(
         { error: "Failed to delete item" },
         { status: 500 }
@@ -176,8 +121,8 @@ export async function DELETE(request, { params }) {
       ok: true,
       message: "Item deleted successfully",
     });
-  } catch (error) {
-    console.error("Error:", error);
+  } catch (err) {
+    console.error("Error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

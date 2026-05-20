@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import { requireAdmin } from "@/lib/api-auth";
+import { getSession } from "@/lib/auth-session";
 import { createAdminClient } from "@/lib/supabase";
 
 function filenameStem() {
@@ -12,8 +12,10 @@ function filenameStem() {
 }
 
 export async function GET(request) {
-  const auth = await requireAdmin(request);
-  if (auth instanceof NextResponse) return auth;
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { searchParams } = new URL(request.url);
   const scope = searchParams.get("scope") ?? "both";
@@ -72,7 +74,7 @@ export async function GET(request) {
     const { data, error } = await db
       .from("certificates")
       .select(
-        "code, nomor_sertifikat, recipient_name, certificate_type, dewan_ambalan, status, created_at",
+        "code, recipient_name, certificate_type, dewan_ambalan, status, created_at",
       )
       .order("created_at", { ascending: false });
 
@@ -87,10 +89,9 @@ export async function GET(request) {
 
     const rows = (data ?? []).map((r) => ({
       Kode: r.code ?? "",
-      "No. Sertifikat": r.nomor_sertifikat ?? "",
       "Nama Penerima": r.recipient_name ?? "",
       "Jenis Sertifikat": r.certificate_type ?? "",
-      "Penerbit": r.dewan_ambalan ?? "",
+      "Dewan Ambalan": r.dewan_ambalan ?? "",
       Status: r.status ?? "",
       "Dibuat": r.created_at
         ? new Date(r.created_at).toLocaleDateString("id-ID")
@@ -102,7 +103,6 @@ export async function GET(request) {
     );
     ws["!cols"] = [
       { wch: 20 }, // Kode
-      { wch: 35 }, // No. Sertifikat
       { wch: 25 }, // Nama Penerima
       { wch: 22 }, // Jenis Sertifikat
       { wch: 25 }, // Dewan Ambalan

@@ -18,15 +18,16 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://*.supabase.co https://*.googleusercontent.com",
+      "img-src 'self' data: blob: https://*.googleusercontent.com",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co https://api.resend.com",
+      "connect-src 'self' https://api.resend.com",
       "frame-ancestors 'none'",
     ].join("; "),
   },
 ];
 
 const nextConfig = {
+  serverExternalPackages: ["pg"],
   async headers() {
     return [
       {

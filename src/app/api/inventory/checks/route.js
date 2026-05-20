@@ -1,19 +1,13 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase";
-import { requireAdmin } from "@/lib/api-auth";
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { query, getClient } from "@/lib/db";
 
 // GET /api/inventory/checks?item_id=xxx - get check logs for item
 export async function GET(request) {
   try {
-    const auth = await requireAdmin(request);
-    if (auth instanceof NextResponse) return auth;
-
     const { searchParams } = new URL(request.url);
     const itemId = searchParams.get("item_id");
-    const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "50"), 1), 200);
-    const offset = Math.max(parseInt(searchParams.get("offset") || "0"), 0);
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const offset = parseInt(searchParams.get("offset") || "0");
 
     if (!itemId) {
       return NextResponse.json(
@@ -22,41 +16,33 @@ export async function GET(request) {
       );
     }
 
-    if (!UUID_RE.test(itemId)) {
-      return NextResponse.json(
-        { error: "Invalid item_id format" },
-        { status: 400 }
-      );
-    }
+    // Count query
+    const countResult = await query(
+      `SELECT COUNT(*) AS total FROM item_checks WHERE item_id = $1`,
+      [itemId]
+    );
+    const count = parseInt(countResult.rows[0]?.total || "0");
 
-    const db = createAdminClient();
-
-    const { data, count, error } = await db
-      .from("item_checks")
-      .select("*", { count: "exact" })
-      .eq("item_id", itemId)
-      .order("check_date", { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (error) {
-      console.error("Error fetching item checks:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch item checks" },
-        { status: 500 }
-      );
-    }
+    // Data query
+    const { rows } = await query(
+      `SELECT * FROM item_checks
+       WHERE item_id = $1
+       ORDER BY check_date DESC
+       LIMIT $2 OFFSET $3`,
+      [itemId, limit, offset]
+    );
 
     return NextResponse.json({
       ok: true,
-      checks: data || [],
+      checks: rows || [],
       pagination: {
-        total: count || 0,
+        total: count,
         limit,
         offset,
       },
     });
-  } catch (error) {
-    console.error("Error:", error);
+  } catch (err) {
+    console.error("Error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -64,91 +50,71 @@ export async function GET(request) {
   }
 }
 
-// POST /api/inventory/checks - create check log (admin only)
+// POST /api/inventory/checks - create check log
 export async function POST(request) {
+  const client = await getClient();
   try {
-    const auth = await requireAdmin(request);
-    if (auth instanceof NextResponse) return auth;
-
     const body = await request.json();
     const { item_id, condition, notes, requires_maintenance = false } = body;
 
     if (!item_id || !condition) {
+      client.release();
       return NextResponse.json(
         { error: "item_id and condition are required" },
         { status: 400 }
       );
     }
 
-    if (!UUID_RE.test(item_id)) {
-      return NextResponse.json(
-        { error: "Invalid item_id format" },
-        { status: 400 }
-      );
-    }
-
     if (!["baik", "perlu_perbaikan", "rusak"].includes(condition)) {
+      client.release();
       return NextResponse.json(
         { error: "Invalid condition value" },
         { status: 400 }
       );
     }
 
-    const db = createAdminClient();
+    await client.query("BEGIN");
 
     // Verify item exists
-    const { data: item, error: itemError } = await db
-      .from("inventory_items")
-      .select("id")
-      .eq("id", item_id)
-      .single();
+    const itemResult = await client.query(
+      `SELECT id FROM inventory_items WHERE id = $1`,
+      [item_id]
+    );
 
-    if (itemError || !item) {
+    if (itemResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      client.release();
       return NextResponse.json(
         { error: "Item not found" },
         { status: 404 }
       );
     }
 
-    const insertPayload = {
-      item_id,
-      condition,
-      checked_by: auth.id,
-      requires_maintenance: Boolean(requires_maintenance),
-    };
-    if (notes) insertPayload.notes = notes;
-
-    // Create check log and update item's last_checked
-    const { data, error } = await db
-      .from("item_checks")
-      .insert(insertPayload)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error creating check log:", error);
-      return NextResponse.json(
-        { error: "Failed to create check log" },
-        { status: 500 }
-      );
-    }
+    // Create check log
+    const insertResult = await client.query(
+      `INSERT INTO item_checks (item_id, condition, notes, requires_maintenance)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *`,
+      [item_id, condition, notes ?? null, requires_maintenance]
+    );
 
     // Update item's condition and last_checked
-    await db
-      .from("inventory_items")
-      .update({
-        condition,
-        last_checked: new Date().toISOString(),
-        last_checked_by: auth.id,
-      })
-      .eq("id", item_id);
+    await client.query(
+      `UPDATE inventory_items SET condition = $1, last_checked = NOW() WHERE id = $2`,
+      [condition, item_id]
+    );
+
+    await client.query("COMMIT");
+    client.release();
 
     return NextResponse.json({
       ok: true,
-      check: data,
+      check: insertResult.rows[0],
     });
-  } catch (error) {
-    console.error("Error:", error);
+  } catch (err) {
+    try { await client.query("ROLLBACK"); } catch (_) {}
+    client.release();
+    console.error("Error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

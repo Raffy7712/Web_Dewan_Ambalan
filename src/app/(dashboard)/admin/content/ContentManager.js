@@ -8,7 +8,7 @@ import {
   deleteCmsEntryAction,
   toggleCmsPublishedAction,
 } from "@/app/actions/admin";
-import { CMS_PUBLIC_BINDINGS, getCmsBindingKeySet } from "@/lib/cms";
+import { CMS_PUBLIC_BINDINGS, getCmsBindingKeySet } from "@/lib/cms-bindings";
 
 const emptyDraft = () => ({
   section_key: "",

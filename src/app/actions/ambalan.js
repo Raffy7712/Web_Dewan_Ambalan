@@ -1,7 +1,7 @@
 "use server";
 
 import { getSession } from "./auth";
-import { createAdminClient } from "@/lib/supabase";
+import { query } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { isAmbalanRegistrationEnabled, getMasaBakti } from "@/lib/cms";
 import { getStaffEmails } from "@/lib/queries";
@@ -46,44 +46,43 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
   const ambR = consumeAmbalanUser(session.id);
   if (!ambR.ok) return { error: rateLimitMessage(ambR.retryAfterMs) };
 
-  const db = createAdminClient();
-
-  const { data: existing, error: exErr } = await db
-    .from("ambalan_applications")
-    .select("id")
-    .eq("account_id", session.id)
-    .eq("period", period)
-    .maybeSingle();
-
-  if (exErr && exErr.code !== "42P01") {
-    console.error("submitAmbalanApplicationAction:", exErr.message);
+  let existing = null;
+  try {
+    const existingResult = await query(
+      "SELECT id FROM ambalan_applications WHERE account_id = $1 AND period = $2",
+      [session.id, period]
+    );
+    existing = existingResult.rows[0] ?? null;
+  } catch (err) {
+    if (err.code !== "42P01") {
+      console.error("submitAmbalanApplicationAction:", err.message);
+    }
   }
 
   const isFirstSubmit = !existing;
 
-  const { error } = await db.from("ambalan_applications").upsert(
-    {
-      account_id: session.id,
-      full_name,
-      class_name,
-      phone,
-      motivation,
-      experience,
-      period,
-      status: "pending",
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "account_id,period" },
-  );
-
-  if (error) {
-    if (error.code === "42P01") {
+  try {
+    await query(
+      `INSERT INTO ambalan_applications (account_id, full_name, class_name, phone, motivation, experience, period, status, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (account_id, period) DO UPDATE SET
+         full_name = EXCLUDED.full_name,
+         class_name = EXCLUDED.class_name,
+         phone = EXCLUDED.phone,
+         motivation = EXCLUDED.motivation,
+         experience = EXCLUDED.experience,
+         status = EXCLUDED.status,
+         updated_at = EXCLUDED.updated_at`,
+      [session.id, full_name, class_name, phone, motivation, experience, period, "pending", new Date().toISOString()]
+    );
+  } catch (err) {
+    if (err.code === "42P01") {
       return {
         error:
           "Tabel pendaftaran belum ada. Jalankan migration-v3.sql di Supabase dulu.",
       };
     }
-    console.error("submitAmbalanApplicationAction:", error.message);
+    console.error("submitAmbalanApplicationAction:", err.message);
     return { error: "Gagal menyimpan pendaftaran. Coba lagi." };
   }
 
@@ -101,11 +100,16 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
       )
       .catch(() => {});
 
-    const { data: acc } = await db
-      .from("accounts")
-      .select("email, display_name")
-      .eq("id", session.id)
-      .maybeSingle();
+    let acc;
+    try {
+      const accResult = await query(
+        "SELECT email, display_name FROM accounts WHERE id = $1",
+        [session.id]
+      );
+      acc = accResult.rows[0] ?? null;
+    } catch (err) {
+      acc = null;
+    }
     if (acc?.email) {
       sendAmbalanReceivedEmail(
         acc.email,
