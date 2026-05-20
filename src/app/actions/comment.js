@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase";
+import { query } from "@/lib/db";
 import { getSession } from "./auth";
 import { detectProfanity } from "@/lib/profanity";
 import { getStaffEmails } from "@/lib/queries";
@@ -62,15 +62,18 @@ function detectSpam(content) {
 // ─── Rate Limiting ────────────────────────────────────────────────────────────
 
 /** 5 komentar per 1 menit — lebih ketat dari sebelumnya */
-async function isRateLimited(authorId, db) {
+async function isRateLimited(authorId) {
   const oneMinAgo = new Date(Date.now() - 60 * 1000).toISOString();
-  const { count } = await db
-    .from("comments")
-    .select("id", { count: "exact", head: true })
-    .eq("author_id", authorId)
-    .gte("created_at", oneMinAgo);
-
-  return (count ?? 0) >= 5;
+  try {
+    const result = await query(
+      "SELECT COUNT(*) as count FROM comments WHERE author_id = $1 AND created_at >= $2",
+      [authorId, oneMinAgo]
+    );
+    return Number(result.rows[0].count) >= 5;
+  } catch (err) {
+    // On error, allow the comment (fail open)
+    return false;
+  }
 }
 
 // ─── Server Action ────────────────────────────────────────────────────────────
@@ -93,10 +96,8 @@ export async function submitCommentAction(prevState, formData) {
   if (content.length > 1000)
     return { error: "Komentar terlalu panjang (maks. 1000 karakter)." };
 
-  const db = createAdminClient();
-
   // ── Rate limiting ──
-  const limited = await isRateLimited(session.id, db);
+  const limited = await isRateLimited(session.id);
   if (limited) {
     return {
       error: "Kamu mengirim terlalu banyak komentar. Tunggu 1 menit.",
@@ -115,18 +116,13 @@ export async function submitCommentAction(prevState, formData) {
   // ── Spam detection ──
   const { isSpam, score } = detectSpam(content);
 
-  const { error } = await db.from("comments").insert({
-    post_id,
-    author_id: session.id,
-    parent_id,
-    content,
-    is_spam: isSpam,
-    spam_score: score,
-    is_pinned: false,
-  });
-
-  if (error) {
-    console.error("submitCommentAction:", error.message);
+  try {
+    await query(
+      "INSERT INTO comments (post_id, author_id, parent_id, content, is_spam, spam_score, is_pinned) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+      [post_id, session.id, parent_id, content, isSpam, score, false]
+    );
+  } catch (err) {
+    console.error("submitCommentAction:", err.message);
     return { error: "Gagal mengirim komentar. Coba lagi." };
   }
 

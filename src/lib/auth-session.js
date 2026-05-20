@@ -2,22 +2,23 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import crypto from "crypto";
-import { createAdminClient } from "./supabase";
-
-export const SESSION_COOKIE = "da_session";
+import { query } from "./db";
+import { SESSION_COOKIE } from "./auth-constants";
 const SESSION_ISSUER = "da-alf";
 const SESSION_AUDIENCE = "da-alf-web";
 const MAX_AGE = 60 * 60 * 24 * 7;
 
+const DEFAULT_SECRET = "da-alf-default-secret-please-change-me-32ch";
+
 function getSecretKey() {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret) {
-    throw new Error("AUTH_SECRET wajib diset. Session tidak dapat dibuat tanpa secret key.");
+  const secret = process.env.AUTH_SECRET ?? DEFAULT_SECRET;
+  if (process.env.NODE_ENV === "production" && secret === DEFAULT_SECRET) {
+    throw new Error("AUTH_SECRET wajib diganti di production.");
   }
   return new TextEncoder().encode(secret);
 }
 
-export function isStaffRole(role) {
+export async function isStaffRole(role) {
   return role === "admin" || role === "moderator";
 }
 
@@ -73,17 +74,19 @@ export const getCurrentUser = cache(async () => {
   const id = payload?.sub ?? payload?.id;
   if (!id) return null;
 
-  const db = createAdminClient();
-  const { data: account, error } = await db
-    .from("accounts")
-    .select(
-      `id, display_name, username, email, role, profile_picture_url, bio,
-       is_active, banned, created_at, jabatan_id, jabatan:jabatan(id, nama, urutan)`,
-    )
-    .eq("id", id)
-    .maybeSingle();
+  // Direct SQL query with LEFT JOIN to jabatan
+  const { rows } = await query(
+    `SELECT a.id, a.display_name, a.username, a.email, a.role, a.profile_picture_url, a.bio,
+            a.is_active, a.banned, a.created_at, a.jabatan_id,
+            j.id as jab_id, j.nama as jab_nama, j.urutan as jab_urutan
+     FROM accounts a
+     LEFT JOIN jabatan j ON a.jabatan_id = j.id
+     WHERE a.id = $1`,
+    [id]
+  );
 
-  if (error || !account?.is_active || account.banned) return null;
+  const account = rows[0];
+  if (!account?.is_active || account.banned) return null;
 
   return {
     id: account.id,
@@ -95,7 +98,7 @@ export const getCurrentUser = cache(async () => {
     bio: account.bio,
     created_at: account.created_at,
     jabatan_id: account.jabatan_id,
-    jabatan: account.jabatan,
+    jabatan: account.jab_id ? { id: account.jab_id, nama: account.jab_nama, urutan: account.jab_urutan } : null,
   };
 });
 

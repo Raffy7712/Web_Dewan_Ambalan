@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
-import { createAdminClient } from "@/lib/supabase";
+import { query } from "@/lib/db";
 import { getClientIpFromHeaders } from "@/lib/request-ip";
 import { consumePageViewIp, rateLimitMessage } from "@/lib/rate-limit";
 
@@ -18,7 +17,7 @@ export async function POST(request) {
   }
 
   const header = request.headers.get("x-da-internal");
-  if (!header || header.length !== secret.length || !crypto.timingSafeEqual(Buffer.from(header), Buffer.from(secret))) {
+  if (!header || header !== secret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -47,17 +46,15 @@ export async function POST(request) {
   }
 
   try {
-    const db = createAdminClient();
-    const { error } = await db.from("page_view_logs").insert({ path });
-    if (error) {
-      if (error.code === "42P01") {
-        return NextResponse.json({ ok: false, message: "no table" }, { status: 503 });
-      }
-      console.error("page-view log:", error.message);
-      return NextResponse.json({ ok: false }, { status: 500 });
+    await query(
+      `INSERT INTO page_view_logs (path) VALUES ($1)`,
+      [path]
+    );
+  } catch (err) {
+    if (err.code === "42P01") {
+      return NextResponse.json({ ok: false, message: "no table" }, { status: 503 });
     }
-  } catch (e) {
-    console.error(e);
+    console.error("page-view log:", err.message);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase";
+import { query, getClient } from "@/lib/db";
 import { getSession } from "./auth";
 import { revalidatePath } from "next/cache";
 import {
@@ -28,27 +28,32 @@ export async function setAccountBannedAction(prevState, formData) {
     return { error: "Kamu tidak bisa memblokir akun sendiri." };
   }
 
-  const db = createAdminClient();
+  let target;
+  try {
+    const result = await query(
+      "SELECT id, role, banned, email, display_name FROM accounts WHERE id = $1",
+      [accountId]
+    );
+    target = result.rows[0] ?? null;
+  } catch (err) {
+    return { error: "Akun tidak ditemukan." };
+  }
 
-  const { data: target, error: fetchErr } = await db
-    .from("accounts")
-    .select("id, role, banned, email, display_name")
-    .eq("id", accountId)
-    .maybeSingle();
-
-  if (fetchErr || !target) return { error: "Akun tidak ditemukan." };
+  if (!target) return { error: "Akun tidak ditemukan." };
 
   if (banned) {
     if (target.role === "admin") {
-      const { count, error: cErr } = await db
-        .from("accounts")
-        .select("*", { count: "exact", head: true })
-        .eq("role", "admin")
-        .eq("is_active", true)
-        .eq("banned", false);
-
-      if (cErr) return { error: "Gagal memverifikasi admin." };
-      if ((count ?? 0) <= 1) {
+      let count;
+      try {
+        const countResult = await query(
+          "SELECT COUNT(*) as count FROM accounts WHERE role = $1 AND is_active = $2 AND banned = $3",
+          ["admin", true, false]
+        );
+        count = Number(countResult.rows[0].count);
+      } catch (err) {
+        return { error: "Gagal memverifikasi admin." };
+      }
+      if (count <= 1) {
         return {
           error:
             "Tidak bisa memblokir admin terakhir yang aktif. Angkat admin lain dulu.",
@@ -56,18 +61,13 @@ export async function setAccountBannedAction(prevState, formData) {
       }
     }
 
-    const { error } = await db
-      .from("accounts")
-      .update({
-        banned: true,
-        banned_at: new Date().toISOString(),
-        banned_reason: reason || null,
-        banned_by: session.id,
-      })
-      .eq("id", accountId);
-
-    if (error) {
-      console.error("setAccountBannedAction ban:", error.message);
+    try {
+      await query(
+        "UPDATE accounts SET banned = $1, banned_at = $2, banned_reason = $3, banned_by = $4 WHERE id = $5",
+        [true, new Date().toISOString(), reason || null, session.id, accountId]
+      );
+    } catch (err) {
+      console.error("setAccountBannedAction ban:", err.message);
       return { error: "Gagal memblokir akun. Pastikan migrasi v7 sudah dijalankan." };
     }
     if (target.email) {
@@ -78,18 +78,13 @@ export async function setAccountBannedAction(prevState, formData) {
       ).catch(() => {});
     }
   } else {
-    const { error } = await db
-      .from("accounts")
-      .update({
-        banned: false,
-        banned_at: null,
-        banned_reason: null,
-        banned_by: null,
-      })
-      .eq("id", accountId);
-
-    if (error) {
-      console.error("setAccountBannedAction unban:", error.message);
+    try {
+      await query(
+        "UPDATE accounts SET banned = $1, banned_at = $2, banned_reason = $3, banned_by = $4 WHERE id = $5",
+        [false, null, null, null, accountId]
+      );
+    } catch (err) {
+      console.error("setAccountBannedAction unban:", err.message);
       return { error: "Gagal membuka blokir akun." };
     }
     if (target.email) {
@@ -120,15 +115,18 @@ export async function setAccountRoleAction(prevState, formData) {
     return { error: "Peran tidak valid." };
   }
 
-  const db = createAdminClient();
+  let target;
+  try {
+    const result = await query(
+      "SELECT id, role, is_active, banned, email, display_name FROM accounts WHERE id = $1",
+      [accountId]
+    );
+    target = result.rows[0] ?? null;
+  } catch (err) {
+    return { error: "Akun tidak ditemukan." };
+  }
 
-  const { data: target, error: fetchErr } = await db
-    .from("accounts")
-    .select("id, role, is_active, banned, email, display_name")
-    .eq("id", accountId)
-    .maybeSingle();
-
-  if (fetchErr || !target) return { error: "Akun tidak ditemukan." };
+  if (!target) return { error: "Akun tidak ditemukan." };
   if (!target.is_active) {
     return { error: "Akun tidak aktif tidak dapat diubah perannya." };
   }
@@ -137,15 +135,17 @@ export async function setAccountRoleAction(prevState, formData) {
   }
 
   if (target.role === "admin" && newRole !== "admin") {
-    const { count, error: cErr } = await db
-      .from("accounts")
-      .select("*", { count: "exact", head: true })
-      .eq("role", "admin")
-      .eq("is_active", true)
-      .eq("banned", false);
-
-    if (cErr) return { error: "Gagal memverifikasi jumlah admin." };
-    if ((count ?? 0) <= 1) {
+    let count;
+    try {
+      const countResult = await query(
+        "SELECT COUNT(*) as count FROM accounts WHERE role = $1 AND is_active = $2 AND banned = $3",
+        ["admin", true, false]
+      );
+      count = Number(countResult.rows[0].count);
+    } catch (err) {
+      return { error: "Gagal memverifikasi jumlah admin." };
+    }
+    if (count <= 1) {
       return {
         error:
           "Tidak bisa menurunkan admin terakhir yang aktif. Angkat akun lain menjadi admin dulu.",
@@ -153,9 +153,12 @@ export async function setAccountRoleAction(prevState, formData) {
     }
   }
 
-  const { error } = await db.from("accounts").update({ role: newRole }).eq("id", accountId);
-
-  if (error) {
+  try {
+    await query(
+      "UPDATE accounts SET role = $1 WHERE id = $2",
+      [newRole, accountId]
+    );
+  } catch (err) {
     return { error: "Gagal memperbarui peran." };
   }
 

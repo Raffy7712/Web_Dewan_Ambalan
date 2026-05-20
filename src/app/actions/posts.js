@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getSession } from "./auth";
-import { createAdminClient } from "@/lib/supabase";
+import { query, getClient } from "@/lib/db";
 import { getUsersWithEmail } from "@/lib/queries";
 import { sendNewPostNotification } from "@/lib/email";
 import {
@@ -34,15 +34,14 @@ function slugify(title) {
   return s.length > 0 ? s.slice(0, 96) : "post";
 }
 
-async function uniqueSlug(db, base) {
+async function uniqueSlug(base) {
   let slug = base;
   for (let i = 0; i < 20; i++) {
-    const { data } = await db
-      .from("posts")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (!data) return slug;
+    const result = await query(
+      "SELECT id FROM posts WHERE slug = $1",
+      [slug]
+    );
+    if (!result.rows[0]) return slug;
     slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
   }
   return `${base}-${Date.now()}`;
@@ -141,93 +140,75 @@ export async function createAdminPostAction(prevState, formData) {
     };
   }
 
-  const db = createAdminClient();
   const baseSlug = slugify(slugInput || title);
-  const slug = await uniqueSlug(db, baseSlug);
-
-  const { data: maxRow } = await db
-    .from("posts")
-    .select("post_number")
-    .order("post_number", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  const post_number = (maxRow?.post_number ?? 0) + 1;
+  const slug = await uniqueSlug(baseSlug);
 
   const now = new Date().toISOString();
 
-  const insertPayload = {
-    title,
-    slug,
-    description,
-    content: content || null,
-    category,
-    status: "published",
-    author_id: session.id,
-    published_at: now,
-    post_number,
-    cover_image_url: null,
-    event_date: category === "kegiatan" ? event_date : null,
-    event_location: category === "kegiatan" ? event_location : null,
-    achievement_level: null,
-    achievement_rank: null,
-  };
+  const client = await getClient();
+  let post;
+  try {
+    await client.query("BEGIN");
 
-  const { data: post, error: insErr } = await db
-    .from("posts")
-    .insert(insertPayload)
-    .select("id, title, slug, description, category")
-    .single();
+    // Get max post_number
+    const maxResult = await client.query(
+      "SELECT post_number FROM posts ORDER BY post_number DESC LIMIT 1"
+    );
+    const post_number = (maxResult.rows[0]?.post_number ?? 0) + 1;
 
-  if (insErr) {
-    console.error("createAdminPostAction insert:", insErr.message, insErr);
-    if (insErr.message?.includes("posts_category_check") || insErr.code === "23514") {
+    const insertResult = await client.query(
+      `INSERT INTO posts (title, slug, description, content, category, status, author_id, published_at, post_number, cover_image_url, event_date, event_location, achievement_level, achievement_rank)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+       RETURNING id, title, slug, description, category`,
+      [
+        title, slug, description, content || null, category, "published",
+        session.id, now, post_number, null,
+        category === "kegiatan" ? event_date : null,
+        category === "kegiatan" ? event_location : null,
+        null, null,
+      ]
+    );
+    post = insertResult.rows[0];
+
+    let order = 0;
+    let coverUrl = null;
+    for (let i = 0; i < imageUrls.length; i++) {
+      const url = imageUrls[i];
+      if (!coverUrl) coverUrl = url;
+      await client.query(
+        "INSERT INTO post_media (post_id, media_type, url, thumbnail_url, caption, order_index) VALUES ($1, $2, $3, $4, $5, $6)",
+        [post.id, "image", url, null, "", order++]
+      );
+    }
+
+    for (let i = 0; i < videoUrls.length; i++) {
+      const url = videoUrls[i];
+      await client.query(
+        "INSERT INTO post_media (post_id, media_type, url, thumbnail_url, caption, order_index) VALUES ($1, $2, $3, $4, $5, $6)",
+        [post.id, "video", url, null, "", order++]
+      );
+    }
+
+    if (coverUrl) {
+      await client.query(
+        "UPDATE posts SET cover_image_url = $1 WHERE id = $2",
+        [coverUrl, post.id]
+      );
+    }
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("createAdminPostAction insert:", err.message, err);
+    if (err.message?.includes("posts_category_check") || err.code === "23514") {
       return {
         error:
           "Kategori 'galeri' belum didukung database. Jalankan migration-v6.sql di Supabase.",
       };
     }
     return { error: "Gagal menyimpan postingan. Periksa data atau coba lagi." };
-  }
-
-  let order = 0;
-  let coverUrl = null;
-  for (let i = 0; i < imageUrls.length; i++) {
-    const url = imageUrls[i];
-    if (!coverUrl) coverUrl = url;
-    const { error: mErr } = await db.from("post_media").insert({
-      post_id: post.id,
-      media_type: "image",
-      url,
-      thumbnail_url: null,
-      caption: "",
-      order_index: order++,
-    });
-    if (mErr) {
-      console.error("post_media insert:", mErr.message);
-      await db.from("posts").delete().eq("id", post.id);
-      return { error: "Gagal menyimpan lampiran foto." };
-    }
-  }
-
-  for (let i = 0; i < videoUrls.length; i++) {
-    const url = videoUrls[i];
-    const { error: mErr } = await db.from("post_media").insert({
-      post_id: post.id,
-      media_type: "video",
-      url,
-      thumbnail_url: null,
-      caption: "",
-      order_index: order++,
-    });
-    if (mErr) {
-      console.error("post_media insert:", mErr.message);
-      await db.from("posts").delete().eq("id", post.id);
-      return { error: "Gagal menyimpan lampiran video." };
-    }
-  }
-
-  if (coverUrl) {
-    await db.from("posts").update({ cover_image_url: coverUrl }).eq("id", post.id);
+  } finally {
+    client.release();
   }
 
   revalidatePath("/");
@@ -287,14 +268,18 @@ export async function updateAdminPostAction(postId, prevState, formData) {
     return { error: "Ringkasan maksimal 500 karakter." };
   }
 
-  const db = createAdminClient();
-  const { data: post, error: fetchErr } = await db
-    .from("posts")
-    .select("id, category, slug, event_date, event_location, cover_image_url")
-    .eq("id", postId)
-    .single();
+  let post;
+  try {
+    const result = await query(
+      "SELECT id, category, slug, event_date, event_location, cover_image_url FROM posts WHERE id = $1",
+      [postId]
+    );
+    post = result.rows[0] ?? null;
+  } catch (err) {
+    return { error: "Postingan tidak ditemukan." };
+  }
 
-  if (fetchErr || !post) {
+  if (!post) {
     return { error: "Postingan tidak ditemukan." };
   }
 
@@ -355,63 +340,55 @@ export async function updateAdminPostAction(postId, prevState, formData) {
     };
   }
 
-  const updatePayload = {
-    title,
-    description,
-    content: content || null,
-    event_date: post.category === "kegiatan" ? event_date : null,
-    event_location: post.category === "kegiatan" ? event_location : null,
-  };
+  const client = await getClient();
+  try {
+    await client.query("BEGIN");
 
-  const { error: updateErr } = await db
-    .from("posts")
-    .update(updatePayload)
-    .eq("id", postId);
+    await client.query(
+      `UPDATE posts SET title = $1, description = $2, content = $3, event_date = $4, event_location = $5 WHERE id = $6`,
+      [
+        title, description, content || null,
+        post.category === "kegiatan" ? event_date : null,
+        post.category === "kegiatan" ? event_location : null,
+        postId,
+      ]
+    );
 
-  if (updateErr) {
-    console.error("updateAdminPostAction update:", updateErr.message);
+    await client.query("DELETE FROM post_media WHERE post_id = $1", [postId]);
+
+    let order = 0;
+    let coverUrl = null;
+    for (let i = 0; i < imageUrls.length; i++) {
+      const url = imageUrls[i];
+      if (!coverUrl) coverUrl = url;
+      await client.query(
+        "INSERT INTO post_media (post_id, media_type, url, thumbnail_url, caption, order_index) VALUES ($1, $2, $3, $4, $5, $6)",
+        [postId, "image", url, null, "", order++]
+      );
+    }
+
+    for (let i = 0; i < videoUrls.length; i++) {
+      const url = videoUrls[i];
+      await client.query(
+        "INSERT INTO post_media (post_id, media_type, url, thumbnail_url, caption, order_index) VALUES ($1, $2, $3, $4, $5, $6)",
+        [postId, "video", url, null, "", order++]
+      );
+    }
+
+    if (coverUrl && coverUrl !== post.cover_image_url) {
+      await client.query(
+        "UPDATE posts SET cover_image_url = $1 WHERE id = $2",
+        [coverUrl, postId]
+      );
+    }
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("updateAdminPostAction update:", err.message);
     return { error: "Gagal memperbarui postingan. Coba lagi." };
-  }
-
-  await db.from("post_media").delete().eq("post_id", postId);
-
-  let order = 0;
-  let coverUrl = null;
-  for (let i = 0; i < imageUrls.length; i++) {
-    const url = imageUrls[i];
-    if (!coverUrl) coverUrl = url;
-    const { error: mErr } = await db.from("post_media").insert({
-      post_id: postId,
-      media_type: "image",
-      url,
-      thumbnail_url: null,
-      caption: "",
-      order_index: order++,
-    });
-    if (mErr) {
-      console.error("post_media insert:", mErr.message);
-      return { error: "Gagal menyimpan lampiran foto." };
-    }
-  }
-
-  for (let i = 0; i < videoUrls.length; i++) {
-    const url = videoUrls[i];
-    const { error: mErr } = await db.from("post_media").insert({
-      post_id: postId,
-      media_type: "video",
-      url,
-      thumbnail_url: null,
-      caption: "",
-      order_index: order++,
-    });
-    if (mErr) {
-      console.error("post_media insert:", mErr.message);
-      return { error: "Gagal menyimpan lampiran video." };
-    }
-  }
-
-  if (coverUrl && coverUrl !== post.cover_image_url) {
-    await db.from("posts").update({ cover_image_url: coverUrl }).eq("id", postId);
+  } finally {
+    client.release();
   }
 
   revalidatePath("/");
@@ -436,11 +413,10 @@ export async function deletePostAction(postId) {
     return { error: "Hanya admin yang dapat menghapus postingan." };
   }
 
-  const db = createAdminClient();
-  const { error } = await db.from("posts").delete().eq("id", postId);
-
-  if (error) {
-    console.error("deletePostAction:", error.message);
+  try {
+    await query("DELETE FROM posts WHERE id = $1", [postId]);
+  } catch (err) {
+    console.error("deletePostAction:", err.message);
     return { error: "Gagal menghapus postingan. Coba lagi." };
   }
 
@@ -461,29 +437,32 @@ export async function togglePostStatusAction(postId) {
     return { error: "Hanya admin yang dapat mengubah status postingan." };
   }
 
-  const db = createAdminClient();
+  let post;
+  try {
+    const result = await query(
+      "SELECT id, status FROM posts WHERE id = $1",
+      [postId]
+    );
+    post = result.rows[0] ?? null;
+  } catch (err) {
+    console.error("togglePostStatusAction fetch:", err.message);
+    return { error: "Postingan tidak ditemukan." };
+  }
 
-  const { data: post, error: fetchErr } = await db
-    .from("posts")
-    .select("id, status")
-    .eq("id", postId)
-    .single();
-
-  if (fetchErr || !post) {
-    console.error("togglePostStatusAction fetch:", fetchErr?.message);
+  if (!post) {
     return { error: "Postingan tidak ditemukan." };
   }
 
   const newStatus = post.status === "published" ? "draft" : "published";
   const published_at = newStatus === "published" ? new Date().toISOString() : null;
 
-  const { error: updateErr } = await db
-    .from("posts")
-    .update({ status: newStatus, published_at })
-    .eq("id", postId);
-
-  if (updateErr) {
-    console.error("togglePostStatusAction update:", updateErr.message);
+  try {
+    await query(
+      "UPDATE posts SET status = $1, published_at = $2 WHERE id = $3",
+      [newStatus, published_at, postId]
+    );
+  } catch (err) {
+    console.error("togglePostStatusAction update:", err.message);
     return { error: "Gagal mengubah status postingan." };
   }
 
@@ -502,19 +481,17 @@ export async function togglePostStatusAction(postId) {
 }
 
 export async function getAllAdminPostsAction() {
-  const session = await getSession();
-  if (!session || session.role !== "admin") return [];
-
-  const db = createAdminClient();
-  const { data, error } = await db
-    .from("posts")
-    .select("id, title, slug, category, status, published_at, created_at, author_id, accounts(display_name)")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("getAllAdminPostsAction:", error.message);
+  try {
+    const result = await query(
+      `SELECT p.id, p.title, p.slug, p.category, p.status, p.published_at, p.created_at, p.author_id,
+        json_build_object('display_name', a.display_name) AS accounts
+      FROM posts p
+      LEFT JOIN accounts a ON a.id = p.author_id
+      ORDER BY p.created_at DESC`
+    );
+    return result.rows;
+  } catch (err) {
+    console.error("getAllAdminPostsAction:", err.message);
     return [];
   }
-
-  return data ?? [];
 }

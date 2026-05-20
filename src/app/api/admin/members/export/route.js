@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import { requireAdmin } from "@/lib/api-auth";
-import { createAdminClient } from "@/lib/supabase";
+import { getSession } from "@/lib/auth-session";
+import { query } from "@/lib/db";
 
 function filenameStem() {
   const d = new Date();
@@ -12,20 +12,21 @@ function filenameStem() {
 }
 
 export async function GET(request) {
-  const auth = await requireAdmin(request);
-  if (auth instanceof NextResponse) return auth;
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  const db = createAdminClient();
-
-  // Fetch all active members with jabatan
-  const { data: members, error: membersError } = await db
-    .from("accounts")
-    .select(
-      `id, display_name, username, email, role, bio, profile_picture_url, created_at,
-       jabatan:jabatan(id, nama, urutan)`,
-    )
-    .eq("is_active", true)
-    .order("display_name", { ascending: true });
+  // Fetch all active members with jabatan via LEFT JOIN
+  const { rows: members, error: membersError } = await query(
+    `SELECT a.id, a.display_name, a.username, a.email, a.role, a.bio, a.profile_picture_url, a.created_at,
+            j.id as jab_id, j.nama as jab_nama, j.urutan as jab_urutan
+     FROM accounts a
+     LEFT JOIN jabatan j ON a.jabatan_id = j.id
+     WHERE a.is_active = true
+     ORDER BY a.display_name ASC`,
+    []
+  );
 
   if (membersError) {
     console.error("members export:", membersError.message);
@@ -35,7 +36,11 @@ export async function GET(request) {
     );
   }
 
-  const list = members ?? [];
+  const list = (members ?? []).map(m => ({
+    ...m,
+    jabatan: m.jab_id ? { id: m.jab_id, nama: m.jab_nama, urutan: m.jab_urutan } : null,
+  }));
+
   const wb = XLSX.utils.book_new();
 
   // Sheet 1: Struktur pengurus (members WITH jabatan)

@@ -1,59 +1,32 @@
-import { createAdminClient } from "./supabase";
-
-export function formatRupiah(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "Rp 0";
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(n);
-}
-
-export function computeMonthTotals(saldoAwal, transactions) {
-  let pemasukan = 0;
-  let pengeluaran = 0;
-  for (const t of transactions ?? []) {
-    const j = Number(t.jumlah);
-    if (t.jenis === "pemasukan") pemasukan += j;
-    else pengeluaran += j;
-  }
-  const saldoAkhir = Number(saldoAwal) + pemasukan - pengeluaran;
-  return { pemasukan, pengeluaran, saldoAkhir };
-}
-
-export function monthLabel(year, month) {
-  return new Date(year, month - 1, 1).toLocaleDateString("id-ID", {
-    month: "long",
-    year: "numeric",
-  });
-}
+import { query } from "./db";
+import { computeMonthTotals, monthLabel } from "./finance-utils";
 
 /** @returns {{ months: object[], transactionsByMonth: Record<string, object[]> }} */
 export async function getFinanceDataAdmin() {
-  const db = createAdminClient();
-  const { data: months, error } = await db
-    .from("finance_months")
-    .select(
-      "id, year, month, saldo_awal, catatan_publik, is_published, updated_at",
-    )
-    .order("year", { ascending: false })
-    .order("month", { ascending: false });
-
-  if (error) {
-    if (error.code !== "42P01") console.error("getFinanceDataAdmin:", error.message);
+  let list;
+  try {
+    const { rows } = await query(
+      `SELECT id, year, month, saldo_awal, catatan_publik, is_published, updated_at
+       FROM finance_months
+       ORDER BY year DESC, month DESC`,
+      []
+    );
+    list = rows ?? [];
+  } catch (err) {
+    if (!err.message?.includes("finance_months")) console.error("getFinanceDataAdmin:", err.message);
     return { months: [], transactionsByMonth: {} };
   }
 
-  const list = months ?? [];
   if (list.length === 0) return { months: [], transactionsByMonth: {} };
 
   const ids = list.map((m) => m.id);
-  const { data: txs } = await db
-    .from("finance_transactions")
-    .select("id, month_id, tanggal, jenis, keterangan, jumlah")
-    .in("month_id", ids)
-    .order("tanggal", { ascending: true });
+  const { rows: txs } = await query(
+    `SELECT id, month_id, tanggal, jenis, keterangan, jumlah
+     FROM finance_transactions
+     WHERE month_id = ANY($1)
+     ORDER BY tanggal ASC`,
+    [ids]
+  );
 
   const transactionsByMonth = Object.fromEntries(ids.map((id) => [id, []]));
   for (const t of txs ?? []) {
@@ -66,30 +39,33 @@ export async function getFinanceDataAdmin() {
 
 /** Hanya periode yang dipublikasikan — untuk halaman publik. */
 export async function getFinanceDataPublic() {
-  const db = createAdminClient();
-  const { data: months, error } = await db
-    .from("finance_months")
-    .select("id, year, month, saldo_awal, catatan_publik, is_published, updated_at")
-    .eq("is_published", true)
-    .order("year", { ascending: false })
-    .order("month", { ascending: false });
-
-  if (error) {
-    if (error.code !== "42P01") console.error("getFinanceDataPublic:", error.message);
+  let list;
+  try {
+    const { rows } = await query(
+      `SELECT id, year, month, saldo_awal, catatan_publik, is_published, updated_at
+       FROM finance_months
+       WHERE is_published = true
+       ORDER BY year DESC, month DESC`,
+      []
+    );
+    list = rows ?? [];
+  } catch (err) {
+    if (!err.message?.includes("finance_months")) console.error("getFinanceDataPublic:", err.message);
     return { months: [], transactionsByMonth: {}, latestKas: null };
   }
 
-  const list = months ?? [];
   if (list.length === 0) {
     return { months: [], transactionsByMonth: {}, latestKas: null };
   }
 
   const ids = list.map((m) => m.id);
-  const { data: txs } = await db
-    .from("finance_transactions")
-    .select("id, month_id, tanggal, jenis, keterangan, jumlah")
-    .in("month_id", ids)
-    .order("tanggal", { ascending: true });
+  const { rows: txs } = await query(
+    `SELECT id, month_id, tanggal, jenis, keterangan, jumlah
+     FROM finance_transactions
+     WHERE month_id = ANY($1)
+     ORDER BY tanggal ASC`,
+    [ids]
+  );
 
   const transactionsByMonth = Object.fromEntries(ids.map((id) => [id, []]));
   for (const t of txs ?? []) {

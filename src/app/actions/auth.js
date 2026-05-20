@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase";
+import { query, getClient } from "@/lib/db";
 import {
   clearSessionCookie,
   createSessionCookie,
@@ -26,12 +26,11 @@ import {
   trustDevice,
   createNewIpAlert,
   markAlertEmailSent,
-  parseUserAgent,
 } from "@/lib/device-verify";
+import { parseUserAgent } from "@/lib/device-utils";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { redirect, headers } from "next/navigation";
 
 function hashOtp(otp) {
   return crypto.createHash("sha256").update(otp).digest("hex");
@@ -65,33 +64,27 @@ export async function loginAction(prevState, formData) {
     return { error: rateLimitMessage(loginGate.retryAfterMs) };
   }
 
-  const db = createAdminClient();
   const looksLikeEmail = input.includes("@");
 
-  let accountQuery = db
-    .from("accounts")
-    .select("id, display_name, username, email, password_hash, role, is_active, banned");
+  let account;
+  try {
+    const primaryCol = looksLikeEmail ? "email" : "username";
+    const result = await query(
+      `SELECT id, display_name, username, email, password_hash, role, is_active, banned FROM accounts WHERE ${primaryCol} = $1`,
+      [input]
+    );
+    account = result.rows[0] ?? null;
 
-  if (looksLikeEmail) {
-    accountQuery = accountQuery.eq("email", input);
-  } else {
-    accountQuery = accountQuery.eq("username", input);
-  }
-
-  let { data: account, error } = await accountQuery.maybeSingle();
-
-  // Allow either identifier if user mixed them up
-  if (!account && !error) {
-    const fallback = await db
-      .from("accounts")
-      .select("id, display_name, username, password_hash, role, is_active, banned")
-      .eq(looksLikeEmail ? "username" : "email", input)
-      .maybeSingle();
-    account = fallback.data;
-    error = fallback.error;
-  }
-
-  if (error) {
+    // Allow either identifier if user mixed them up
+    if (!account) {
+      const fallbackCol = looksLikeEmail ? "username" : "email";
+      const fallback = await query(
+        `SELECT id, display_name, username, email, password_hash, role, is_active, banned FROM accounts WHERE ${fallbackCol} = $1`,
+        [input]
+      );
+      account = fallback.rows[0] ?? null;
+    }
+  } catch (err) {
     return { error: "Username/email atau password salah." };
   }
 
@@ -115,7 +108,7 @@ export async function loginAction(prevState, formData) {
   }
 
   // Get user agent for device fingerprinting
-  const headersList = await headers();
+  const headersList = headers();
   const userAgent = headersList.get("user-agent") || "Unknown";
   const deviceName = parseUserAgent(userAgent);
 
@@ -175,22 +168,19 @@ export async function sendVerificationAction(prevState, formData) {
     return { error: "Password dan konfirmasi tidak cocok." };
   }
 
-  const db = createAdminClient();
-  const { data: existingUser } = await db
-    .from("accounts")
-    .select("id")
-    .eq("username", username)
-    .maybeSingle();
-  if (existingUser) {
+  const existingUserResult = await query(
+    "SELECT id FROM accounts WHERE username = $1",
+    [username]
+  );
+  if (existingUserResult.rows[0]) {
     return { error: "Username sudah dipakai. Pilih username lain." };
   }
 
-  const { data: existingEmail } = await db
-    .from("accounts")
-    .select("id")
-    .eq("email", email)
-    .maybeSingle();
-  if (existingEmail) {
+  const existingEmailResult = await query(
+    "SELECT id FROM accounts WHERE email = $1",
+    [email]
+  );
+  if (existingEmailResult.rows[0]) {
     return { error: "Email sudah terdaftar. Gunakan email lain atau login." };
   }
 
@@ -200,25 +190,22 @@ export async function sendVerificationAction(prevState, formData) {
   if (!rgIp.ok) return { error: rateLimitMessage(rgIp.retryAfterMs) };
   if (!rgEm.ok) return { error: rateLimitMessage(rgEm.retryAfterMs) };
 
-  await db
-    .from("otp_tokens")
-    .delete()
-    .eq("email", email)
-    .eq("type", "email_verify")
-    .is("used_at", null);
+  await query(
+    "DELETE FROM otp_tokens WHERE email = $1 AND type = $2 AND used_at IS NULL",
+    [email, "email_verify"]
+  );
 
   const otp = String(crypto.randomInt(100000, 999999));
   const expires_at = new Date(Date.now() + 15 * 60 * 1000).toISOString();
 
-  const { error: otpErr } = await db.from("otp_tokens").insert({
-    email,
-    account_id: null,
-    token_hash: hashOtp(otp),
-    expires_at,
-    type: "email_verify",
-  });
-
-  if (otpErr) return { error: "Gagal membuat kode verifikasi." };
+  try {
+    await query(
+      "INSERT INTO otp_tokens (email, account_id, token_hash, expires_at, type) VALUES ($1, $2, $3, $4, $5)",
+      [email, null, hashOtp(otp), expires_at, "email_verify"]
+    );
+  } catch (err) {
+    return { error: "Gagal membuat kode verifikasi." };
+  }
 
   try {
     const { sendOtpEmail } = await import("@/lib/email");
@@ -226,7 +213,13 @@ export async function sendVerificationAction(prevState, formData) {
   } catch (error) {
     const message = String(error?.message || error || "Gagal mengirim email.");
     console.error("sendVerificationAction email error:", message);
-    return { error: "Gagal mengirim email. Cek kembali alamat email kamu atau coba lagi nanti." };
+    if (message.includes("domain is not verified")) {
+      return {
+        error:
+          "Gagal mengirim email. Domain pengirim belum diverifikasi di Resend. Periksa EMAIL_FROM dan status domain di dashboard Resend.",
+      };
+    }
+    return { error: "Gagal mengirim email. Cek kembali alamat email kamu." };
   }
 
   consumeRegisterOtpIp(ip);
@@ -261,57 +254,53 @@ export async function verifyAndRegisterAction(prevState, formData) {
   const rv = consumeRegisterVerifyIp(ip);
   if (!rv.ok) return { error: rateLimitMessage(rv.retryAfterMs) };
 
-  const db = createAdminClient();
-  const { data: token } = await db
-    .from("otp_tokens")
-    .select("id, expires_at, used_at")
-    .eq("email", email)
-    .eq("token_hash", hashOtp(otp))
-    .eq("type", "email_verify")
-    .is("used_at", null)
-    .maybeSingle();
+  const tokenResult = await query(
+    "SELECT id, expires_at, used_at FROM otp_tokens WHERE email = $1 AND token_hash = $2 AND type = $3 AND used_at IS NULL",
+    [email, hashOtp(otp), "email_verify"]
+  );
+  const token = tokenResult.rows[0] ?? null;
 
   if (!token) return { error: "Kode OTP salah atau tidak ditemukan." };
   if (new Date(token.expires_at) < new Date()) {
     return { error: "Kode OTP sudah kadaluarsa. Klik 'Kirim Ulang OTP'." };
   }
 
-  const { data: existingUser } = await db
-    .from("accounts")
-    .select("id")
-    .eq("username", username)
-    .maybeSingle();
-  if (existingUser) return { error: "Username sudah dipakai saat ini." };
+  const existingUserResult = await query(
+    "SELECT id FROM accounts WHERE username = $1",
+    [username]
+  );
+  if (existingUserResult.rows[0]) return { error: "Username sudah dipakai saat ini." };
 
-  const { data: existingEmail } = await db
-    .from("accounts")
-    .select("id")
-    .eq("email", email)
-    .maybeSingle();
-  if (existingEmail) return { error: "Email sudah terdaftar." };
+  const existingEmailResult = await query(
+    "SELECT id FROM accounts WHERE email = $1",
+    [email]
+  );
+  if (existingEmailResult.rows[0]) return { error: "Email sudah terdaftar." };
 
-  await db
-    .from("otp_tokens")
-    .update({ used_at: new Date().toISOString() })
-    .eq("id", token.id);
+  const client = await getClient();
+  let newUser;
+  try {
+    await client.query("BEGIN");
 
-  const password_hash = await bcryptjs.hash(password, 12);
-  const { data: newUser, error: insertErr } = await db
-    .from("accounts")
-    .insert({
-      display_name,
-      username,
-      email,
-      password_hash,
-      role: "user",
-      jabatan_id: null,
-    })
-    .select("id, display_name, username, role")
-    .single();
+    await client.query(
+      "UPDATE otp_tokens SET used_at = $1 WHERE id = $2",
+      [new Date().toISOString(), token.id]
+    );
 
-  if (insertErr) {
-    console.error(insertErr);
+    const password_hash = await bcryptjs.hash(password, 12);
+    const insertResult = await client.query(
+      "INSERT INTO accounts (display_name, username, email, password_hash, role, jabatan_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, display_name, username, role",
+      [display_name, username, email, password_hash, "user", null]
+    );
+    newUser = insertResult.rows[0];
+
+    await client.query("COMMIT");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error(err);
     return { error: "Gagal membuat akun. Coba lagi." };
+  } finally {
+    client.release();
   }
 
   sendWelcomeEmail(email, display_name).catch(() => {});
@@ -347,12 +336,13 @@ export async function updateProfileAction(prevState, formData) {
   if (!display_name) return { error: "Nama tidak boleh kosong." };
   if (display_name.length > 80) return { error: "Nama terlalu panjang." };
 
-  const db = createAdminClient();
-  const { error } = await db
-    .from("accounts")
-    .update({ display_name })
-    .eq("id", session.id);
-
-  if (error) return { error: "Gagal memperbarui profil." };
+  try {
+    await query(
+      "UPDATE accounts SET display_name = $1 WHERE id = $2",
+      [display_name, session.id]
+    );
+  } catch (err) {
+    return { error: "Gagal memperbarui profil." };
+  }
   return { success: "Profil berhasil diperbarui!" };
 }

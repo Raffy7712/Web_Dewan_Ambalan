@@ -1,6 +1,6 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase";
+import { query, getClient } from "@/lib/db";
 import { getSession } from "./auth";
 import { revalidatePath } from "next/cache";
 
@@ -18,40 +18,34 @@ export async function getSuratMasukList() {
   const session = await ensureAdminSession();
   if (!session) return [];
 
-  const db = createAdminClient();
-  const { data, error } = await db
-    .from("surat_masuk")
-    .select(
-      "id, tanggal_diterima, nomor_surat, tanggal_surat, dari, perihal, catatan, lampiran_url, created_at",
-    )
-    .order("tanggal_diterima", { ascending: false })
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("getSuratMasukList:", error.message);
+  try {
+    const result = await query(
+      `SELECT id, tanggal_diterima, nomor_surat, tanggal_surat, dari, perihal, catatan, lampiran_url, created_at
+       FROM surat_masuk
+       ORDER BY tanggal_diterima DESC, created_at DESC`
+    );
+    return result.rows;
+  } catch (err) {
+    console.error("getSuratMasukList:", err.message);
     return [];
   }
-  return data ?? [];
 }
 
 export async function getSuratKeluarList() {
   const session = await ensureAdminSession();
   if (!session) return [];
 
-  const db = createAdminClient();
-  const { data, error } = await db
-    .from("surat_keluar")
-    .select(
-      "id, tanggal_keluar, nomor_surat, kepada, perihal, catatan, lampiran_url, created_at",
-    )
-    .order("tanggal_keluar", { ascending: false })
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("getSuratKeluarList:", error.message);
+  try {
+    const result = await query(
+      `SELECT id, tanggal_keluar, nomor_surat, kepada, perihal, catatan, lampiran_url, created_at
+       FROM surat_keluar
+       ORDER BY tanggal_keluar DESC, created_at DESC`
+    );
+    return result.rows;
+  } catch (err) {
+    console.error("getSuratKeluarList:", err.message);
     return [];
   }
-  return data ?? [];
 }
 
 export async function saveSuratMasukAction(prevState, formData) {
@@ -71,36 +65,23 @@ export async function saveSuratMasukAction(prevState, formData) {
     return { error: "Tanggal diterima, nomor surat, dari, dan perihal wajib diisi." };
   }
 
-  const db = createAdminClient();
-  const row = {
-    tanggal_diterima,
-    nomor_surat,
-    tanggal_surat: tanggal_surat || null,
-    dari,
-    perihal,
-    catatan,
-    lampiran_url,
-  };
-
-  if (id) {
-    const { error } = await db.from("surat_masuk").update(row).eq("id", id);
-    if (error) {
-      if (error.code === "42P01") {
-        return { error: "Tabel surat belum ada. Jalankan migration-v9.sql di Supabase." };
-      }
-      return { error: "Gagal memperbarui surat masuk." };
+  try {
+    if (id) {
+      await query(
+        `UPDATE surat_masuk SET tanggal_diterima = $1, nomor_surat = $2, tanggal_surat = $3, dari = $4, perihal = $5, catatan = $6, lampiran_url = $7 WHERE id = $8`,
+        [tanggal_diterima, nomor_surat, tanggal_surat || null, dari, perihal, catatan, lampiran_url, id]
+      );
+    } else {
+      await query(
+        `INSERT INTO surat_masuk (tanggal_diterima, nomor_surat, tanggal_surat, dari, perihal, catatan, lampiran_url, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [tanggal_diterima, nomor_surat, tanggal_surat || null, dari, perihal, catatan, lampiran_url, session.id]
+      );
     }
-  } else {
-    const { error } = await db.from("surat_masuk").insert({
-      ...row,
-      created_by: session.id,
-    });
-    if (error) {
-      if (error.code === "42P01") {
-        return { error: "Tabel surat belum ada. Jalankan migration-v9.sql di Supabase." };
-      }
-      return { error: "Gagal menambah surat masuk." };
+  } catch (err) {
+    if (err.code === "42P01") {
+      return { error: "Tabel surat belum ada. Jalankan migration-v9.sql di Supabase." };
     }
+    return { error: id ? "Gagal memperbarui surat masuk." : "Gagal menambah surat masuk." };
   }
 
   revalidateAgenda();
@@ -114,9 +95,11 @@ export async function deleteSuratMasukAction(prevState, formData) {
   const id = formData.get("id")?.toString().trim();
   if (!id) return { error: "ID tidak valid." };
 
-  const db = createAdminClient();
-  const { error } = await db.from("surat_masuk").delete().eq("id", id);
-  if (error) return { error: "Gagal menghapus surat masuk." };
+  try {
+    await query("DELETE FROM surat_masuk WHERE id = $1", [id]);
+  } catch (err) {
+    return { error: "Gagal menghapus surat masuk." };
+  }
 
   revalidateAgenda();
   return { success: true };
@@ -138,35 +121,23 @@ export async function saveSuratKeluarAction(prevState, formData) {
     return { error: "Tanggal keluar, nomor surat, kepada, dan perihal wajib diisi." };
   }
 
-  const db = createAdminClient();
-  const row = {
-    tanggal_keluar,
-    nomor_surat,
-    kepada,
-    perihal,
-    catatan,
-    lampiran_url,
-  };
-
-  if (id) {
-    const { error } = await db.from("surat_keluar").update(row).eq("id", id);
-    if (error) {
-      if (error.code === "42P01") {
-        return { error: "Tabel surat belum ada. Jalankan migration-v9.sql di Supabase." };
-      }
-      return { error: "Gagal memperbarui surat keluar." };
+  try {
+    if (id) {
+      await query(
+        `UPDATE surat_keluar SET tanggal_keluar = $1, nomor_surat = $2, kepada = $3, perihal = $4, catatan = $5, lampiran_url = $6 WHERE id = $7`,
+        [tanggal_keluar, nomor_surat, kepada, perihal, catatan, lampiran_url, id]
+      );
+    } else {
+      await query(
+        `INSERT INTO surat_keluar (tanggal_keluar, nomor_surat, kepada, perihal, catatan, lampiran_url, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [tanggal_keluar, nomor_surat, kepada, perihal, catatan, lampiran_url, session.id]
+      );
     }
-  } else {
-    const { error } = await db.from("surat_keluar").insert({
-      ...row,
-      created_by: session.id,
-    });
-    if (error) {
-      if (error.code === "42P01") {
-        return { error: "Tabel surat belum ada. Jalankan migration-v9.sql di Supabase." };
-      }
-      return { error: "Gagal menambah surat keluar." };
+  } catch (err) {
+    if (err.code === "42P01") {
+      return { error: "Tabel surat belum ada. Jalankan migration-v9.sql di Supabase." };
     }
+    return { error: id ? "Gagal memperbarui surat keluar." : "Gagal menambah surat keluar." };
   }
 
   revalidateAgenda();
@@ -180,9 +151,11 @@ export async function deleteSuratKeluarAction(prevState, formData) {
   const id = formData.get("id")?.toString().trim();
   if (!id) return { error: "ID tidak valid." };
 
-  const db = createAdminClient();
-  const { error } = await db.from("surat_keluar").delete().eq("id", id);
-  if (error) return { error: "Gagal menghapus surat keluar." };
+  try {
+    await query("DELETE FROM surat_keluar WHERE id = $1", [id]);
+  } catch (err) {
+    return { error: "Gagal menghapus surat keluar." };
+  }
 
   revalidateAgenda();
   return { success: true };

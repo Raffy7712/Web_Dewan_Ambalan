@@ -1,40 +1,37 @@
-import { createAdminClient } from "./supabase";
+import { query } from "./db";
 
 export async function getAllActiveAccountsForAdmin() {
-  const db = createAdminClient();
-  const { data, error } = await db
-    .from("accounts")
-    .select(
-      `id, display_name, username, role, jabatan_id, is_active, banned,
-       jabatan:jabatan(id, nama, urutan)`,
-    )
-    .eq("is_active", true)
-    .eq("banned", false)
-    .order("display_name", { ascending: true });
-
-  if (error) {
-    console.error("getAllActiveAccountsForAdmin:", error.message);
+  try {
+    const { rows } = await query(
+      `SELECT a.id, a.display_name, a.username, a.role, a.jabatan_id, a.is_active, a.banned,
+        json_build_object('id', j.id, 'nama', j.nama, 'urutan', j.urutan) AS jabatan
+       FROM accounts a
+       LEFT JOIN jabatan j ON a.jabatan_id = j.id
+       WHERE a.is_active = true AND a.banned = false
+       ORDER BY a.display_name ASC`,
+      []
+    );
+    return rows ?? [];
+  } catch (err) {
+    console.error("getAllActiveAccountsForAdmin:", err.message);
     return [];
   }
-
-  return data ?? [];
 }
 
 /** Admin: daftar akun untuk kelola ban (tanpa password). */
 export async function getAccountsForAdminList() {
-  const db = createAdminClient();
-  const { data, error } = await db
-    .from("accounts")
-    .select(
-      "id, display_name, username, email, role, is_active, banned, banned_at, banned_reason, created_at",
-    )
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("getAccountsForAdminList:", error.message);
+  try {
+    const { rows } = await query(
+      `SELECT id, display_name, username, email, role, is_active, banned, banned_at, banned_reason, created_at
+       FROM accounts
+       ORDER BY created_at DESC`,
+      []
+    );
+    return rows ?? [];
+  } catch (err) {
+    console.error("getAccountsForAdminList:", err.message);
     return [];
   }
-  return data ?? [];
 }
 
 /**
@@ -42,30 +39,29 @@ export async function getAccountsForAdminList() {
  * @returns {Promise<{ ok: boolean, error?: string, totals?: object, byDay?: object[], topPaths?: {path:string,count:number}[] }>}
  */
 export async function getPageViewAnalytics() {
-  const db = createAdminClient();
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
   const since7d = new Date(now - 7 * dayMs).toISOString();
   const since24h = new Date(now - dayMs).toISOString();
 
-  const { data, error } = await db
-    .from("page_view_logs")
-    .select("path, created_at")
-    .gte("created_at", since7d)
-    .limit(20000);
-
-  if (error) {
-    if (error.code === "42P01" || error.message?.includes("page_view_logs")) {
+  let rows;
+  try {
+    const result = await query(
+      `SELECT path, created_at FROM page_view_logs WHERE created_at >= $1 LIMIT 20000`,
+      [since7d]
+    );
+    rows = result.rows ?? [];
+  } catch (err) {
+    if (err.message?.includes("page_view_logs")) {
       return {
         ok: false,
         error:
-          "Tabel page_view_logs belum ada. Jalankan migration-v7.sql di Supabase.",
+          "Tabel page_view_logs belum ada. Jalankan migration-v7.sql di database.",
       };
     }
-    return { ok: false, error: error.message };
+    return { ok: false, error: err.message };
   }
 
-  const rows = data ?? [];
   const last24h = rows.filter((r) => r.created_at >= since24h).length;
   const byDayMap = new Map();
   for (let i = 6; i >= 0; i--) {
@@ -101,56 +97,46 @@ export async function getPageViewAnalytics() {
 }
 
 export async function getMyAmbalanApplication(accountId, period = "2026-2027") {
-  const db = createAdminClient();
-  const { data, error } = await db
-    .from("ambalan_applications")
-    .select(
-      "id, full_name, class_name, phone, motivation, experience, status, period, created_at, reviewed_at",
-    )
-    .eq("account_id", accountId)
-    .eq("period", period)
-    .maybeSingle();
-
-  if (error) {
-    if (error.code !== "42P01") {
-      console.error("getMyAmbalanApplication:", error.message);
+  try {
+    const { rows } = await query(
+      `SELECT id, full_name, class_name, phone, motivation, experience, status, period, created_at, reviewed_at
+       FROM ambalan_applications
+       WHERE account_id = $1 AND period = $2`,
+      [accountId, period]
+    );
+    return rows[0] ?? null;
+  } catch (err) {
+    if (!err.message?.includes("ambalan_applications")) {
+      console.error("getMyAmbalanApplication:", err.message);
     }
     return null;
   }
-
-  return data;
 }
 
 export async function getRegistrationSetting() {
-  const db = createAdminClient();
-  const { data } = await db
-    .from("site_settings")
-    .select("value_json")
-    .eq("key", "registration_enabled")
-    .maybeSingle();
-
+  const { rows } = await query(
+    `SELECT value_json FROM site_settings WHERE key = $1`,
+    ["registration_enabled"]
+  );
+  const data = rows[0] ?? null;
   return data?.value_json?.enabled !== false;
 }
 
 export async function getAmbalanRegistrationSetting() {
-  const db = createAdminClient();
-  const { data } = await db
-    .from("site_settings")
-    .select("value_json")
-    .eq("key", "ambalan_registration_enabled")
-    .maybeSingle();
-
+  const { rows } = await query(
+    `SELECT value_json FROM site_settings WHERE key = $1`,
+    ["ambalan_registration_enabled"]
+  );
+  const data = rows[0] ?? null;
   return data?.value_json?.enabled !== false;
 }
 
 export async function getMasaBaktiSetting() {
-  const db = createAdminClient();
-  const { data } = await db
-    .from("site_settings")
-    .select("value_json")
-    .eq("key", "masa_bakti")
-    .maybeSingle();
-
+  const { rows } = await query(
+    `SELECT value_json FROM site_settings WHERE key = $1`,
+    ["masa_bakti"]
+  );
+  const data = rows[0] ?? null;
   const j = data?.value_json ?? {};
   return {
     display:
@@ -166,76 +152,82 @@ export async function getMasaBaktiSetting() {
 
 /** Admin: semua baris program unggulan termasuk nonaktif. */
 export async function getFeaturedProgramsAdmin() {
-  const db = createAdminClient();
-  const { data, error } = await db
-    .from("featured_programs")
-    .select("id, title, description, sort_order, is_active, created_at")
-    .order("sort_order", { ascending: true });
-
-  if (error) {
-    if (error.code !== "42P01") {
-      console.error("getFeaturedProgramsAdmin:", error.message);
+  try {
+    const { rows } = await query(
+      `SELECT id, title, description, sort_order, is_active, created_at
+       FROM featured_programs
+       ORDER BY sort_order ASC`,
+      []
+    );
+    return rows ?? [];
+  } catch (err) {
+    if (!err.message?.includes("featured_programs")) {
+      console.error("getFeaturedProgramsAdmin:", err.message);
     }
     return [];
   }
-
-  return data ?? [];
 }
 
 /** Admin: semua posts untuk management panel */
 export async function getAllAdminPosts() {
-  const db = createAdminClient();
-
-  const { data, error } = await db
-    .from("posts")
-    .select("id, title, slug, category, status, published_at, created_at, author_id, accounts(display_name)")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("getAllAdminPosts:", error.message);
+  try {
+    const { rows } = await query(
+      `SELECT p.id, p.title, p.slug, p.category, p.status, p.published_at, p.created_at, p.author_id,
+        json_build_object('display_name', a.display_name) AS accounts
+       FROM posts p
+       LEFT JOIN accounts a ON p.author_id = a.id
+       ORDER BY p.created_at DESC`,
+      []
+    );
+    return rows ?? [];
+  } catch (err) {
+    console.error("getAllAdminPosts:", err.message);
     return [];
   }
-
-  return data ?? [];
 }
 
 /** Admin: fetch single post with media for editing */
 export async function getPostForEdit(postId) {
-  const db = createAdminClient();
+  try {
+    const { rows } = await query(
+      `SELECT p.id, p.title, p.description, p.content, p.slug, p.category, p.status,
+        p.published_at, p.author_id, p.post_number, p.event_date, p.event_location, p.cover_image_url,
+        (SELECT COALESCE(json_agg(json_build_object('id', pm.id, 'media_type', pm.media_type, 'url', pm.url, 'order_index', pm.order_index)), '[]'::json)
+         FROM post_media pm WHERE pm.post_id = p.id) AS post_media
+       FROM posts p
+       WHERE p.id = $1`,
+      [postId]
+    );
+    const data = rows[0] ?? null;
+    if (!data) return null;
 
-  const { data, error } = await db
-    .from("posts")
-    .select(
-      `id, title, description, content, slug, category, status,
-       published_at, author_id, post_number, event_date, event_location,
-       cover_image_url, post_media(id, media_type, url, order_index)`,
-    )
-    .eq("id", postId)
-    .single();
+    if (data.post_media) {
+      data.post_media = data.post_media.sort(
+        (a, b) => a.order_index - b.order_index,
+      );
+    }
 
-  if (error) {
-    console.error("getPostForEdit:", error.message);
+    return data;
+  } catch (err) {
+    console.error("getPostForEdit:", err.message);
     return null;
   }
-
-  if (data && data.post_media) {
-    data.post_media = data.post_media.sort(
-      (a, b) => a.order_index - b.order_index,
-    );
-  }
-
-  return data;
 }
 
 export async function getPermissionMatrix() {
-  const db = createAdminClient();
-  const [{ data: keys }, { data: matrix }] = await Promise.all([
-    db.from("permission_keys").select("key, label, module").order("module", { ascending: true }),
-    db.from("role_permissions").select("role, permission_key, allowed"),
+  const [keysResult, matrixResult] = await Promise.all([
+    query(
+      `SELECT key, label, module FROM permission_keys ORDER BY module ASC`,
+      []
+    ),
+    query(
+      `SELECT role, permission_key, allowed FROM role_permissions`,
+      []
+    ),
   ]);
 
   return {
-    keys: keys ?? [],
-    matrix: matrix ?? [],
+    keys: keysResult.rows ?? [],
+    matrix: matrixResult.rows ?? [],
   };
 }

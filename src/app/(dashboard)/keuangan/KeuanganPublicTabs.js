@@ -5,7 +5,7 @@ import {
   formatRupiah,
   computeMonthTotals,
   monthLabel,
-} from "@/lib/finance-queries";
+} from "@/lib/finance-utils";
 import { Wallet, Landmark } from "lucide-react";
 
 const DEFAULT_UI = {

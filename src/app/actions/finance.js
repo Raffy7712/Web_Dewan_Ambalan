@@ -1,11 +1,11 @@
 "use server";
 
-import { createAdminClient } from "@/lib/supabase";
+import { query } from "@/lib/db";
 import { getSession } from "./auth";
 import { revalidatePath } from "next/cache";
 import { getStaffEmails } from "@/lib/queries";
 import { sendStaffFinancePublishedNotification } from "@/lib/email";
-import { monthLabel } from "@/lib/finance-queries";
+import { monthLabel } from "@/lib/finance-utils";
 
 function notifyStaffFinancePublished(year, month) {
   const periodLabel = monthLabel(year, month);
@@ -46,24 +46,19 @@ export async function createFinanceMonthAction(prevState, formData) {
     return { error: "Bulan tidak valid." };
   }
 
-  const db = createAdminClient();
-  const { error } = await db.from("finance_months").insert({
-    year,
-    month,
-    saldo_awal,
-    catatan_publik,
-    is_published,
-    updated_by: session.id,
-  });
-
-  if (error) {
-    if (error.code === "23505") {
+  try {
+    await query(
+      "INSERT INTO finance_months (year, month, saldo_awal, catatan_publik, is_published, updated_by) VALUES ($1, $2, $3, $4, $5, $6)",
+      [year, month, saldo_awal, catatan_publik, is_published, session.id]
+    );
+  } catch (err) {
+    if (err.code === "23505") {
       return { error: "Periode tahun & bulan ini sudah ada." };
     }
-    if (error.code === "42P01") {
+    if (err.code === "42P01") {
       return { error: "Jalankan migration-v8.sql di Supabase terlebih dahulu." };
     }
-    console.error("createFinanceMonthAction:", error.message);
+    console.error("createFinanceMonthAction:", err.message);
     return { error: "Gagal menyimpan periode." };
   }
 
@@ -86,25 +81,24 @@ export async function updateFinanceMonthAction(prevState, formData) {
   const catatan_publik = formData.get("catatan_publik")?.toString().trim() || null;
   const is_published = formData.get("is_published") === "on";
 
-  const db = createAdminClient();
-  const { data: prevRow } = await db
-    .from("finance_months")
-    .select("is_published, year, month")
-    .eq("id", id)
-    .maybeSingle();
+  let prevRow;
+  try {
+    const prevResult = await query(
+      "SELECT is_published, year, month FROM finance_months WHERE id = $1",
+      [id]
+    );
+    prevRow = prevResult.rows[0] ?? null;
+  } catch (err) {
+    prevRow = null;
+  }
 
-  const { error } = await db
-    .from("finance_months")
-    .update({
-      saldo_awal,
-      catatan_publik,
-      is_published,
-      updated_by: session.id,
-    })
-    .eq("id", id);
-
-  if (error) {
-    console.error("updateFinanceMonthAction:", error.message);
+  try {
+    await query(
+      "UPDATE finance_months SET saldo_awal = $1, catatan_publik = $2, is_published = $3, updated_by = $4 WHERE id = $5",
+      [saldo_awal, catatan_publik, is_published, session.id, id]
+    );
+  } catch (err) {
+    console.error("updateFinanceMonthAction:", err.message);
     return { error: "Gagal memperbarui periode." };
   }
 
@@ -128,11 +122,10 @@ export async function deleteFinanceMonthAction(prevState, formData) {
   const id = formData.get("month_id")?.toString() ?? "";
   if (!id) return { error: "Periode tidak valid." };
 
-  const db = createAdminClient();
-  const { error } = await db.from("finance_months").delete().eq("id", id);
-
-  if (error) {
-    console.error("deleteFinanceMonthAction:", error.message);
+  try {
+    await query("DELETE FROM finance_months WHERE id = $1", [id]);
+  } catch (err) {
+    console.error("deleteFinanceMonthAction:", err.message);
     return { error: "Gagal menghapus periode." };
   }
 
@@ -159,20 +152,16 @@ export async function addFinanceTransactionAction(prevState, formData) {
   if (!keterangan) return { error: "Keterangan wajib diisi." };
   if (jumlah === null || jumlah <= 0) return { error: "Jumlah harus lebih dari 0." };
 
-  const db = createAdminClient();
-  const { error } = await db.from("finance_transactions").insert({
-    month_id,
-    tanggal,
-    jenis,
-    keterangan,
-    jumlah,
-  });
-
-  if (error) {
-    if (error.code === "42P01") {
+  try {
+    await query(
+      "INSERT INTO finance_transactions (month_id, tanggal, jenis, keterangan, jumlah) VALUES ($1, $2, $3, $4, $5)",
+      [month_id, tanggal, jenis, keterangan, jumlah]
+    );
+  } catch (err) {
+    if (err.code === "42P01") {
       return { error: "Jalankan migration-v8.sql di Supabase." };
     }
-    console.error("addFinanceTransactionAction:", error.message);
+    console.error("addFinanceTransactionAction:", err.message);
     return { error: "Gagal menambah transaksi." };
   }
 
@@ -188,11 +177,10 @@ export async function deleteFinanceTransactionAction(prevState, formData) {
   const id = formData.get("transaction_id")?.toString() ?? "";
   if (!id) return { error: "Transaksi tidak valid." };
 
-  const db = createAdminClient();
-  const { error } = await db.from("finance_transactions").delete().eq("id", id);
-
-  if (error) {
-    console.error("deleteFinanceTransactionAction:", error.message);
+  try {
+    await query("DELETE FROM finance_transactions WHERE id = $1", [id]);
+  } catch (err) {
+    console.error("deleteFinanceTransactionAction:", err.message);
     return { error: "Gagal menghapus transaksi." };
   }
 
