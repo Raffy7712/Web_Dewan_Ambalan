@@ -172,7 +172,7 @@ export async function getFeaturedProgramsAdmin() {
 export async function getAllAdminPosts() {
   try {
     const { rows } = await query(
-      `SELECT p.id, p.title, p.slug, p.category, p.status, p.published_at, p.created_at, p.author_id,
+      `SELECT p.id, p.title, p.slug, p.category, p.status, p.created_at, p.created_at as published_at, p.author_id,
         json_build_object('display_name', a.display_name) AS accounts
        FROM posts p
        LEFT JOIN accounts a ON p.author_id = a.id
@@ -190,9 +190,9 @@ export async function getAllAdminPosts() {
 export async function getPostForEdit(postId) {
   try {
     const { rows } = await query(
-      `SELECT p.id, p.title, p.description, p.content, p.slug, p.category, p.status,
-        p.published_at, p.author_id, p.post_number, p.event_date, p.event_location, p.cover_image_url,
-        (SELECT COALESCE(json_agg(json_build_object('id', pm.id, 'media_type', pm.media_type, 'url', pm.url, 'order_index', pm.order_index)), '[]'::json)
+      `SELECT p.id, p.title, p.excerpt as description, p.content, p.slug, p.category, p.status,
+        p.created_at as published_at, p.author_id, p.event_date, p.event_location, p.featured_image_url as cover_image_url,
+        (SELECT COALESCE(json_agg(json_build_object('id', pm.id, 'media_type', pm.media_type, 'url', pm.media_url, 'order_index', pm.sort_order)), '[]'::json)
          FROM post_media pm WHERE pm.post_id = p.id) AS post_media
        FROM posts p
        WHERE p.id = $1`,

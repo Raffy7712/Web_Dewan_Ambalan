@@ -12,10 +12,9 @@ export async function getPosts({
 } = {}) {
   let sql = `
     SELECT
-      p.id, p.post_number, p.title, p.slug, p.description, p.category,
-      p.cover_image_url, p.event_date, p.event_location,
-      p.achievement_level, p.achievement_rank,
-      p.published_at, p.created_at,
+      p.id, p.title, p.slug, p.excerpt as description, p.category,
+      p.featured_image_url as cover_image_url, p.event_date, p.event_location,
+      p.created_at as published_at, p.created_at,
       CASE WHEN a.id IS NULL THEN NULL
         ELSE json_build_object(
           'display_name', a.display_name,
@@ -28,11 +27,10 @@ export async function getPosts({
           json_build_object(
             'id', pm.id,
             'media_type', pm.media_type,
-            'url', pm.url,
-            'thumbnail_url', pm.thumbnail_url,
+            'url', pm.media_url,
             'caption', pm.caption,
-            'order_index', pm.order_index
-          ) ORDER BY pm.order_index
+            'order_index', pm.sort_order
+          ) ORDER BY pm.sort_order
         ) FROM post_media pm WHERE pm.post_id = p.id),
         '[]'::json
       ) AS post_media
@@ -52,7 +50,7 @@ export async function getPosts({
     params.push(excludeCategory);
   }
 
-  sql += ` ORDER BY p.published_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
+  sql += ` ORDER BY p.created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
   params.push(limit, offset);
 
   try {
@@ -68,7 +66,9 @@ export async function getPosts({
 export async function getPostBySlug(slug) {
   const sql = `
     SELECT
-      p.*,
+      p.id, p.title, p.slug, p.excerpt as description, p.content, p.category, p.status,
+      p.featured_image_url as cover_image_url, p.event_date, p.event_location,
+      p.author_id, p.created_at, p.updated_at,
       CASE WHEN a.id IS NULL THEN NULL
         ELSE json_build_object(
           'display_name', a.display_name,
@@ -81,11 +81,10 @@ export async function getPostBySlug(slug) {
           json_build_object(
             'id', pm.id,
             'media_type', pm.media_type,
-            'url', pm.url,
-            'thumbnail_url', pm.thumbnail_url,
+            'url', pm.media_url,
             'caption', pm.caption,
-            'order_index', pm.order_index
-          ) ORDER BY pm.order_index
+            'order_index', pm.sort_order
+          ) ORDER BY pm.sort_order
         ) FROM post_media pm WHERE pm.post_id = p.id),
         '[]'::json
       ) AS post_media
@@ -136,8 +135,8 @@ export async function getUpcomingKegiatan(limit = 5) {
   const today = new Date().toISOString().split("T")[0];
   const sql = `
     SELECT
-      id, title, slug, description, event_date, event_location, category,
-      cover_image_url, published_at
+      id, title, slug, excerpt as description, event_date, event_location, category,
+      featured_image_url as cover_image_url, created_at as published_at
     FROM posts
     WHERE status = $1
       AND category = $2
@@ -160,7 +159,7 @@ export async function getPastKegiatan(limit = 10) {
   const today = new Date().toISOString().split("T")[0];
   const sql = `
     SELECT
-      id, title, slug, description, event_date, event_location, cover_image_url
+      id, title, slug, excerpt as description, event_date, event_location, featured_image_url as cover_image_url
     FROM posts
     WHERE status = $1
       AND category = $2
@@ -247,7 +246,7 @@ export async function getAccountById(id) {
 export async function getGallery(limit = 40) {
   const sql = `
     SELECT
-      pm.id, pm.url, pm.caption, pm.order_index,
+      pm.id, pm.media_url as url, pm.caption, pm.sort_order as order_index,
       json_build_object(
         'id', p.id,
         'title', p.title,

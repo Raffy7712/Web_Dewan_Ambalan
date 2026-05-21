@@ -150,22 +150,15 @@ export async function createAdminPostAction(prevState, formData) {
   try {
     await client.query("BEGIN");
 
-    // Get max post_number
-    const maxResult = await client.query(
-      "SELECT post_number FROM posts ORDER BY post_number DESC LIMIT 1"
-    );
-    const post_number = (maxResult.rows[0]?.post_number ?? 0) + 1;
-
     const insertResult = await client.query(
-      `INSERT INTO posts (title, slug, description, content, category, status, author_id, published_at, post_number, cover_image_url, event_date, event_location, achievement_level, achievement_rank)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-       RETURNING id, title, slug, description, category`,
+      `INSERT INTO posts (title, slug, excerpt, content, category, status, author_id, featured_image_url, event_date, event_location)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING id, title, slug, excerpt as description, category`,
       [
         title, slug, description, content || null, category, "published",
-        session.id, now, post_number, null,
+        session.id, null,
         category === "kegiatan" ? event_date : null,
         category === "kegiatan" ? event_location : null,
-        null, null,
       ]
     );
     post = insertResult.rows[0];
@@ -176,22 +169,22 @@ export async function createAdminPostAction(prevState, formData) {
       const url = imageUrls[i];
       if (!coverUrl) coverUrl = url;
       await client.query(
-        "INSERT INTO post_media (post_id, media_type, url, thumbnail_url, caption, order_index) VALUES ($1, $2, $3, $4, $5, $6)",
-        [post.id, "image", url, null, "", order++]
+        "INSERT INTO post_media (post_id, media_type, media_url, caption, sort_order) VALUES ($1, $2, $3, $4, $5)",
+        [post.id, "image", url, "", order++]
       );
     }
 
     for (let i = 0; i < videoUrls.length; i++) {
       const url = videoUrls[i];
       await client.query(
-        "INSERT INTO post_media (post_id, media_type, url, thumbnail_url, caption, order_index) VALUES ($1, $2, $3, $4, $5, $6)",
-        [post.id, "video", url, null, "", order++]
+        "INSERT INTO post_media (post_id, media_type, media_url, caption, sort_order) VALUES ($1, $2, $3, $4, $5)",
+        [post.id, "video", url, "", order++]
       );
     }
 
     if (coverUrl) {
       await client.query(
-        "UPDATE posts SET cover_image_url = $1 WHERE id = $2",
+        "UPDATE posts SET featured_image_url = $1 WHERE id = $2",
         [coverUrl, post.id]
       );
     }
@@ -271,7 +264,7 @@ export async function updateAdminPostAction(postId, prevState, formData) {
   let post;
   try {
     const result = await query(
-      "SELECT id, category, slug, event_date, event_location, cover_image_url FROM posts WHERE id = $1",
+      "SELECT id, category, slug, event_date, event_location, featured_image_url as cover_image_url FROM posts WHERE id = $1",
       [postId]
     );
     post = result.rows[0] ?? null;
@@ -345,7 +338,7 @@ export async function updateAdminPostAction(postId, prevState, formData) {
     await client.query("BEGIN");
 
     await client.query(
-      `UPDATE posts SET title = $1, description = $2, content = $3, event_date = $4, event_location = $5 WHERE id = $6`,
+      `UPDATE posts SET title = $1, excerpt = $2, content = $3, event_date = $4, event_location = $5 WHERE id = $6`,
       [
         title, description, content || null,
         post.category === "kegiatan" ? event_date : null,
@@ -362,22 +355,22 @@ export async function updateAdminPostAction(postId, prevState, formData) {
       const url = imageUrls[i];
       if (!coverUrl) coverUrl = url;
       await client.query(
-        "INSERT INTO post_media (post_id, media_type, url, thumbnail_url, caption, order_index) VALUES ($1, $2, $3, $4, $5, $6)",
-        [postId, "image", url, null, "", order++]
+        "INSERT INTO post_media (post_id, media_type, media_url, caption, sort_order) VALUES ($1, $2, $3, $4, $5)",
+        [postId, "image", url, "", order++]
       );
     }
 
     for (let i = 0; i < videoUrls.length; i++) {
       const url = videoUrls[i];
       await client.query(
-        "INSERT INTO post_media (post_id, media_type, url, thumbnail_url, caption, order_index) VALUES ($1, $2, $3, $4, $5, $6)",
-        [postId, "video", url, null, "", order++]
+        "INSERT INTO post_media (post_id, media_type, media_url, caption, sort_order) VALUES ($1, $2, $3, $4, $5)",
+        [postId, "video", url, "", order++]
       );
     }
 
     if (coverUrl && coverUrl !== post.cover_image_url) {
       await client.query(
-        "UPDATE posts SET cover_image_url = $1 WHERE id = $2",
+        "UPDATE posts SET featured_image_url = $1 WHERE id = $2",
         [coverUrl, postId]
       );
     }
@@ -454,12 +447,11 @@ export async function togglePostStatusAction(postId) {
   }
 
   const newStatus = post.status === "published" ? "draft" : "published";
-  const published_at = newStatus === "published" ? new Date().toISOString() : null;
 
   try {
     await query(
-      "UPDATE posts SET status = $1, published_at = $2 WHERE id = $3",
-      [newStatus, published_at, postId]
+      "UPDATE posts SET status = $1 WHERE id = $2",
+      [newStatus, postId]
     );
   } catch (err) {
     console.error("togglePostStatusAction update:", err.message);
@@ -483,7 +475,7 @@ export async function togglePostStatusAction(postId) {
 export async function getAllAdminPostsAction() {
   try {
     const result = await query(
-      `SELECT p.id, p.title, p.slug, p.category, p.status, p.published_at, p.created_at, p.author_id,
+      `SELECT p.id, p.title, p.slug, p.category, p.status, p.created_at, p.created_at as published_at, p.author_id,
         json_build_object('display_name', a.display_name) AS accounts
       FROM posts p
       LEFT JOIN accounts a ON a.id = p.author_id
