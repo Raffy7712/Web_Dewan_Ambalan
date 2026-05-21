@@ -118,7 +118,12 @@ export default async function AdminDashboardPage() {
   const session = await getSession();
   if (!session || session.role !== "admin") redirect("/anggota");
 
-  const traffic = await getPageViewAnalytics();
+  let traffic = { ok: false };
+  try {
+    traffic = await getPageViewAnalytics();
+  } catch (err) {
+    console.error("[admin] getPageViewAnalytics error:", err.message);
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
