@@ -1,12 +1,8 @@
 import Link from "next/link";
 import LogoImage from "./LogoImage";
-import { MapPin, Phone, Mail, Globe, ExternalLink } from "lucide-react";
-import { getCmsText } from "@/lib/cms";
-import { getSiteContact } from "@/lib/site-contact";
+import { MapPin, Mail, Globe, ExternalLink } from "lucide-react";
 
-export default async function Footer() {
-  const { phone: contactPhone, email: contactEmail, websiteHref, websiteLabel, addressLine } =
-    getSiteContact();
+export default function Footer() {
   const navLinks = [
     { href: "/home", label: "Beranda" },
     { href: "/berita", label: "Berita & Artikel" },
@@ -16,13 +12,6 @@ export default async function Footer() {
     { href: "/galeri", label: "Galeri Foto" },
     { href: "/vouchers", label: "Verifikasi Voucher & Sertifikat" },
   ];
-
-  const motto = await getCmsText(
-    "footer",
-    "brand",
-    "motto",
-    '"Satyaku Kudarmakan, Darmaku Kubaktikan"',
-  );
 
   return (
     <footer className="bg-slate-950 text-foreground border-t border-primary/30 mt-auto">
@@ -49,7 +38,7 @@ export default async function Footer() {
           <p className="text-muted-foreground text-sm leading-relaxed">
             Kwartir Ranting Bantarkawung · Kwartir Cabang Brebes.
           </p>
-          <p className="text-accent text-xs mt-3 italic font-medium">{motto}</p>
+          <p className="text-accent text-xs mt-3 italic font-medium">&ldquo;Satyaku Kudarmakan, Darmaku Kubaktikan&rdquo;</p>
         </div>
 
         {/* Navigation */}
@@ -86,30 +75,26 @@ export default async function Footer() {
                 size={15}
                 className="flex-shrink-0 mt-0.5 text-accent"
               />
-              {addressLine}
-            </li>
-            <li className="flex items-center gap-2.5 text-sm text-muted-foreground">
-              <Phone size={15} className="flex-shrink-0 text-accent" />
-              {contactPhone}
+              Jl. Raya Bantarkawung, Brebes, Jawa Tengah 52274
             </li>
             <li className="flex items-center gap-2.5 text-sm text-muted-foreground">
               <Mail size={15} className="flex-shrink-0 text-accent" />
               <a
-                href={`mailto:${contactEmail}`}
+                href="mailto:praskaba7@gmail.com"
                 className="hover:text-white transition-colors"
               >
-                {contactEmail}
+                praskaba7@gmail.com
               </a>
             </li>
             <li className="flex items-center gap-2.5 text-sm text-muted-foreground">
               <Globe size={15} className="flex-shrink-0 text-accent" />
               <a
-                href={websiteHref}
+                href="https://da-alf.web.id"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition-colors"
               >
-                {websiteLabel}
+                da-alf.web.id
               </a>
             </li>
           </ul>
