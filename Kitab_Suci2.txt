@@ -1,0 +1,567 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║         KITAB SUCI 2 — DOKUMENTASI LENGKAP PENGEMBANGAN WEB DA-ALF             ║
+║              Dewan Ambalan SMK Al Furqon Bantarkawung                          ║
+║                                                                                ║
+║                   Next.js 16 + Tailwind v4 + Self-Hosted PostgreSQL            ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+DAFTAR ISI:
+═══════════════════════════════════════════════════════════════════════════════
+I.   PROFIL PROJECT
+II.  TECH STACK
+III. ARCHITECTURE & STRUKTUR FOLDER
+IV.  DATABASE SCHEMA
+V.   FITUR-FITUR
+VI.  UI/UX & TEMA
+VII. ENVIRONMENT VARIABLES
+VIII. DEPLOYMENT GUIDE (Vercel + Self-Hosted PostgreSQL)
+IX.  BUG FIXES LOG
+X.   TROUBLESHOOTING
+XI.  ROADMAP & FUTURE PLANS
+XII. QUICK COMMANDS REFERENCE
+═══════════════════════════════════════════════════════════════════════════════
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN I: PROFIL PROJECT
+═══════════════════════════════════════════════════════════════════════════════
+
+Nama: Web Dewan Ambalan DA-ALF
+Domain: https://da-alf.web.id
+Organisasi: Gugus Depan Brebes 02.165 / 02.166 — SMK Al Furqon Bantarkawung
+Tujuan: Portal resmi Dewan Ambalan untuk publikasi kegiatan, transparansi
+         keuangan, verifikasi sertifikat/voucher, manajemen inventaris, dan
+         administrasi internal.
+
+Fase: Production Release (V1.0)
+Status: ✅ Active — deployed on Vercel
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN II: TECH STACK
+═══════════════════════════════════════════════════════════════════════════════
+
+Frontend:
+  - Next.js 16 (App Router, React 19, Server Components)
+  - Tailwind CSS v4 (utility-first, CSS @theme directives)
+  - shadcn/ui (component library, manually adapted for Tailwind v4)
+  - Lucide React (icon library)
+
+Backend:
+  - Next.js Server Actions (for form submissions)
+  - Next.js Route Handlers (for API endpoints)
+  - JWT Auth via `jose` library (custom, no Supabase Auth)
+  - Rate limiter: in-memory (`src/lib/rate-limit.js`)
+
+Database:
+  - PostgreSQL 15+ (self-hosted)
+  - Schema: `app` (not `public`)
+  - Connection: `pg` (node-postgres) with connection pooling
+  - Migration system: SQL files in `/migrations/`, run via `scripts/migrate.js`
+
+Email:
+  - Resend API (`RESEND_API_KEY`)
+  - Templates: OTP, welcome, role change, comment notification, etc.
+
+Media:
+  - Cloudinary (unsigned upload preset for admin)
+  - Google Drive image normalization (`getDisplayUrl`)
+
+Deployment:
+  - Vercel (Washington D.C. region)
+  - Self-hosted PostgreSQL (any VPS with SSL/TLS)
+  - Environment variables via Vercel Dashboard
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN III: ARCHITECTURE & STRUKTUR FOLDER
+═══════════════════════════════════════════════════════════════════════════════
+
+```
+da-alf/
+├── src/
+│   ├── app/
+│   │   ├── (dashboard)/          # Layout grup (Navbar + Footer)
+│   │   │   ├── layout.js         # Dashboard layout (async, getSession)
+│   │   │   ├── page.js           # / → redirect ke /home
+│   │   │   ├── home/page.js      # Landing page publik (CMS-driven)
+│   │   │   ├── berita/
+│   │   │   │   ├── page.js       # Daftar berita & artikel
+│   │   │   │   └── [slug]/page.js# Detail berita + komentar
+│   │   │   ├── kegiatan/page.js  # Jadwal kegiatan
+│   │   │   ├── anggota/page.js   # Struktur organisasi
+│   │   │   ├── keuangan/page.js  # Transparansi keuangan publik
+│   │   │   ├── galeri/page.js    # Galeri foto
+│   │   │   ├── profil/page.js    # Profil user (protected)
+│   │   │   ├── certificates/page.js  # Verifikasi sertifikat (publik)
+│   │   │   ├── vouchers/page.js  # Verifikasi voucher (publik)
+│   │   │   ├── daftar-ambalan/page.js # Pendaftaran calon pengurus
+│   │   │   ├── admin/
+│   │   │   │   ├── page.js           # Dashboard admin
+│   │   │   │   ├── certificates/page.js  # Kelola sertifikat
+│   │   │   │   ├── vouchers/page.js      # Kelola voucher
+│   │   │   │   ├── inventory/        # Manajemen inventaris
+│   │   │   │   ├── finance/          # Laporan keuangan
+│   │   │   │   ├── posts/            # Kelola postingan
+│   │   │   │   ├── users/            # Kelola user
+│   │   │   │   ├── content/          # CMS portal
+│   │   │   │   ├── programs/         # Program unggulan
+│   │   │   │   ├── jabatan/          # Kelola jabatan
+│   │   │   │   ├── agenda-surat/     # Buku agenda surat
+│   │   │   │   ├── management/       # Role management
+│   │   │   │   ├── permissions/      # Permission matrix
+│   │   │   │   ├── settings/         # Site settings
+│   │   │   │   ├── analytics/        # Traffic analytics
+│   │   │   │   └── panduan/          # Panduan admin
+│   │   │   └── ... (public pages)
+│   │   ├── api/                  # Route Handlers (REST)
+│   │   │   ├── vouchers/         # Generate, verify, list, export
+│   │   │   ├── certificates/     # CRUD certificates
+│   │   │   ├── inventory/        # Items, maintenance, checks, export
+│   │   │   ├── verification/     # Unified verification
+│   │   │   ├── admin/export/     # Excel exports
+│   │   │   └── internal/         # Page view logging
+│   │   ├── actions/              # Server Actions
+│   │   │   ├── auth.js           # Login, register, logout, reset password
+│   │   │   ├── admin.js          # CMS, featured programs, jabatan
+│   │   │   ├── posts.js          # CRUD posts
+│   │   │   ├── comment.js        # Comments
+│   │   │   ├── ambalan.js        # Ambalan applications
+│   │   │   ├── finance.js        # Finance CRUD
+│   │   │   ├── admin-users.js    # Ban/unban, role change
+│   │   │   ├── password.js       # Change password
+│   │   │   └── agenda-surat.js   # Surat masuk/keluar
+│   │   ├── login/page.js         # Halaman login
+│   │   ├── register/page.js      # Halaman register
+│   │   ├── reset-password/page.js# Reset password
+│   │   ├── globals.css           # Theme + Tailwind v4 @theme
+│   │   ├── layout.js             # Root layout
+│   │   └── proxy.js              # Next.js 16 proxy (ex-middleware)
+│   ├── components/
+│   │   ├── ui/                   # shadcn/ui components
+│   │   │   ├── button.jsx
+│   │   │   ├── card.jsx
+│   │   │   ├── input.jsx
+│   │   │   ├── badge.jsx
+│   │   │   ├── select.jsx
+│   │   │   ├── dialog.jsx
+│   │   │   ├── tabs.jsx
+│   │   │   ├── separator.jsx
+│   │   │   ├── avatar.jsx
+│   │   │   ├── label.jsx
+│   │   │   └── dropdown-menu.jsx
+│   │   ├── admin/AdminShell.js   # Admin layout shell
+│   │   ├── Navbar.js             # Navigation bar
+│   │   ├── Footer.js             # Static footer
+│   │   ├── CookieConsent.js      # Cookie consent banner
+│   │   ├── ThemeToggle.js        # Dark/light toggle
+│   │   ├── LogoImage.js          # Logo component
+│   │   ├── ArticleCard.js        # Article card
+│   │   ├── EventCard.js          # Event card
+│   │   ├── ImageLightbox.js       # Image lightbox
+│   │   └── ... (other components)
+│   └── lib/
+│       ├── db.js                 # pg Pool connection
+│       ├── auth.js               # Session, JWT, login/logout
+│       ├── queries.js            # Public DB queries
+│       ├── admin-queries.js      # Admin DB queries
+│       ├── cms.js                # CMS queries
+│       ├── finance-queries.js    # Finance queries
+│       ├── finance-utils.js      # Finance utilities
+│       ├── email.js              # Resend email templates
+│       ├── utils.js              # cn() utility
+│       ├── rate-limit.js         # In-memory rate limiter
+│       ├── device-utils.js       # Device detection
+│       ├── avatar.js             # Avatar generation
+│       ├── media-url.js          # Google Drive URL normalization
+│       └── site-contact.js       # Contact info (env-based)
+├── scripts/
+│   ├── migrate.js                # Migration runner
+│   └── export-buku-arsip.js      # XLSX export script
+├── migrations/                   # SQL migration files
+│   ├── migration.sql             # Schema awal
+│   ├── migration-v2.sql
+│   ├── ...
+│   └── migration-v16.sql         # Column renames (Indonesia)
+├── public/
+│   ├── logo.png
+│   └── default-avatar.svg
+├── components.json               # shadcn config
+├── next.config.mjs               # Next.js config + CSP
+├── AGENTS.md                     # Agent instructions
+└── Kitab_Suci.txt                # Dokumentasi utama
+```
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN IV: DATABASE SCHEMA
+═══════════════════════════════════════════════════════════════════════════════
+
+Semua tabel di schema `app` (bukan `public`).
+
+TABEL UTAMA:
+  accounts           — User accounts (admin/moderator/user), banned status, JWT auth
+  posts              — Postingan (pengumuman/kegiatan/prestasi) + event fields
+  post_media         — Foto & video per postingan
+  comments           — Komentar (1 level nesting), approval, pinned
+  featured_programs  — Program unggulan untuk landing & home
+  cms_entries        — Konten portal dinamis (hero, section, label)
+  site_settings      — Toggle & string settings (registration, masa_bakti, dll)
+  finance_months     — Periode laporan keuangan
+  finance_transactions— Transaksi keuangan masuk/keluar
+  page_view_logs     — Traffic analytics
+  surat_masuk        — Agenda surat masuk
+  surat_keluar       — Agenda surat keluar
+  ambalan_applications— Pendaftaran calon pengurus
+  vouchers           — Voucher dengan kode unik
+  certificates       — Sertifikat dengan kode unik & QR
+  verification_scans — Riwayat scan verifikasi
+  inventory_items    — Inventaris sarana prasarana
+  maintenance_logs   — Riwayat perawatan inventaris
+  item_checks        — Riwayat pengecekan inventaris
+  inventory_categories— Kategori inventaris
+  permission_keys    — Definisi permission
+  role_permissions   — Mapping role → permission
+  otp_tokens         — Token OTP untuk registrasi/reset password
+  jabatan            — Struktur jabatan organisasi
+
+COLUMN RENAMES (migration-v16):
+  certificates: code → kode, nomor_sertifikat → nomor, recipient_name → nama_penerima,
+                certificate_type → jenis_sertifikat, dewan_ambalan → penerbit,
+                description → keterangan
+  vouchers:     code → kode, title → judul, description → keterangan,
+                expires_at → kadaluarsa
+
+CORE MIGRATION FILES (urut):
+  migration.sql        → Schema awal
+  migration-v2.sql     → Featured programs
+  migration-v3.sql     → CMS entries
+  migration-v4.sql     → Comments
+  migration-v5.sql     → Featured programs (active field)
+  migration-v6.sql     → Site settings
+  migration-v7.sql     → Banned users + page_view_logs
+  migration-v8.sql     → Finance tables
+  migration-v9.sql     → Surat masuk/keluar
+  migration-v10.sql    → Permission keys + content.portal.manage
+  migration-v11.sql    → Vouchers & certificates
+  migration-v12.sql    → Inventory
+  migration-v13.sql    → (skip/rolled into v14)
+  migration-v14.sql    → Indexes + search_path fixes
+  migration-v15.sql    → Self-hosted PostgreSQL adjustments
+  migration-v16.sql    → Column renames ke Indonesia
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN V: FITUR-FITUR
+═══════════════════════════════════════════════════════════════════════════════
+
+A. PUBLIC (SEMUA PENGUNJUNG)
+  [x] Beranda (/home) — Hero, statistik, fokus kegiatan, kegiatan terdekat, CTA
+  [x] Berita & Artikel (/berita) — Daftar postingan publik
+  [x] Detail Berita (/berita/[slug]) — Konten + komentar
+  [x] Jadwal Kegiatan (/kegiatan) — Kegiatan terdekat & lampau
+  [x] Struktur Organisasi (/anggota) — Jabatan & anggota aktif
+  [x] Transparansi Keuangan (/keuangan) — Laporan keuangan per bulan (publik)
+  [x] Galeri Foto (/galeri) — Galeri gambar publik
+  [x] Verifikasi Sertifikat (/certificates) — Scan & verifikasi QR code
+  [x] Verifikasi Voucher (/vouchers) — Scan & verifikasi kode voucher
+  [x] Pendaftaran Calon Pengurus (/daftar-ambalan) — Form seleksi
+  [x] Profil (/profil) — Profil user (setelah login)
+  [x] Landing Page (/) — Narasi Pramuka Penegak + program unggulan
+
+B. AUTH (WAJIB LOGIN)
+  [x] Login (/login) — Username atau email + password
+  [x] Register (/register) — OTP email verification
+  [x] Reset Password (/reset-password) — OTP via email
+  [x] Logout — Clear session cookie
+
+C. ADMIN (ROLE: ADMIN / MODERATOR)
+  [x] Dashboard Admin (/admin) — Ringkasan + traffic analytics
+  [x] Kelola Postingan (/admin/posts) — CRUD + toggle status
+  [x] Kelola Program Unggulan (/admin/programs) — CRUD featured programs
+  [x] Kelola CMS Portal (/admin/content) — Edit teks portal via kartu slot
+  [x] Kelola Keuangan (/admin/finance) — CRUD periode + transaksi
+  [x] Kelola Voucher & Sertifikat (/admin/vouchers, /admin/certificates)
+  [x] Manajemen Inventaris (/admin/inventory) — CRUD + maintenance + checks
+  [x] Buku Agenda Surat (/admin/agenda-surat) — Surat masuk & keluar
+  [x] Kelola Jabatan (/admin/jabatan) — CRUD jabatan organisasi
+  [x] Manajemen User (/admin/users) — Ban/unban, promote/demote role
+  [x] Role Management (/admin/management) — Atur role user
+  [x] Permission Matrix (/admin/permissions) — Lihat mapping role → permission
+  [x] Analytics (/admin/analytics) — Traffic 7 hari terakhir
+  [x] Site Settings (/admin/settings) — Toggle registrasi + masa bakti
+  [x] Panduan Admin (/admin/panduan) — Dokumentasi panel
+
+D. EXPORTS
+  [x] Excel: Vouchers, Certificates, Finance, Agenda Surat
+  [x] CSV: Vouchers, Certificates
+  [x] PDF: Inventory labels (barcode/QR)
+  [x] XLSX: Buku sertifikat & piagam (via scripts/export-buku-arsip.js)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN VI: UI/UX & TEMA
+═══════════════════════════════════════════════════════════════════════════════
+
+THEME SYSTEM:
+  - Class-based dark mode via `.dark` class on `<html>`
+  - Tailwind v4 `@custom-variant dark` in globals.css
+  - HSL CSS custom properties for all colors
+  - @theme block maps variables → Tailwind utilities
+
+PALETTE (Modern Pramuka):
+  Light Mode:
+    --background: 48 33% 96%   (warm cream)
+    --foreground: 24 10% 10%   (dark brown)
+    --primary:    142 76% 29%  (forest green)
+    --secondary:  28 87% 40%   (warm brown)
+    --accent:     38 92% 50%   (amber)
+    --card:       0 0% 100%    (white)
+    --muted:      60 5% 90%    (light cream)
+    --border:     24 6% 80%    (light brown)
+
+  Dark Mode (hitamin):
+    --background: 0 0% 0%      (pure black)
+    --foreground: 0 0% 90%    (light gray)
+    --primary:    142 72% 49%  (bright green)
+    --secondary:  28 87% 45%  (warm brown)
+    --accent:     38 92% 50%  (amber)
+    --card:       0 0% 5%      (near black)
+    --muted:      0 0% 10%    (very dark)
+    --border:     0 0% 15%    (dark gray)
+
+SHADCN UI COMPONENTS (siap pakai):
+  Button, Card, Input, Label, Badge, Select, Separator, Avatar,
+  Dialog, Tabs, DropdownMenu — semua di src/components/ui/
+
+STYLING RULES:
+  - Pakai Tailwind utility classes, JANGAN pakai var(--)
+  - Warna: bg-background, bg-card, bg-muted, text-foreground,
+           text-muted-foreground, border-border, bg-primary, text-primary
+  - Radius: rounded-lg (default), rounded-xl (card)
+  - Shadow: shadow-sm (card default), shadow-lg (modal)
+  - Font: Geist Sans (via next/font)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN VII: ENVIRONMENT VARIABLES
+═══════════════════════════════════════════════════════════════════════════════
+
+WAJIB:
+  DATABASE_URL       — Koneksi PostgreSQL (postgresql://user:pass@host:5432/da_alf?sslmode=require)
+  AUTH_SECRET        — JWT signing key (openssl rand -hex 32)
+  RESEND_API_KEY     — API key dari Resend dashboard
+  EMAIL_FROM         — Email pengirim (verified di Resend)
+  INTERNAL_ANALYTICS_SECRET — Random string untuk page view logging
+  NEXT_PUBLIC_SITE_URL      — Domain (http://localhost:3000 untuk dev)
+
+OPTIONAL:
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+  NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+  FOOTER_CONTACT_PHONE       — (tidak dipakai lagi, footer static)
+  FOOTER_CONTACT_EMAIL       — (tidak dipakai lagi, footer static)
+  FOOTER_WEBSITE_URL         — (tidak dipakai lagi, footer static)
+
+Catatan: Semua env harus di-set di Vercel Dashboard → Settings → Environment Variables.
+Jangan commit .env atau .env.local ke git.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN VIII: DEPLOYMENT GUIDE (Vercel + Self-Hosted PostgreSQL)
+═══════════════════════════════════════════════════════════════════════════════
+
+PRE-DEPLOYMENT:
+  1. Push semua perubahan ke GitHub (branch main)
+  2. Pastikan PostgreSQL server aktif & menerima koneksi SSL
+  3. Set semua environment variables di Vercel Dashboard
+  4. Jalankan migration ke production database:
+     npm run migrate   (atau manual via psql/HeidiSQL)
+     Urutan: migration.sql → migration-v2.sql → ... → migration-v16.sql
+
+VERCEL DEPLOYMENT:
+  1. Vercel Dashboard → Deployments → Trigger Deployment (branch main)
+  2. Build akan: npm install → node scripts/migrate.js → next build
+  3. Migration script akan skip jika DB tidak tersedia (build tetap lanjut)
+  4. Jika deploy sukses, Vercel akan serve aplikasi
+
+  Build Machine: Washington D.C., USA (East) — iad1
+  Plan: Hobby (2 cores, 8 GB)
+
+POST-DEPLOYMENT:
+  1. Cek /home apakah loading normal
+  2. Cek /login → login sebagai admin
+  3. Cek /admin → dashboard admin
+  4. Cek email: register akun baru → verifikasi OTP
+  5. Cek database: pastikan page_view_logs terisi
+
+NOTES:
+  - Build akan fail jika ada ESLint error: npm run lint dulu
+  - Pastikan DATABASE_URL pakai connection pooler untuk production
+  - Self-hosted PostgreSQL harus allow koneksi dari IP Vercel
+  - Rate limiter in-memory (single instance OK untuk hobby plan)
+  - Multi-replica perlu Redis/Upstash untuk rate limiting
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN IX: BUG FIXES LOG (LENGKAP)
+═══════════════════════════════════════════════════════════════════════════════
+
+[CRITICAL]
+  1. headers() import — pake next/navigation (Client) bukan next/headers (Server)
+     Fix: import dari next/headers + await
+  2. device-utils.js — require("crypto") di ESM
+     Fix: import crypto from "crypto"
+  3. avatar.js — default-avatar.jpg ga ada
+     Fix: pake default-avatar.svg
+  4. inventory/items/[id] — SQL Injection via dynamic column names
+     Fix: whitelist ALLOWED_ITEM_FIELDS
+  5. countParams block-scoping — ReferenceError karena const di luar block
+     Fix: declare const sebelum if block
+
+[HIGH]
+  6. params not awaited — Next.js 16 params adalah Promise
+     Fix: await params di semua route handlers
+  7. CookieConsent hydration — banner muncul walau cookie sudah ada
+     Fix: pake useEffect + ref, bukan useState initializer
+  8. middleware.js → proxy.js — Next.js 16 rename
+     Fix: export proxy, rename file
+  9. ImageLightbox keyboard — onKeyDown tanpa event listener
+     Fix: window.addEventListener via useEffect
+  10. admin-queries — variabel since24h tidak terpakai
+      Fix: hapus deklarasi
+  11. CSP Cloudinary diblokir — img-src tidak include res.cloudinary.com
+      Fix: tambah ke CSP di next.config.mjs
+  12. Migration script crash — pool.connect() tanpa try-catch
+      Fix: wrap connection attempt, non-fatal build jika DB down
+  13. All unprotected DB queries — 500 error jika pool exhausted
+      Fix: try-catch di cms.js, admin-queries.js, finance-queries.js, actions/*
+
+[MEDIUM]
+  14. rate-limit.js memory leak — Map buckets tidak dibersihkan
+      Fix: cleanupStaleKeys() periodik
+  15. export Excel — format=xlsx ga didukung API
+      Fix: ganti ke format=csv
+  16. email.js — sendWelcomeEmail tidak logging error
+      Fix: .catch dengan console.error
+
+[LOW]
+  17. eslint.config.mjs — import path tidak valid
+      Fix: hapus import eslint-config-next/core-web-vitals
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN X: TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+Q: Page 500 error setelah deploy?
+A: Cek Vercel Dashboard → Function Logs. Biasanya:
+   - Database connection (pool exhausted): cek DATABASE_URL + connection pooler
+   - Missing table/column: jalankan migration yang sesuai
+   - Build error: cek npm run lint lokal
+
+Q: "remaining connection slots are reserved"
+A: Database pool penuh. Solusi:
+   - Kurangi `max: 10` di src/lib/db.js jadi 4-5
+   - Pakai connection pooler (PgBouncer)
+   - Tutup koneksi idle yang tidak perlu
+
+Q: Email tidak terkirim?
+A: - Cek RESEND_API_KEY valid
+   - Cek EMAIL_FROM sudah verified di Resend dashboard
+   - Cek domain sudah setup DNS records
+
+Q: Dark mode tidak berfungsi?
+A: - Cek class "dark" ada di <html> — localStorage.getItem("theme")
+   - Cek @custom-variant dark di globals.css
+   - Cek ThemeToggle.js useEffect berjalan
+
+Q: Gagal build karena migration?
+A: - Migration error sudah non-fatal (build tetap lanjut)
+   - Jika tetap error: comment dulu baris `node scripts/migrate.js` di package.json
+   - Jalankan migration manual via HeidiSQL/psql
+
+Q: Login tidak bisa?
+A: - Cek AUTH_SECRET sudah set
+   - Cek DATABASE_URL bisa konek
+   - Cek tabel accounts ada isinya
+
+Q: fitur admin tidak muncul?
+A: - Pastikan login sebagai admin (role = "admin")
+   - Cek session cookie tidak expired
+   - Cek proxy.js tidak block request
+
+Q: Halaman pake var(--) masih ada?
+A: - Sudah semua diganti Tailwind utility classes
+   - Jika ada sisa: cari "var(--" di src/ (kecuali select.jsx & globals.css)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN XI: ROADMAP & FUTURE PLANS
+═══════════════════════════════════════════════════════════════════════════════
+
+FASE A — REVIEW & POLISH (SELESAI)
+  [x] Fix 500 errors
+  [x] Database column renames ke Indonesia
+  [x] shadcn/ui integration
+  [x] CSS variables → Tailwind utilities
+  [x] Dark mode pure black
+  [x] Theme tokens konsisten
+  [x] Static footer
+  [x] Error handling di semua DB queries
+
+FASE B — POST-LAUNCH (PRIORITAS)
+  [ ] QR code scanner dengan camera (html5-qrcode)
+  [ ] Foto profil upload (Cloudinary)
+  [ ] Export PDF sertifikat otomatis
+  [ ] Low-stock alerts untuk inventory
+  [ ] Sort drag-drop untuk jabatan (kolom urutan)
+  [ ] Breadcrumb navigasi
+  [ ] Open Graph tags per halaman
+
+FASE C — FITUR LANJUTAN
+  [ ] Manajemen event dengan countdown
+  [ ] Kalender kegiatan interaktif
+  [ ] Grafik keuangan (Chart.js)
+  [ ] Audit logs untuk admin actions
+  [ ] Multiple images untuk galeri
+  [ ] Comment report system
+
+FASE D — SCALING
+  [ ] Redis/Upstash untuk rate limiting multi-replica
+  [ ] CDN untuk static assets
+  [ ] Image optimization pipeline
+  [ ] Database read replicas
+  [ ] PgBouncer untuk connection pooling
+
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN XII: QUICK COMMANDS REFERENCE
+═══════════════════════════════════════════════════════════════════════════════
+
+Development:
+  npm run dev              → Start dev server (no DEP0205 warning)
+  npm run lint             → Check ESLint
+  npm run build            → Build untuk production
+
+Database:
+  npm run migrate          → Jalankan semua migration
+  node scripts/migrate.js v16  → Migration spesifik
+  node scripts/export-buku-arsip.js  → Export XLSX sertifikat
+
+Git:
+  git status               → Cek perubahan
+  git add -A               → Stage semua
+  git commit -m "pesan"    → Commit
+  git push                 → Push ke remote
+
+Vercel:
+  Vercel Dashboard → Deployments → Trigger Deployment
+
+Catatan: File ini adalah dokumentasi lengkap dari pengembangan
+Web Dewan Ambalan DA-ALF. Untuk catatan session real-time dan
+progress detail, lihat Kitab_Suci.txt.
+
+--- Akhir Kitab_Suci2.txt ---

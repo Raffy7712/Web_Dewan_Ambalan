@@ -10,6 +10,27 @@
 
 ═══════════════════════════════════════════════════════════════════════════════
 BAGIAN I: DAFTAR PERBAIKAN & PROGRES
+
+0. [CORE] Session May 24, 2026 — Final Release Polish:
+   a. Fix login 500 — headers import dari next/navigation (Client) → next/headers + await.
+   b. Hapus priority prop dari LogoImage.js.
+   c. CookieConsent — pake useEffect + ref, hindari hydration mismatch.
+   d. middleware.js → proxy.js (Next.js 16: export proxy, bukan middleware).
+   e. Semua migration hapus public. prefix (schema = app).
+   f. Fix countParams ReferenceError di src/lib/supabase.js.
+   g. Migrasi v14, v15, v16 via HeidiSQL.
+   h. Columns renamed ke Indonesia (certificates + vouchers).
+   i. API routes + export routes diupdate sesuai kolom baru.
+   j. Admin tables ditambah kolom Penerbit, Dibuat, Keterangan.
+   k. Export XLSX dari live DB via scripts/export-buku-arsip.js.
+   l. shadcn/ui setup + components: Button, Card, Input, Badge, Select, dll.
+   m. globals.css: modern Pramuka HSL palette + @theme block.
+   n. Semua CSS variables diganti Tailwind utility classes (410+ ref di 21 file).
+   o. Dark mode pure black (0 0% 0%), netral surfaces.
+   p. Semua hardcoded emerald/amber/slate diganti theme tokens (bg-primary, text-foreground, dll).
+   q. Footer static (praskaba7@gmail.com, da-alf.web.id, no telp).
+   r. Migration script ga ngeblock build kalo DB down.
+   s. Try-catch di semua unprotected DB query (cms.js, admin-queries.js, finance-queries.js, actions/*).
 ═══════════════════════════════════════════════════════════════════════════════
 
 1. [DONE] Koreksi Konten & Narasi:
