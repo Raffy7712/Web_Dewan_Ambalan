@@ -2,6 +2,7 @@
  * device-utils.js — Pure utility functions for device detection
  * Extracted from device-verify.js to avoid sync function exports in "use server" chain
  */
+import crypto from "crypto";
 
 /**
  * Extract device name from User-Agent string
@@ -34,6 +35,5 @@ export function parseUserAgent(userAgent) {
  */
 export function hashUserAgent(userAgent) {
   if (!userAgent) return null;
-  const crypto = require("crypto");
   return crypto.createHash("sha256").update(userAgent).digest("hex");
 }

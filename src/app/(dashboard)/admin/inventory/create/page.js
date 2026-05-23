@@ -21,10 +21,6 @@ export default function CreateInventoryPage() {
     purchase_price: '',
   });
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   const fetchCategories = async () => {
     try {
       const res = await fetch('/api/inventory/categories');
@@ -36,6 +32,10 @@ export default function CreateInventoryPage() {
       // Categories are optional, no need to block
     }
   };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

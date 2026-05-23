@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Plus, Search, Download, Package, ArrowLeft } from 'lucide-react';
 
@@ -12,11 +12,7 @@ export default function InventoryListPage() {
   const [condition, setCondition] = useState('');
   const [pagination, setPagination] = useState({ total: 0, limit: 50, offset: 0 });
 
-  useEffect(() => {
-    fetchItems();
-  }, [search, condition, pagination.offset]);
-
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -44,7 +40,11 @@ export default function InventoryListPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, condition, pagination.limit, pagination.offset]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
 
   const getConditionBadge = (cond) => {
     switch (cond) {
@@ -98,7 +98,7 @@ export default function InventoryListPage() {
               Tambah Item
             </Link>
             <Link
-              href="/api/inventory/export?item_ids=all&format=xlsx"
+              href="/api/inventory/export?item_ids=all&format=csv"
               className="inline-flex items-center gap-2 bg-[var(--surface-app)] border border-[var(--border-primary)] hover:border-emerald-500 text-[var(--text-primary)] font-medium py-2 px-4 rounded-lg text-sm transition-colors"
             >
               <Download size={16} />

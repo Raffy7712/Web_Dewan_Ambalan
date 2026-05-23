@@ -36,7 +36,7 @@ export default function SuratMediaUpload({
           {label}
         </span>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-3">
-          Surat PDF, Word, atau format dokumen lainnya. Max 1 file.
+          Gambar/Foto lampiran surat. Max 1 file.
         </p>
       </label>
 

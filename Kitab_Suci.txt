@@ -949,3 +949,127 @@ Jika ada pertanyaan atau issue:
 
 **Happy coding! 🚀**
 
+
+═══════════════════════════════════════════════════════════════════════════════
+BAGIAN X: BUG FIXES & AUDIT LOG (May 2026)
+═══════════════════════════════════════════════════════════════════════════════
+
+Berikut adalah daftar bug yang telah ditemukan dan diperbaiki selama sesi audit:
+
+1. [CRITICAL] device-utils.js — require("crypto") di ESM context
+   - File: src/lib/device-utils.js:37
+   - Bug: Menggunakan `const crypto = require("crypto")` padahal file sudah ESM.
+   - Fix: Ganti dengan `import crypto from "crypto"` di top-level, hapus require.
+
+2. [CRITICAL] avatar.js — Referensi file .jpg yang tidak ada
+   - File: src/lib/avatar.js:8
+   - Bug: Fallback avatar mengarah ke `/default-avatar.jpg`, tapi file asli adalah `.svg`.
+   - Fix: Ganti path menjadi `/default-avatar.svg`.
+
+3. [CRITICAL] inventory/items/[id]/route.js — SQL Injection di PUT handler
+   - File: src/app/api/inventory/items/[id]/route.js:59-79
+   - Bug: Nama kolom dari request body langsung diinterpolasi ke SQL tanpa sanitasi.
+   - Fix: Implementasi whitelist kolom `ALLOWED_ITEM_FIELDS` yang diizinkan untuk update.
+
+4. [HIGH] inventory/items/[id]/route.js — params tidak di-await (Next.js 16)
+   - File: src/app/api/inventory/items/[id]/route.js:5,53,104
+   - Bug: Di Next.js 16, `params` adalah Promise dan harus di-await.
+   - Fix: Tambahkan `await` pada semua akses `params` di GET, PUT, DELETE.
+
+5. [HIGH] ImageLightbox.js — Keyboard handler tidak berfungsi
+   - File: src/components/ImageLightbox.js:22-27
+   - Bug: `handleKeyDown` didefinisikan tapi hanya di-attach ke div melalui `onKeyDown` yang tidak auto-focus.
+   - Fix: Pindahkan listener keyboard ke `window.addEventListener` via `useEffect`.
+
+6. [HIGH] SuratMediaUpload.js — Media type tidak sesuai deskripsi
+   - File: src/components/SuratMediaUpload.js:39
+   - Bug: Deskripsi bilang "PDF, Word, atau dokumen", tapi CloudinaryMediaUpload hanya support image/video.
+   - Fix: Ubah deskripsi menjadi "Gambar/Foto lampiran surat. Max 1 file."
+
+7. [HIGH] admin-queries.js — Variabel tidak terpakai
+   - File: src/lib/admin-queries.js:45
+   - Bug: `const since24h` dideklarasikan tapi tidak pernah digunakan.
+   - Fix: Hapus deklarasi yang tidak terpakai.
+
+8. [HIGH] CSP — Cloudinary diblokir oleh Content Security Policy
+   - File: next.config.mjs:21-23
+   - Bug: `img-src` hanya mencakup `*.googleusercontent.com`, tidak termasuk Cloudinary.
+   - Fix: Tambahkan `https://res.cloudinary.com` ke `img-src` dan `api.cloudinary.com` ke `connect-src`.
+
+9. [MEDIUM] rate-limit.js — Memory leak pada Map
+   - File: src/lib/rate-limit.js
+   - Bug: Map `buckets` tidak pernah dibersihkan, key untuk IP/email menumpuk selamanya.
+   - Fix: Tambahkan `cleanupStaleKeys()` yang berjalan periodik untuk hapus key kadaluarsa.
+
+10. [MEDIUM] inventory/page.js — Export Excel mengarah ke format tidak didukung
+    - File: src/app/(dashboard)/admin/inventory/page.js:101
+    - Bug: Link export mengarah ke `format=xlsx` tapi API hanya support `json|csv|pdf`.
+    - Fix: Ubah ke `format=csv` (bisa dibuka Excel).
+
+11. [MEDIUM] email.js — sendWelcomeEmail tidak logging error
+    - File: src/lib/email.js:373
+    - Bug: Error handling menggunakan `.catch(() => {})` tanpa logging.
+    - Fix: Ganti jadi `.catch((e) => console.error(...))` agar error tercatat.
+
+12. [LOW] eslint.config.mjs — Import path tidak valid
+    - File: eslint.config.mjs:2
+    - Bug: Import `eslint-config-next/core-web-vitals` gagal karena path tidak ada.
+    - Fix: Hapus import tersebut; ESLint tetap jalan dengan konfigurasi minimal.
+
+DATABASE: Self-Hosted PostgreSQL (bukan Supabase)
+═══════════════════════════════════════════════════════════════════════════════
+Project ini menggunakan self-hosted PostgreSQL dengan koneksi langsung via `pg`
+(node-postgres). Tidak menggunakan Supabase client sama sekali.
+
+Setup Database:
+1. Install PostgreSQL (local atau VPS)
+2. Buat database: `CREATE DATABASE da_alf;`
+3. Set search_path: `CREATE SCHEMA IF NOT EXISTS app;`
+4. Jalankan migration berurutan dari folder /migrations/
+
+Environment Variables untuk Self-Hosted PostgreSQL:
+  DATABASE_URL=postgresql://user:password@host:5432/da_alf?sslmode=require
+
+  Catatan: Tidak perlu NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  atau SUPABASE_SERVICE_ROLE_KEY. Semua query via src/lib/db.js (pg pool langsung).
+
+Migration System:
+- Semua migration ada di folder /migrations/
+- Jalankan via: npm run migrate
+- Atau manual via psql: \i migrations/migration-v15.sql (bertahap)
+- Urutan: migration.sql → migration-v2.sql → ... → migration-v15.sql
+
+Perbedaan dari Supabase:
+- Tidak ada RLS (Row Level Security) — keamanan di-handle oleh aplikasi
+- Tidak ada Supabase Auth — pakai JWT custom via jose
+- Tidak ada Supabase Storage — upload via Cloudinary unsigned preset
+- Tidak ada Supabase Realtime — semua real-time via router.refresh()
+
+VERCEL + Self-Hosted PostgreSQL Deployment:
+═══════════════════════════════════════════════════════════════════════════════
+1. Di Vercel Dashboard → Settings → Environment Variables:
+   - DATABASE_URL: koneksi ke PostgreSQL server (self-hosted)
+   - AUTH_SECRET: random string panjang (openssl rand -hex 32)
+   - RESEND_API_KEY: dari dashboard Resend
+   - EMAIL_FROM: email terverifikasi di Resend
+   - INTERNAL_ANALYTICS_SECRET: random string panjang
+   - NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: dari Cloudinary dashboard
+   - NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET: dari Cloudinary settings
+   - FOOTER_CONTACT_PHONE, FOOTER_CONTACT_EMAIL, FOOTER_WEBSITE_URL
+   - NEXT_PUBLIC_SITE_URL: domain production
+
+2. Pastikan PostgreSQL server menerima koneksi dari Vercel (whitelist IP atau
+   gunakan koneksi SSL/TLS).
+
+3. Jalankan migration via npm run migrate sebelum aplikasi berjalan.
+
+4. Build & Deploy dari Vercel dashboard atau via git push.
+
+CATATAN PENTING:
+- Jangan commit .env atau .env.local ke git.
+- AUTH_SECRET wajib diubah dari default untuk production.
+- INTERNAL_ANALYTICS_SECRET wajib string random panjang.
+- DATABASE_URL untuk production sebaiknya pakai connection pooler (PgBouncer).
+- Rate limiter in-memory (src/lib/rate-limit.js) hanya untuk single instance;
+  untuk multi-replica, upgrade ke Redis/Upstash.
+

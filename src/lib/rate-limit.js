@@ -4,8 +4,25 @@
  */
 
 const buckets = new Map();
+const BUCKET_CLEANUP_INTERVAL = 60 * 60 * 1000;
+let lastCleanup = Date.now();
+
+function cleanupStaleKeys() {
+  const now = Date.now();
+  if (now - lastCleanup < BUCKET_CLEANUP_INTERVAL) return;
+  lastCleanup = now;
+  for (const [key, entries] of buckets) {
+    const fresh = entries.filter((t) => now - t < 3600000);
+    if (fresh.length === 0) {
+      buckets.delete(key);
+    } else {
+      buckets.set(key, fresh);
+    }
+  }
+}
 
 function getPrunedArray(key, windowMs) {
+  cleanupStaleKeys();
   const now = Date.now();
   const arr = (buckets.get(key) ?? []).filter((t) => now - t < windowMs);
   buckets.set(key, arr);

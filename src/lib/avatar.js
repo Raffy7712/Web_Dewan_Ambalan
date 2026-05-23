@@ -5,7 +5,7 @@ export function getAvatarUrl(profilePictureUrl) {
   if (profilePictureUrl && profilePictureUrl.trim()) {
     return profilePictureUrl;
   }
-  return "/default-avatar.jpg";
+  return "/default-avatar.svg";
 }
 
 // Generate initials for fallback display

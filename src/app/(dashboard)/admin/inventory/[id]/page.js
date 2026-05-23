@@ -29,11 +29,6 @@ export default function InventoryDetailPage({ params }) {
     setTimeout(() => setToast(null), 3000);
   };
 
-  useEffect(() => {
-    fetchItemData();
-    fetchCategories();
-  }, [id]);
-
   const fetchItemData = async () => {
     setLoading(true);
     setError(null);
@@ -63,6 +58,11 @@ export default function InventoryDetailPage({ params }) {
       }
     } catch {}
   };
+
+  useEffect(() => {
+    fetchItemData();
+    fetchCategories();
+  }, [id]);
 
   const startEditing = () => {
     setEditForm({

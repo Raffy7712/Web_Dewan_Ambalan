@@ -10,10 +10,6 @@ export default function InventoryExportPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchAllItems();
-  }, []);
-
   const fetchAllItems = async () => {
     setLoading(true);
     setError(null);
@@ -34,6 +30,10 @@ export default function InventoryExportPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAllItems();
+  }, []);
 
   const handleToggleItem = (itemId) => {
     const newSelected = new Set(selectedItems);

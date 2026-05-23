@@ -370,7 +370,7 @@ export async function sendWelcomeEmail(to, displayName) {
       </div>
     `,
     })
-    .catch(() => {}); // Welcome email is non-critical, silently ignore errors
+    .catch((e) => console.error("sendWelcomeEmail:", e.message));
 }
 
 /** Notifikasi ketika peran akun user diubah. */

@@ -21,7 +21,7 @@ export default async function EditPostPage({ params }) {
           Edit Postingan
         </h1>
         <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-          Ubah isi, foto, atau video dari postingan "{post.title}"
+          Ubah isi, foto, atau video dari postingan &quot;{post.title}&quot;
         </p>
       </div>
 

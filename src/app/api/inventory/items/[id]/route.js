@@ -4,7 +4,7 @@ import { query } from "@/lib/db";
 // GET /api/inventory/items/[id] - get single item
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const { rows } = await query(
       `SELECT
@@ -49,17 +49,23 @@ export async function GET(request, { params }) {
   }
 }
 
+const ALLOWED_ITEM_FIELDS = new Set([
+  "name", "category_id", "description", "quantity", "unit",
+  "condition", "location", "purchase_date", "purchase_price",
+  "last_checked", "code"
+]);
+
 // PUT /api/inventory/items/[id] - update item
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
-    // Build SET clause dynamically from body
-    const keys = Object.keys(body);
+    // Whitelist column names to prevent SQL injection
+    const keys = Object.keys(body).filter(k => ALLOWED_ITEM_FIELDS.has(k));
     if (keys.length === 0) {
       return NextResponse.json(
-        { error: "No fields to update" },
+        { error: "No valid fields to update" },
         { status: 400 }
       );
     }
@@ -103,7 +109,7 @@ export async function PUT(request, { params }) {
 // DELETE /api/inventory/items/[id] - delete item
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const { rowCount } = await query(
       `DELETE FROM inventory_items WHERE id = $1`,
