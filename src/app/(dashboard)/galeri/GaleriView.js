@@ -29,8 +29,8 @@ export default function GaleriView({ initialMedia = [] }) {
             onClick={() => setFilter(key)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               filter === key
-                ? "bg-emerald-600 text-white"
-                : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500"
+                ? "bg-primary text-white"
+                : "bg-card text-muted-foreground border border-border hover:border-primary"
             }`}
           >
             {label}
@@ -40,9 +40,9 @@ export default function GaleriView({ initialMedia = [] }) {
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-          <ImageIcon size={48} className="mx-auto mb-3 text-slate-400" />
-          <p className="font-medium text-slate-600 dark:text-slate-400">Belum ada foto untuk kategori ini.</p>
+        <div className="text-center py-20 bg-card rounded-lg border border-border">
+          <ImageIcon size={48} className="mx-auto mb-3 text-muted-foreground" />
+          <p className="font-medium text-muted-foreground">Belum ada foto untuk kategori ini.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -50,7 +50,7 @@ export default function GaleriView({ initialMedia = [] }) {
             <div
               key={m.id}
               onClick={() => setLightbox(m)}
-              className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-slate-200 dark:bg-slate-800 shadow-sm hover:shadow-lg transition-all"
+              className="group relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-muted shadow-sm hover:shadow-lg transition-all"
             >
               <img
                 src={getDisplayUrl(m.url)}
@@ -74,11 +74,11 @@ export default function GaleriView({ initialMedia = [] }) {
       {/* Lightbox Modal */}
       {lightbox && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/95 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={() => setLightbox(null)}
         >
           <div
-            className="bg-white dark:bg-slate-900 rounded-lg overflow-hidden max-w-3xl w-full shadow-2xl border border-slate-700"
+            className="bg-card rounded-lg overflow-hidden max-w-3xl w-full shadow-2xl border border-border"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative aspect-video bg-black">
@@ -98,19 +98,19 @@ export default function GaleriView({ initialMedia = [] }) {
             <div className="p-5 flex items-start justify-between gap-4">
               <div className="flex-1">
                 {lightbox.caption && (
-                  <p className="font-bold text-slate-900 dark:text-white text-lg mb-2">
+                  <p className="font-bold text-foreground text-lg mb-2">
                     {lightbox.caption}
                   </p>
                 )}
                 {lightbox.post && (
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-xs px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold">
+                    <span className="text-xs px-2.5 py-1 rounded-md bg-primary/10 text-primary font-bold">
                       {categoryConfig[lightbox.post.category] ?? lightbox.post.category}
                     </span>
                     <Link
                       href={`/berita/${lightbox.post.slug}`}
                       onClick={() => setLightbox(null)}
-                      className="text-sm text-emerald-600 dark:text-emerald-400 font-semibold hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1"
+                      className="text-sm text-primary font-semibold hover:text-primary/80 flex items-center gap-1"
                     >
                       Baca Berita Terkait <ChevronRight size={16} />
                     </Link>

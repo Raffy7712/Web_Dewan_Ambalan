@@ -40,7 +40,7 @@ const categoryConfig = {
   },
   kegiatan: {
     label: "Kegiatan",
-    cls: "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300",
+    cls: "bg-accent/10 text-accent",
   },
   prestasi: {
     label: "Prestasi",
@@ -154,9 +154,9 @@ export default async function PostDetailPage({ params }) {
           {/* Kegiatan info */}
           {post.category === "kegiatan" &&
             (post.event_date || post.event_location) && (
-              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl p-4 mb-5 flex flex-wrap gap-4">
+              <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 mb-5 flex flex-wrap gap-4">
                 {post.event_date && (
-                  <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+                  <div className="flex items-center gap-2 text-sm text-accent">
                     <CalendarDays size={16} className="flex-shrink-0" />
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-wider opacity-60">
@@ -169,7 +169,7 @@ export default async function PostDetailPage({ params }) {
                   </div>
                 )}
                 {post.event_location && (
-                  <div className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+                  <div className="flex items-center gap-2 text-sm text-accent">
                     <MapPin size={16} className="flex-shrink-0" />
                     <div>
                       <p className="text-[10px] font-semibold uppercase tracking-wider opacity-60">
@@ -357,7 +357,7 @@ export default async function PostDetailPage({ params }) {
       <div className="mt-6">
         <Link
           href="/berita"
-          className="inline-flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400 font-semibold hover:underline"
+          className="inline-flex items-center gap-1.5 text-sm text-accent font-semibold hover:underline"
         >
           &larr; Kembali ke Berita
         </Link>

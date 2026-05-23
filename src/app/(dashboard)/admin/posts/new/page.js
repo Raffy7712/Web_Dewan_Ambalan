@@ -13,18 +13,18 @@ export default async function AdminNewPostPage() {
       <div className="flex items-center gap-3 mb-6">
         <Link
           href="/admin"
-          className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
+          className="p-2 rounded-xl hover:bg-muted text-muted-foreground transition-colors"
         >
           <ArrowLeft size={18} />
         </Link>
         <div>
           <div className="flex items-center gap-2">
             <Newspaper size={22} className="text-emerald-600" />
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               Posting baru
             </h1>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 text-sm mt-0.5">
+          <p className="text-muted-foreground text-sm mt-0.5">
             Publikasikan kegiatan (jadwal + berita) atau album dokumentasi ke
             galeri foto.
           </p>

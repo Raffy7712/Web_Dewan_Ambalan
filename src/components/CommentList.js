@@ -45,7 +45,7 @@ function StaffActions({ comment, isStaff, onDelete, onTogglePin, onToggleSpam })
         title={comment.is_pinned ? "Lepas pin" : "Sematkan"}
         onClick={() => startTransition(() => onTogglePin(comment.id, comment.is_pinned))}
         disabled={pending}
-        className="p-1.5 rounded-lg text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-40"
+        className="p-1.5 rounded-lg text-gray-400 hover:text-accent hover:bg-accent/5 transition-colors disabled:opacity-40"
       >
         {comment.is_pinned ? <PinOff size={14} /> : <Pin size={14} />}
       </button>
@@ -134,13 +134,13 @@ export default function CommentList({ initialComments, session }) {
           key={c.id}
           className={`bg-white dark:bg-[#150f2d] border rounded-xl p-4 transition-colors ${
             c.is_pinned
-              ? "border-amber-300 dark:border-amber-700/60"
+              ? "border-accent/50"
               : "border-purple-100 dark:border-purple-900/40"
           }`}
         >
           {/* Pinned badge */}
           {c.is_pinned && (
-            <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase mb-2">
+            <div className="flex items-center gap-1 text-accent text-[10px] font-bold uppercase mb-2">
               <Pin size={11} /> Disematkan
             </div>
           )}

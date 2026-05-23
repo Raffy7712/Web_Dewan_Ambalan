@@ -41,7 +41,7 @@ export default function ImageLightbox({ images = [] }) {
               setCurrentIndex(idx);
               setIsOpen(true);
             }}
-            className="group relative aspect-square overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:border-emerald-500 transition-colors"
+            className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted hover:border-primary transition-colors"
             title="Klik untuk lihat full"
           >
             <img

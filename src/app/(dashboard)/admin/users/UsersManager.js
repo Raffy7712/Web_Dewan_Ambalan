@@ -25,16 +25,16 @@ export default function UsersManager({ accounts, currentUserId }) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
-      <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
+      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
         Akun pengguna
       </h1>
-      <p className="text-sm text-[var(--text-secondary)] mb-6">
+      <p className="text-sm text-muted-foreground mb-6">
         Blokir akun yang melanggar. Pengguna terblokir tidak bisa login dan
         diperlakukan seperti logout di situs. Untuk mengubah peran (admin /
         moderator / anggota), buka{" "}
         <Link
           href="/admin/management"
-          className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+          className="font-semibold text-primary hover:underline"
         >
           Manajemen admin
         </Link>
@@ -48,7 +48,7 @@ export default function UsersManager({ accounts, currentUserId }) {
         </div>
       )}
       {banState?.success && (
-        <div className="mb-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-900/20 dark:text-emerald-200">
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
           <CheckCircle size={18} className="shrink-0 mt-0.5" />
           {banState.banned
             ? "Akun berhasil diblokir."
@@ -62,16 +62,16 @@ export default function UsersManager({ accounts, currentUserId }) {
         </div>
       )}
       {roleState?.success && (
-        <div className="mb-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-900/20 dark:text-emerald-200">
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
           <CheckCircle size={18} className="shrink-0 mt-0.5" />
           Peran akun berhasil diubah.
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)]">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="w-full text-sm text-left">
           <thead>
-            <tr className="border-b border-[var(--border-primary)] text-[var(--text-muted)]">
+            <tr className="border-b border-border text-muted-foreground">
               <th className="px-4 py-3 font-semibold">Nama</th>
               <th className="px-4 py-3 font-semibold">Username</th>
               <th className="px-4 py-3 font-semibold hidden lg:table-cell">
@@ -88,32 +88,32 @@ export default function UsersManager({ accounts, currentUserId }) {
               return (
                 <tr
                   key={a.id}
-                  className="border-b border-[var(--border-primary)] last:border-0 hover:bg-[var(--surface-muted)]/60"
+                  className="border-b border-border last:border-0 hover:bg-muted/60"
                 >
-                  <td className="px-4 py-3 font-medium text-[var(--text-primary)]">
+                  <td className="px-4 py-3 font-medium text-foreground">
                     <span className="flex items-center gap-1.5">
                       {a.display_name}
                       {a.role === "admin" && (
                         <Shield
                           size={14}
-                          className="text-emerald-600 shrink-0"
+                          className="text-primary shrink-0"
                           aria-label="admin"
                         />
                       )}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[var(--text-secondary)] font-mono text-xs">
+                  <td className="px-4 py-3 text-muted-foreground font-mono text-xs">
                     {a.username}
                   </td>
-                  <td className="px-4 py-3 text-[var(--text-secondary)] text-xs hidden lg:table-cell max-w-[200px] truncate">
+                  <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell max-w-[200px] truncate">
                     {a.email ?? "—"}
                   </td>
-                  <td className="px-4 py-3 capitalize text-[var(--text-secondary)]">
+                  <td className="px-4 py-3 capitalize text-muted-foreground">
                     {a.role}
                   </td>
                   <td className="px-4 py-3">
                     {!a.is_active ? (
-                      <span className="text-xs font-semibold text-slate-500">
+                      <span className="text-xs font-semibold text-muted-foreground">
                         Nonaktif
                       </span>
                     ) : a.banned ? (
@@ -121,18 +121,18 @@ export default function UsersManager({ accounts, currentUserId }) {
                         Terblokir
                       </span>
                     ) : (
-                      <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                      <span className="text-xs font-semibold text-primary">
                         Aktif
                       </span>
                     )}
                   </td>
                   <td className="px-4 py-3">
                     {isSelf ? (
-                      <span className="text-xs text-[var(--text-muted)]">
+                      <span className="text-xs text-muted-foreground">
                         Akun kamu
                       </span>
                     ) : !a.is_active ? (
-                      <span className="text-xs text-[var(--text-muted)]">—</span>
+                      <span className="text-xs text-muted-foreground">—</span>
                     ) : a.banned ? (
                       <form action={banAction}>
                         <input type="hidden" name="account_id" value={a.id} />
@@ -140,7 +140,7 @@ export default function UsersManager({ accounts, currentUserId }) {
                         <button
                           type="submit"
                           disabled={banPending}
-                          className="text-xs font-semibold text-emerald-600 hover:underline disabled:opacity-50"
+                          className="text-xs font-semibold text-primary hover:underline disabled:opacity-50"
                         >
                           Cabut blokir
                         </button>
@@ -157,14 +157,14 @@ export default function UsersManager({ accounts, currentUserId }) {
                         {roleOpenId === a.id && (
                           <form
                             action={roleAction}
-                            className="p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-muted)] space-y-2"
+                            className="p-2 rounded-lg border border-border bg-muted space-y-2"
                           >
                             <input
                               type="hidden"
                               name="account_id"
                               value={a.id}
                             />
-                            <div className="text-[10px] text-[var(--text-muted)]">
+                            <div className="text-[10px] text-muted-foreground">
                               Peran saat ini: <span className="font-semibold capitalize">{a.role}</span>
                             </div>
                             <fieldset className="space-y-1">
@@ -200,14 +200,14 @@ export default function UsersManager({ accounts, currentUserId }) {
                               <button
                                 type="submit"
                                 disabled={rolePending}
-                                className="px-2 py-1 rounded bg-emerald-600 text-white text-xs font-semibold disabled:opacity-50"
+                                className="px-2 py-1 rounded bg-primary text-white text-xs font-semibold disabled:opacity-50"
                               >
                                 Simpan
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setRoleOpenId(null)}
-                                className="px-2 py-1 text-xs text-[var(--text-secondary)]"
+                                className="px-2 py-1 text-xs text-muted-foreground"
                               >
                                 Batal
                               </button>
@@ -227,7 +227,7 @@ export default function UsersManager({ accounts, currentUserId }) {
                         {openId === a.id && (
                           <form
                             action={banAction}
-                            className="p-2 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-muted)] space-y-2"
+                            className="p-2 rounded-lg border border-border bg-muted space-y-2"
                           >
                             <input
                               type="hidden"
@@ -235,13 +235,13 @@ export default function UsersManager({ accounts, currentUserId }) {
                               value={a.id}
                             />
                             <input type="hidden" name="banned" value="true" />
-                            <label className="block text-[10px] text-[var(--text-muted)]">
+                            <label className="block text-[10px] text-muted-foreground">
                               Alasan (opsional)
                               <textarea
                                 name="reason"
                                 rows={2}
                                 maxLength={500}
-                                className="mt-1 w-full text-xs rounded border border-[var(--border-primary)] bg-[var(--surface-elevated)] px-2 py-1"
+                                className="mt-1 w-full text-xs rounded border border-border bg-card px-2 py-1"
                                 placeholder="Contoh: spam komentar"
                               />
                             </label>
@@ -256,7 +256,7 @@ export default function UsersManager({ accounts, currentUserId }) {
                               <button
                                 type="button"
                                 onClick={() => setOpenId(null)}
-                                className="px-2 py-1 text-xs text-[var(--text-secondary)]"
+                                className="px-2 py-1 text-xs text-muted-foreground"
                               >
                                 Batal
                               </button>
@@ -273,7 +273,7 @@ export default function UsersManager({ accounts, currentUserId }) {
         </table>
       </div>
 
-      <p className="text-xs text-[var(--text-muted)] mt-4">
+      <p className="text-xs text-muted-foreground mt-4">
         Alasan blokir dan waktu tercatat di basis data untuk kebutuhan audit
         internal.
       </p>

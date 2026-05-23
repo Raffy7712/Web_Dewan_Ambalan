@@ -59,7 +59,7 @@ export default function AdminShell({ children }) {
                 className={cn(
                   "flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap",
                   active
-                    ? "bg-emerald-600 text-white"
+                    ? "bg-primary text-white"
                     : "bg-muted text-muted-foreground",
                 )}
               >
@@ -93,7 +93,7 @@ export default function AdminShell({ children }) {
                   className={cn(
                     "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     active
-                      ? "bg-emerald-100 dark:bg-emerald-900/35 text-emerald-800 dark:text-emerald-200"
+                      ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >

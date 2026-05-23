@@ -64,24 +64,24 @@
 }
 
 html.dark {
-  --background: 24 10% 4%;
-  --foreground: 60 9% 90%;
-  --card: 24 10% 8%;
-  --card-foreground: 60 9% 90%;
-  --popover: 24 10% 8%;
-  --popover-foreground: 60 9% 90%;
+  --background: 0 0% 0%;
+  --foreground: 0 0% 90%;
+  --card: 0 0% 5%;
+  --card-foreground: 0 0% 90%;
+  --popover: 0 0% 5%;
+  --popover-foreground: 0 0% 90%;
   --primary: 142 72% 49%;
   --primary-foreground: 0 0% 0%;
   --secondary: 28 87% 45%;
   --secondary-foreground: 0 0% 0%;
-  --muted: 24 10% 15%;
-  --muted-foreground: 60 5% 60%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 55%;
   --accent: 38 92% 50%;
   --accent-foreground: 0 0% 0%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --border: 24 10% 18%;
-  --input: 24 10% 18%;
+  --border: 0 0% 15%;
+  --input: 0 0% 15%;
   --ring: 142 72% 49%;
 
   /* Legacy tokens — backward compat */

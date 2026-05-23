@@ -84,31 +84,31 @@ export default function CreateInventoryPage() {
     }
   };
 
-  const inputClass = "w-full px-4 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
-  const labelClass = "block text-sm font-medium text-[var(--text-primary)] mb-2";
+  const inputClass = "w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-primary focus:border-primary";
+  const labelClass = "block text-sm font-medium text-foreground mb-2";
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 md:py-8">
       {/* Header */}
       <Link
         href="/admin/inventory"
-        className="inline-flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400 hover:underline mb-4"
+        className="inline-flex items-center gap-2 text-sm text-primary hover:underline mb-4"
       >
         <ArrowLeft size={16} />
         Kembali ke inventaris
       </Link>
 
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
           Tambah Item Inventaris
         </h1>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <p className="text-sm text-muted-foreground">
           Tambahkan barang baru ke sistem inventaris sarana prasarana.
         </p>
       </div>
 
       {/* Form */}
-      <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+      <div className="rounded-xl border border-border bg-card p-5 md:p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className={labelClass}>Nama Barang *</label>
@@ -229,7 +229,7 @@ export default function CreateInventoryPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-sm"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 disabled:bg-muted-foreground/20 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-sm"
             >
               <Save size={16} />
               {loading ? 'Menyimpan...' : 'Simpan'}
@@ -237,7 +237,7 @@ export default function CreateInventoryPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 bg-[var(--surface-muted)] hover:bg-[var(--surface-app)] text-[var(--text-secondary)] font-bold py-2.5 px-4 rounded-lg text-sm border border-[var(--border-primary)] transition-colors"
+              className="flex-1 bg-muted hover:bg-background text-muted-foreground font-bold py-2.5 px-4 rounded-lg text-sm border border-border transition-colors"
             >
               Batal
             </button>

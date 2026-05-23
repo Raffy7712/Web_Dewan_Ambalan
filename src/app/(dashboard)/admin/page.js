@@ -127,28 +127,28 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
-      <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2">
+      <h1 className="text-3xl font-bold text-foreground mb-2">
         Ringkasan admin
       </h1>
-      <p className="text-[var(--text-secondary)] mb-6">
+      <p className="text-muted-foreground mb-6">
         Konten, pengguna, traffic, dan pengaturan situs dalam satu panel.
       </p>
 
       {traffic.ok && traffic.totals && (
         <div className="grid sm:grid-cols-2 gap-3 mb-8">
-          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4">
-            <p className="text-xs font-medium text-[var(--text-muted)]">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="text-xs font-medium text-muted-foreground">
               Page views (24 jam)
             </p>
-            <p className="text-2xl font-bold text-[var(--text-primary)]">
+            <p className="text-2xl font-bold text-foreground">
               {traffic.totals.last24h.toLocaleString("id-ID")}
             </p>
           </div>
-          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4">
-            <p className="text-xs font-medium text-[var(--text-muted)]">
+          <div className="rounded-xl border border-border bg-card p-4">
+            <p className="text-xs font-medium text-muted-foreground">
               Page views (7 hari)
             </p>
-            <p className="text-2xl font-bold text-[var(--text-primary)]">
+            <p className="text-2xl font-bold text-foreground">
               {traffic.totals.last7d.toLocaleString("id-ID")}
             </p>
           </div>
@@ -160,13 +160,13 @@ export default async function AdminDashboardPage() {
           <Link
             key={href}
             href={href}
-            className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-xl p-5 hover:border-emerald-500 dark:hover:border-emerald-600 transition-colors shadow-sm"
+            className="bg-card border border-border rounded-xl p-5 hover:border-primary transition-colors shadow-sm"
           >
-            <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mb-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
               <Icon size={18} />
             </div>
-            <h2 className="font-bold text-[var(--text-primary)]">{title}</h2>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">
+            <h2 className="font-bold text-foreground">{title}</h2>
+            <p className="text-sm text-muted-foreground mt-1">
               {description}
             </p>
           </Link>

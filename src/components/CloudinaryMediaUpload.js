@@ -214,15 +214,15 @@ export default function CloudinaryMediaUpload({
             onClick={() => fileInputRef.current?.click()}
             className={`rounded-lg border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
               dragActive
-                ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20"
-                : "border-slate-300 bg-slate-50 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800/50 dark:hover:bg-slate-800"
+                ? "border-primary bg-primary/5"
+                : "border-border bg-muted hover:bg-muted/80"
             }`}
           >
-            <Upload size={32} className="mx-auto mb-2 text-slate-400" />
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <Upload size={32} className="mx-auto mb-2 text-muted-foreground" />
+            <p className="text-sm font-medium text-foreground">
               Drag & drop atau klik untuk upload {mediaType === "image" ? "foto" : "video"}
             </p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Tersisa {maxFiles - items.length} dari {maxFiles} slot
             </p>
           </div>
@@ -231,20 +231,20 @@ export default function CloudinaryMediaUpload({
 
       {items.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
+          <p className="text-xs font-medium text-muted-foreground">
             Upload: {items.length}/{maxFiles}
           </p>
-          <div className="space-y-2 max-h-60 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+          <div className="space-y-2 max-h-60 overflow-y-auto rounded-lg border border-border p-3">
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded bg-slate-100 p-3 dark:bg-slate-800"
+                className="flex items-center justify-between rounded bg-muted p-3"
               >
                 <div className="min-w-0 flex-1">
                   {item.uploading && (
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-emerald-600" />
-                      <span className="text-xs text-slate-600 dark:text-slate-400 truncate">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
+                      <span className="text-xs text-muted-foreground truncate">
                         Uploading…
                       </span>
                     </div>
@@ -262,7 +262,7 @@ export default function CloudinaryMediaUpload({
                       href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-emerald-600 hover:underline dark:text-emerald-400 truncate block"
+                      className="text-xs text-primary hover:underline truncate block"
                       title={item.url}
                     >
                       {item.url.split("/").pop().slice(0, 40)}…

@@ -17,10 +17,10 @@ export default async function EditPostPage({ params }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           Edit Postingan
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Ubah isi, foto, atau video dari postingan &quot;{post.title}&quot;
         </p>
       </div>

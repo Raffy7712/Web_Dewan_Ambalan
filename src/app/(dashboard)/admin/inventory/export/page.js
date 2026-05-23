@@ -167,7 +167,7 @@ export default function InventoryExportPage() {
       {/* Back Link */}
       <Link
         href="/admin/inventory"
-        className="inline-flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400 hover:underline mb-4"
+        className="inline-flex items-center gap-2 text-sm text-primary hover:underline mb-4"
       >
         <ArrowLeft size={16} />
         Kembali ke inventaris
@@ -175,10 +175,10 @@ export default function InventoryExportPage() {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
           Export Kode Inventaris
         </h1>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <p className="text-sm text-muted-foreground">
           Pilih item dan export ke PDF untuk print label, Excel untuk laporan data, atau CSV.
         </p>
       </div>
@@ -191,13 +191,13 @@ export default function InventoryExportPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Item List */}
-        <div className="lg:col-span-3 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+        <div className="lg:col-span-3 rounded-xl border border-border bg-card p-5 md:p-6">
           {loading ? (
-            <p className="text-center text-[var(--text-secondary)] py-8">Memuat data...</p>
+            <p className="text-center text-muted-foreground py-8">Memuat data...</p>
           ) : (
             <>
-              <div className="mb-4 flex justify-between items-center pb-4 border-b border-[var(--border-primary)]">
-                <h2 className="text-sm font-bold text-[var(--text-primary)]">
+              <div className="mb-4 flex justify-between items-center pb-4 border-b border-border">
+                <h2 className="text-sm font-bold text-foreground">
                   Item ({items.length})
                 </h2>
                 <label className="flex items-center cursor-pointer">
@@ -205,9 +205,9 @@ export default function InventoryExportPage() {
                     type="checkbox"
                     checked={selectedItems.size === items.length && items.length > 0}
                     onChange={handleSelectAll}
-                    className="w-4 h-4 text-emerald-600 accent-emerald-600"
+                    className="w-4 h-4 text-primary accent-primary"
                   />
-                  <span className="ml-2 text-sm text-[var(--text-secondary)]">Pilih Semua</span>
+                  <span className="ml-2 text-sm text-muted-foreground">Pilih Semua</span>
                 </label>
               </div>
 
@@ -215,24 +215,24 @@ export default function InventoryExportPage() {
                 {items.map((item) => (
                   <label
                     key={item.id}
-                    className="flex items-center p-3 rounded-lg hover:bg-[var(--surface-muted)] cursor-pointer transition-colors"
+                    className="flex items-center p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                   >
                     <input
                       type="checkbox"
                       checked={selectedItems.has(item.id)}
                       onChange={() => handleToggleItem(item.id)}
-                      className="w-4 h-4 text-emerald-600 accent-emerald-600"
+                      className="w-4 h-4 text-primary accent-primary"
                     />
                     <div className="ml-3 flex-1">
-                      <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                      <p className="font-mono font-bold text-primary text-sm">
                         {item.code}
                       </p>
-                      <p className="text-sm text-[var(--text-primary)]">{item.name}</p>
-                      <p className="text-xs text-[var(--text-muted)]">
+                      <p className="text-sm text-foreground">{item.name}</p>
+                      <p className="text-xs text-muted-foreground">
                         Lokasi: {item.location || '-'}
                       </p>
                     </div>
-                    <span className="text-xs bg-[var(--surface-muted)] px-2 py-1 rounded text-[var(--text-secondary)]">
+                    <span className="text-xs bg-muted px-2 py-1 rounded text-muted-foreground">
                       {item.quantity} {item.unit || 'unit'}
                     </span>
                   </label>
@@ -243,12 +243,12 @@ export default function InventoryExportPage() {
         </div>
 
         {/* Actions */}
-        <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 h-fit">
+        <div className="rounded-xl border border-border bg-card p-5 h-fit">
           <div className="mb-4">
-            <p className="text-sm text-[var(--text-muted)] mb-1">
+            <p className="text-sm text-muted-foreground mb-1">
               Dipilih
             </p>
-            <p className="text-2xl font-bold text-[var(--text-primary)]">
+            <p className="text-2xl font-bold text-foreground">
               {selectedItems.size}
             </p>
           </div>
@@ -257,14 +257,14 @@ export default function InventoryExportPage() {
             <button
               onClick={handleDownloadPDF}
               disabled={selectedItems.size === 0 || loading}
-              className="w-full inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-sm"
+              className="w-full inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 disabled:bg-muted-foreground/20 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-sm"
             >
               <FileText size={16} />
               Download PDF
             </button>
             <a
               href={`/api/inventory/export?item_ids=${selectedItems.size === items.length && items.length > 0 ? 'all' : Array.from(selectedItems).join(',')}&format=xlsx`}
-              className={`w-full inline-flex items-center justify-center gap-2 bg-[var(--surface-app)] border border-[var(--border-primary)] hover:border-emerald-500 text-[var(--text-primary)] font-medium py-2.5 px-4 rounded-lg transition-colors text-sm ${selectedItems.size === 0 ? 'opacity-50 pointer-events-none' : ''}`}
+              className={`w-full inline-flex items-center justify-center gap-2 bg-background border border-border hover:border-primary text-foreground font-medium py-2.5 px-4 rounded-lg transition-colors text-sm ${selectedItems.size === 0 ? 'opacity-50 pointer-events-none' : ''}`}
             >
               <FileSpreadsheet size={16} />
               Download Excel
@@ -272,15 +272,15 @@ export default function InventoryExportPage() {
             <button
               onClick={handleDownloadCSV}
               disabled={selectedItems.size === 0}
-              className="w-full inline-flex items-center justify-center gap-2 bg-[var(--surface-app)] border border-[var(--border-primary)] hover:border-emerald-500 text-[var(--text-primary)] font-medium py-2.5 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-2 bg-background border border-border hover:border-primary text-foreground font-medium py-2.5 px-4 rounded-lg transition-colors text-sm disabled:opacity-50"
             >
               <FileSpreadsheet size={16} />
               Download CSV
             </button>
           </div>
 
-          <div className="mt-6 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800/40">
-            <p className="text-xs text-emerald-700 dark:text-emerald-300">
+          <div className="mt-6 p-3 bg-primary/5 rounded-lg border border-primary/20">
+            <p className="text-xs text-primary">
               PDF siap untuk di-print dan di-attach ke barang sebagai label inventaris.
             </p>
           </div>

@@ -113,7 +113,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
   }
 
   function slotStatus(entry) {
-    if (!entry) return { label: "Belum diisi", className: "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300" };
+    if (!entry) return { label: "Belum diisi", className: "bg-muted text-foreground" };
     if (!entry.is_published)
       return { label: "Draft (tidak tampil di situs)", className: "bg-amber-100 dark:bg-amber-900/50 text-amber-900 dark:text-amber-100" };
     return { label: "Published (tampil)", className: "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200" };
@@ -121,10 +121,10 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Content CMS</h1>
-      <p className="text-slate-600 dark:text-slate-400 mb-4">
-        Pilih tab halaman di bawah, lalu ubah tiap <strong className="text-slate-900 dark:text-white">blok teks</strong>{" "}
-        yang sudah dipetakan ke situs. Hanya status <strong className="text-slate-900 dark:text-white">Published</strong>{" "}
+      <h1 className="text-3xl font-bold text-foreground mb-2">Content CMS</h1>
+      <p className="text-muted-foreground mb-4">
+        Pilih tab halaman di bawah, lalu ubah tiap <strong className="text-foreground">blok teks</strong>{" "}
+        yang sudah dipetakan ke situs. Hanya status <strong className="text-foreground">Published</strong>{" "}
         yang dibaca halaman publik.
       </p>
 
@@ -136,7 +136,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
             className={`px-3 py-2 rounded-lg text-sm font-medium ${
               p.key === selectedPage
                 ? "bg-emerald-600 text-white"
-                : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300"
+                : "bg-background dark:bg-card border border-border text-foreground"
             }`}
           >
             {p.label}
@@ -148,9 +148,9 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
         <section className="mb-8 rounded-xl border-2 border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 md:p-5">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Blok teks di situs (terpetakan)</h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                <code className="text-xs bg-white/80 dark:bg-slate-900/80 px-1.5 py-0.5 rounded">page_key</code>{" "}
+              <h2 className="text-lg font-bold text-foreground">Blok teks di situs (terpetakan)</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                <code className="text-xs bg-white/80 dark:bg-card/80 px-1.5 py-0.5 rounded">page_key</code>{" "}
                 untuk tab ini:{" "}
                 <code className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">{bindingSpec.pageKey}</code>
                 {" · "}
@@ -167,7 +167,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
                     </Link>
                   </>
                 ) : (
-                  <span className="font-medium text-slate-700 dark:text-slate-300">{bindingSpec.pathTitle}</span>
+                  <span className="font-medium text-foreground">{bindingSpec.pathTitle}</span>
                 )}
               </p>
             </div>
@@ -184,29 +184,29 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
               return (
                 <li
                   key={`${row.section}-${row.entry}`}
-                  className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-sm"
+                  className="rounded-lg border border-border bg-background dark:bg-card p-4 shadow-sm"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-slate-900 dark:text-white">{row.label}</p>
-                      <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-1 break-all">
+                      <p className="font-semibold text-foreground">{row.label}</p>
+                      <p className="text-xs font-mono text-muted-foreground mt-1 break-all">
                         section_key=<span className="text-emerald-700 dark:text-emerald-400">{row.section}</span> ·
                         entry_key=<span className="text-emerald-700 dark:text-emerald-400">{row.entry}</span>
                       </p>
                       {row.hint && (
-                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{row.hint}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{row.hint}</p>
                       )}
                       {row.sample && (
-                        <p className="text-xs text-slate-500 dark:text-slate-500 mt-2 border-l-2 border-slate-300 dark:border-slate-600 pl-2">
+                        <p className="text-xs text-muted-foreground mt-2 border-l-2 border-border pl-2">
                           Contoh isi: {row.sample}
                         </p>
                       )}
                     </div>
                     <span className={`text-xs font-medium px-2 py-1 rounded shrink-0 ${st.className}`}>{st.label}</span>
                   </div>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 mt-2 line-clamp-3 whitespace-pre-wrap">
+                  <p className="text-sm text-foreground mt-2 line-clamp-3 whitespace-pre-wrap">
                     {preview ?? (
-                      <span className="italic text-slate-500">
+                      <span className="italic text-muted-foreground">
                         Belum ada teks di database — situs memakai teks bawaan (fallback) sampai Anda simpan entri
                         Published.
                       </span>
@@ -226,7 +226,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
                           type="button"
                           onClick={() => handleTogglePublished(entry.id)}
                           disabled={pendingRow}
-                          className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 disabled:opacity-50"
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground disabled:opacity-50"
                         >
                           {entry.is_published ? "Jadikan draft" : "Publish"}
                         </button>
@@ -248,17 +248,17 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
         </section>
       )}
 
-      <h2 id="cms-save-form" className="text-lg font-bold text-slate-900 dark:text-white mb-2 scroll-mt-20">
+      <h2 id="cms-save-form" className="text-lg font-bold text-foreground mb-2 scroll-mt-20">
         Form simpan
       </h2>
-      <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+      <p className="text-sm text-muted-foreground mb-3">
         Dipakai untuk mengisi slot di atas atau kunci kustom. Klik &quot;Isi / Ubah&quot; pada kartu slot untuk mengisi
         kunci otomatis.
       </p>
 
       <form
         action={action}
-        className="grid gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 mb-6"
+        className="grid gap-4 bg-background dark:bg-card border border-border rounded-xl p-5 mb-6"
       >
         <input type="hidden" name="page_key" value={selectedPage} />
         {editingId && (
@@ -277,7 +277,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
             value={draft.section_key}
             onChange={(e) => setDraft((d) => ({ ...d, section_key: e.target.value }))}
             placeholder="section_key"
-            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 read-only:opacity-70"
+            className="px-3 py-2 rounded-lg border border-border bg-background dark:bg-muted text-foreground read-only:opacity-70"
           />
           <input
             name="entry_key"
@@ -286,7 +286,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
             value={draft.entry_key}
             onChange={(e) => setDraft((d) => ({ ...d, entry_key: e.target.value }))}
             placeholder="entry_key"
-            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 read-only:opacity-70"
+            className="px-3 py-2 rounded-lg border border-border bg-background dark:bg-muted text-foreground read-only:opacity-70"
           />
         </div>
         <textarea
@@ -295,7 +295,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
           value={draft.text}
           onChange={(e) => setDraft((d) => ({ ...d, text: e.target.value }))}
           placeholder="Isi teks yang akan tampil di situs (kosongkan tidak disarankan)"
-          className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+          className="px-3 py-2 rounded-lg border border-border bg-background dark:bg-muted text-foreground"
         />
         <div className="grid md:grid-cols-2 gap-3">
           <input
@@ -303,13 +303,13 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
             name="sort_order"
             value={draft.sort_order}
             onChange={(e) => setDraft((d) => ({ ...d, sort_order: e.target.value }))}
-            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+            className="px-3 py-2 rounded-lg border border-border bg-background dark:bg-muted text-foreground"
           />
           <select
             name="is_published"
             value={draft.is_published}
             onChange={(e) => setDraft((d) => ({ ...d, is_published: e.target.value }))}
-            className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+            className="px-3 py-2 rounded-lg border border-border bg-background dark:bg-muted text-foreground"
           >
             <option value="true">Published (tampil di situs)</option>
             <option value="false">Draft (hanya di admin)</option>
@@ -327,7 +327,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
             <button
               type="button"
               onClick={cancelEdit}
-              className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium"
+              className="px-4 py-2 rounded-lg border border-border text-foreground text-sm font-medium"
             >
               Batal edit
             </button>
@@ -347,7 +347,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
         <button
           type="button"
           onClick={() => setShowAdvanced((v) => !v)}
-          className="text-sm font-semibold text-slate-700 dark:text-slate-300 underline"
+          className="text-sm font-semibold text-foreground underline"
         >
           {showAdvanced ? "Sembunyikan" : "Tampilkan"} kunci kustom &amp; daftar mentah
         </button>
@@ -355,29 +355,29 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
 
       {showAdvanced && (
         <>
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mb-6">
-            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-slate-100 flex justify-between items-center gap-2">
+          <div className="bg-background dark:bg-card border border-border rounded-xl overflow-hidden mb-6">
+            <div className="px-4 py-3 border-b border-border text-sm font-semibold text-foreground flex justify-between items-center gap-2">
               <span>Entri kustom / luar peta ({customEntries.length})</span>
-              {pendingRow && <span className="text-xs font-normal text-slate-500">Memproses…</span>}
+              {pendingRow && <span className="text-xs font-normal text-muted-foreground">Memproses…</span>}
             </div>
-            <div className="divide-y divide-slate-200 dark:divide-slate-800">
+            <div className="divide-y divide-border">
               {customEntries.map((entry) => (
                 <div key={entry.id} className="px-4 py-3 text-sm">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-slate-900 dark:text-slate-100">
+                      <p className="font-medium text-foreground">
                         {entry.section_key} / {entry.entry_key}
                         <span
                           className={`ml-2 text-xs font-normal px-2 py-0.5 rounded ${
                             entry.is_published
                               ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200"
-                              : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                              : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {entry.is_published ? "Published" : "Draft"}
                         </span>
                       </p>
-                      <p className="text-slate-600 dark:text-slate-400 mt-1 break-words">
+                      <p className="text-muted-foreground mt-1 break-words">
                         {entry.payload?.text ?? "—"}
                       </p>
                       <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
@@ -390,7 +390,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
                         type="button"
                         onClick={() => loadEntryForEdit(entry)}
                         disabled={pendingRow}
-                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50"
+                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-muted text-foreground hover:bg-muted/80 disabled:opacity-50"
                       >
                         Edit
                       </button>
@@ -398,7 +398,7 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
                         type="button"
                         onClick={() => handleTogglePublished(entry.id)}
                         disabled={pendingRow}
-                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50"
+                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-muted text-foreground hover:bg-muted/80 disabled:opacity-50"
                       >
                         {entry.is_published ? "Draft" : "Publish"}
                       </button>
@@ -415,25 +415,25 @@ export default function ContentManager({ selectedPage, pages, initialEntries }) 
                 </div>
               ))}
               {customEntries.length === 0 && (
-                <p className="px-4 py-6 text-sm text-slate-500 dark:text-slate-400">
+                <p className="px-4 py-6 text-sm text-muted-foreground">
                   Tidak ada entri di luar daftar terpetakan.
                 </p>
               )}
             </div>
           </div>
 
-          <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-slate-100">
+          <div className="bg-muted/50 dark:bg-card/50 border border-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border text-sm font-semibold text-foreground">
               Semua entri di halaman ini ({initialEntries.length})
             </div>
-            <div className="divide-y divide-slate-200 dark:divide-slate-800 max-h-80 overflow-y-auto">
+            <div className="divide-y divide-border max-h-80 overflow-y-auto">
               {initialEntries.map((entry) => (
-                <div key={entry.id} className="px-4 py-2 text-xs font-mono text-slate-600 dark:text-slate-400">
+                <div key={entry.id} className="px-4 py-2 text-xs font-mono text-muted-foreground">
                   {entry.section_key}/{entry.entry_key} — {entry.is_published ? "pub" : "draft"}
                 </div>
               ))}
               {initialEntries.length === 0 && (
-                <p className="px-4 py-6 text-sm text-slate-500">Kosong.</p>
+                <p className="px-4 py-6 text-sm text-muted-foreground">Kosong.</p>
               )}
             </div>
           </div>

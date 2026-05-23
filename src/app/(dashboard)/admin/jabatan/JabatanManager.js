@@ -59,19 +59,19 @@ export default function JabatanManager({ initialJabatan }) {
 
   return (
     <div className="space-y-5">
-      <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-2xl overflow-hidden">
-        <div className="px-5 py-3 bg-[var(--surface-muted)] border-b border-[var(--border-primary)]">
-          <h2 className="font-semibold text-[var(--text-primary)] text-sm">
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <div className="px-5 py-3 bg-muted border-b border-border">
+          <h2 className="font-semibold text-foreground text-sm">
             Daftar Jabatan ({jabatanList.length})
           </h2>
         </div>
 
         {jabatanList.length === 0 ? (
-          <div className="p-8 text-center text-[var(--text-muted)] text-sm">
+          <div className="p-8 text-center text-muted-foreground text-sm">
             Belum ada jabatan. Tambahkan di bawah.
           </div>
         ) : (
-          <ul className="divide-y divide-[var(--border-primary)]">
+          <ul className="divide-y divide-border">
             {jabatanList.map((j) => (
               <li
                 key={j.id}
@@ -79,13 +79,13 @@ export default function JabatanManager({ initialJabatan }) {
               >
                 <GripVertical
                   size={16}
-                  className="text-[var(--text-muted)] flex-shrink-0 hidden sm:block opacity-50"
+                  className="text-muted-foreground flex-shrink-0 hidden sm:block opacity-50"
                 />
                 <div className="flex flex-col gap-1 flex-shrink-0">
                   <button
                     type="button"
                     onClick={() => handleReorder(j.id, "up")}
-                    className="p-1 rounded text-[var(--text-muted)] hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                    className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/5"
                     title="Urutan naik"
                   >
                     <ChevronUp size={16} />
@@ -93,17 +93,17 @@ export default function JabatanManager({ initialJabatan }) {
                   <button
                     type="button"
                     onClick={() => handleReorder(j.id, "down")}
-                    className="p-1 rounded text-[var(--text-muted)] hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                    className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/5"
                     title="Urutan turun"
                   >
                     <ChevronDown size={16} />
                   </button>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[var(--text-primary)] text-sm">
+                  <p className="font-semibold text-foreground text-sm">
                     {j.nama}
                   </p>
-                  <p className="text-xs text-[var(--text-muted)]">
+                  <p className="text-xs text-muted-foreground">
                     Urutan tampil: {j.urutan}
                   </p>
                 </div>
@@ -129,9 +129,9 @@ export default function JabatanManager({ initialJabatan }) {
         )}
       </div>
 
-      <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-2xl p-5">
-        <h2 className="font-semibold text-[var(--text-primary)] text-sm mb-4 flex items-center gap-2">
-          <Plus size={16} className="text-emerald-600 dark:text-emerald-400" />
+      <div className="bg-card border border-border rounded-2xl p-5">
+        <h2 className="font-semibold text-foreground text-sm mb-4 flex items-center gap-2">
+          <Plus size={16} className="text-primary" />
           Tambah Jabatan Baru
         </h2>
 
@@ -152,12 +152,12 @@ export default function JabatanManager({ initialJabatan }) {
             name="nama"
             required
             placeholder="Nama jabatan (mis: Sekretaris Putra)"
-            className="flex-1 border border-[var(--border-primary)] bg-[var(--surface-app)] text-[var(--text-primary)] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-[var(--text-muted)] transition"
+            className="flex-1 border border-border bg-background text-foreground rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-muted-foreground transition"
           />
           <button
             type="submit"
             disabled={addPending}
-            className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm flex-shrink-0"
+            className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm flex-shrink-0"
           >
             {addPending ? (
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -168,7 +168,7 @@ export default function JabatanManager({ initialJabatan }) {
           </button>
         </form>
 
-        <p className="text-xs text-[var(--text-muted)] mt-3">
+        <p className="text-xs text-muted-foreground mt-3">
           Urutan diisi otomatis (terakhir). Gunakan panah naik/turun untuk
           mengubah tampilan di halaman struktur.
         </p>

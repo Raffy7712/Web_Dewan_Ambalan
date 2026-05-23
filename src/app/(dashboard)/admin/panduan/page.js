@@ -88,14 +88,14 @@ export default function AdminPanduanPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 md:py-10">
       <div className="flex items-start gap-3 mb-8">
-        <div className="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
           <BookOpen size={22} />
         </div>
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Panduan pengurus
           </h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Ringkasan penggunaan portal Dewan Ambalan untuk pengurus baru. Untuk
             detail teknis operasional (traffic, env), gunakan juga berkas
             Kitab_Suci_Agent.txt di repositori proyek.
@@ -103,12 +103,12 @@ export default function AdminPanduanPage() {
         </div>
       </div>
 
-      <nav className="mb-10 p-4 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] text-sm">
-        <p className="font-semibold text-[var(--text-primary)] mb-2">Isi halaman</p>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-[var(--text-secondary)]">
+      <nav className="mb-10 p-4 rounded-xl border border-border bg-card text-sm">
+        <p className="font-semibold text-foreground mb-2">Isi halaman</p>
+        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
           {sections.map((s) => (
             <li key={s.id}>
-              <a href={`#${s.id}`} className="hover:text-emerald-600 dark:hover:text-emerald-400">
+              <a href={`#${s.id}`} className="hover:text-primary">
                 {s.title}
               </a>
             </li>
@@ -119,10 +119,10 @@ export default function AdminPanduanPage() {
       <div className="space-y-10">
         {sections.map((s) => (
           <section key={s.id} id={s.id} className="scroll-mt-24">
-            <h2 className="text-lg font-bold text-[var(--text-primary)] border-b border-[var(--border-primary)] pb-2 mb-3">
+            <h2 className="text-lg font-bold text-foreground border-b border-border pb-2 mb-3">
               {s.title}
             </h2>
-            <div className="space-y-3 text-sm text-[var(--text-secondary)] leading-relaxed">
+            <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
               {s.paragraphs.map((para, i) => (
                 <p key={i}>{para}</p>
               ))}
@@ -131,17 +131,17 @@ export default function AdminPanduanPage() {
         ))}
       </div>
 
-      <div className="mt-12 pt-8 border-t border-[var(--border-primary)] flex flex-wrap gap-4">
+      <div className="mt-12 pt-8 border-t border-border flex flex-wrap gap-4">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
         >
           Kembali ke ringkasan admin
           <ExternalLink size={14} />
         </Link>
         <Link
           href="/home"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"
         >
           Lihat beranda publik
         </Link>

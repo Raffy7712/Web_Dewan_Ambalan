@@ -72,8 +72,8 @@ const emptyKeluar = () => ({
   lampiran_url: "",
 });
 
-const linkBtnClass =
-  "inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors";
+  const linkBtnClass =
+    "inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-colors";
 
 export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
   const router = useRouter();
@@ -155,21 +155,21 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
   }
 
   const inputClass =
-    "w-full border border-[var(--border-primary)] bg-[var(--surface-app)] text-[var(--text-primary)] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-[var(--text-muted)]/80";
+    "w-full border border-border bg-background text-foreground rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-muted-foreground/80";
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
-      <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
+      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
         Agenda & arsip surat
       </h1>
-      <p className="text-sm text-[var(--text-secondary)] mb-4 max-w-2xl">
+      <p className="text-sm text-muted-foreground mb-4 max-w-2xl">
         Buku surat masuk dan surat keluar (arsip operasional kantor dewan). Data hanya di panel admin dan tidak
         ditampilkan ke publik. Kolom tabel sama dengan kolom unduhan Excel.
       </p>
 
-      <div className="mb-5 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
-          <FileSpreadsheet size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+      <div className="mb-5 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 rounded-xl border border-border bg-card p-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <FileSpreadsheet size={18} className="text-primary shrink-0" />
           Unduh Excel (.xlsx)
         </div>
         <div className="flex flex-wrap gap-2">
@@ -183,19 +183,19 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
             Semua (2 lembar)
           </a>
         </div>
-        <p className="text-[11px] text-[var(--text-muted)] w-full sm:ml-0">
+        <p className="text-[11px] text-muted-foreground w-full sm:ml-0">
           Unduhan memakai sesi login Anda (cookie). Buka tautan di tab yang sama setelah login sebagai admin.
         </p>
       </div>
 
-      <div className="flex gap-1 p-1 mb-6 rounded-xl bg-[var(--surface-muted)] border border-[var(--border-primary)] w-fit">
+      <div className="flex gap-1 p-1 mb-6 rounded-xl bg-muted border border-border w-fit">
         <button
           type="button"
           onClick={() => setTab("masuk")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
             tab === "masuk"
-              ? "bg-[var(--surface-elevated)] text-emerald-700 dark:text-emerald-300 shadow-sm"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              ? "bg-card text-primary shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Inbox size={16} />
@@ -206,8 +206,8 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
           onClick={() => setTab("keluar")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
             tab === "keluar"
-              ? "bg-[var(--surface-elevated)] text-emerald-700 dark:text-emerald-300 shadow-sm"
-              : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              ? "bg-card text-primary shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Send size={16} />
@@ -217,11 +217,11 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
 
       {tab === "masuk" && (
         <div className="space-y-6">
-          <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-2xl p-5">
-            <h2 className="font-semibold text-[var(--text-primary)] text-sm mb-1">
+          <div className="bg-card border border-border rounded-2xl p-5">
+            <h2 className="font-semibold text-foreground text-sm mb-1">
               {draftMasuk.id ? "Ubah surat masuk" : "Tambah surat masuk"}
             </h2>
-            <p className="text-xs text-[var(--text-muted)] mb-4">
+            <p className="text-xs text-muted-foreground mb-4">
               Tip: isi mengikuti contoh di placeholder. Tanggal pakai pemilih kalender (format disimpan YYYY-MM-DD).
             </p>
             {masukState?.error && (
@@ -230,7 +230,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
             <form action={masukAction} className="grid sm:grid-cols-2 gap-3">
               <input type="hidden" name="id" value={draftMasuk.id} />
               <label className="sm:col-span-1 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Tanggal diterima *</span>
+                <span className="text-xs font-medium text-muted-foreground">Tanggal diterima *</span>
                 <input
                   type="date"
                   name="tanggal_diterima"
@@ -242,7 +242,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </label>
               <label className="sm:col-span-1 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Tanggal surat</span>
+                <span className="text-xs font-medium text-muted-foreground">Tanggal surat</span>
                 <input
                   type="date"
                   name="tanggal_surat"
@@ -253,7 +253,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </label>
               <label className="sm:col-span-2 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Nomor surat *</span>
+                <span className="text-xs font-medium text-muted-foreground">Nomor surat *</span>
                 <input
                   type="text"
                   name="nomor_surat"
@@ -265,7 +265,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </label>
               <label className="sm:col-span-2 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Dari (pengirim / instansi) *</span>
+                <span className="text-xs font-medium text-muted-foreground">Dari (pengirim / instansi) *</span>
                 <input
                   type="text"
                   name="dari"
@@ -277,7 +277,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </label>
               <label className="sm:col-span-2 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Perihal *</span>
+                <span className="text-xs font-medium text-muted-foreground">Perihal *</span>
                 <input
                   type="text"
                   name="perihal"
@@ -289,7 +289,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </label>
               <label className="sm:col-span-2 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Catatan</span>
+                <span className="text-xs font-medium text-muted-foreground">Catatan</span>
                 <textarea
                   name="catatan"
                   rows={2}
@@ -312,10 +312,10 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </div>
               <div className="sm:col-span-2 flex flex-wrap gap-2">
-                <button
-                  type="submit"
-                  disabled={masukPending}
-                  className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl text-sm"
+                  <button
+                    type="submit"
+                    disabled={masukPending}
+                    className="bg-primary hover:bg-primary/90 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl text-sm"
                 >
                   {masukPending ? "Menyimpan…" : draftMasuk.id ? "Simpan perubahan" : "Simpan"}
                 </button>
@@ -323,7 +323,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                   <button
                     type="button"
                     onClick={() => setDraftMasuk(emptyMasuk())}
-                    className="px-5 py-2.5 rounded-xl text-sm font-medium border border-[var(--border-primary)] text-[var(--text-secondary)]"
+                    className="px-5 py-2.5 rounded-xl text-sm font-medium border border-border text-muted-foreground"
                   >
                     Batal edit
                   </button>
@@ -332,14 +332,14 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
             </form>
           </div>
 
-          <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-2xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-[var(--border-primary)] text-sm font-semibold text-[var(--text-primary)]">
+          <div className="bg-card border border-border rounded-2xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border text-sm font-semibold text-foreground">
               Daftar surat masuk ({initialMasuk.length}) — semua kolom
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[960px]">
                 <thead>
-                  <tr className="bg-[var(--surface-muted)] text-left text-[var(--text-muted)] text-[10px] uppercase tracking-wide">
+                  <tr className="bg-muted text-left text-muted-foreground text-[10px] uppercase tracking-wide">
                     <th className="px-2 py-2 font-semibold whitespace-nowrap">Tgl diterima</th>
                     <th className="px-2 py-2 font-semibold whitespace-nowrap">Tgl surat</th>
                     <th className="px-2 py-2 font-semibold">Nomor surat</th>
@@ -350,9 +350,9 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                     <th className="px-2 py-2 font-semibold w-24">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--border-primary)]">
+                <tbody className="divide-y divide-border">
                   {initialMasuk.map((row) => (
-                    <tr key={row.id} className="text-[var(--text-primary)] align-top">
+                    <tr key={row.id} className="text-foreground align-top">
                       <td className="px-2 py-2 whitespace-nowrap text-xs">{formatIdDate(row.tanggal_diterima)}</td>
                       <td className="px-2 py-2 whitespace-nowrap text-xs">{formatIdDate(row.tanggal_surat)}</td>
                       <td className="px-2 py-2 max-w-[140px] text-xs break-words" title={row.nomor_surat}>
@@ -364,10 +364,10 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                       <td className="px-2 py-2 max-w-[180px] text-xs break-words" title={row.perihal}>
                         {row.perihal}
                       </td>
-                      <td className="px-2 py-2 max-w-[160px] text-xs break-words text-[var(--text-secondary)]">
+                      <td className="px-2 py-2 max-w-[160px] text-xs break-words text-muted-foreground">
                         {clip(row.catatan, 120)}
                       </td>
-                      <td className="px-2 py-2 max-w-[120px] text-[10px] font-mono break-all text-emerald-700 dark:text-emerald-400">
+                      <td className="px-2 py-2 max-w-[120px] text-[10px] font-mono break-all text-primary">
                         {row.lampiran_url ? (
                           <a href={row.lampiran_url} className="underline" target="_blank" rel="noreferrer">
                             {clip(row.lampiran_url, 40)}
@@ -381,7 +381,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                           <button
                             type="button"
                             onClick={() => editMasuk(row)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-emerald-600"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-primary"
                             title="Edit"
                           >
                             <Pencil size={15} />
@@ -389,7 +389,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                           <button
                             type="button"
                             onClick={() => handleDeleteMasuk(row.id)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
                             title="Hapus"
                           >
                             <Trash2 size={15} />
@@ -399,7 +399,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                     </tr>
                   ))}
                   {initialMasuk.length === 0 && (
-                    <tr className="bg-[var(--surface-muted)]/35 italic text-[var(--text-secondary)]">
+                    <tr className="bg-muted/35 italic text-muted-foreground">
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {formatIdDate(CONTOH_MASUK.tanggal_diterima)}
                       </td>
@@ -411,7 +411,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                       <td className="px-2 py-2 text-xs max-w-[180px] break-words">{CONTOH_MASUK.perihal}</td>
                       <td className="px-2 py-2 text-xs max-w-[160px] break-words">{CONTOH_MASUK.catatan}</td>
                       <td className="px-2 py-2 text-[10px] font-mono break-all">{clip(CONTOH_MASUK.lampiran_url, 36)}</td>
-                      <td className="px-2 py-2 text-xs not-italic text-amber-800 dark:text-amber-200 font-medium">
+                      <td className="px-2 py-2 text-xs not-italic text-accent font-medium">
                         Contoh
                       </td>
                     </tr>
@@ -420,7 +420,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
               </table>
             </div>
             {initialMasuk.length === 0 && (
-              <p className="px-4 py-3 text-center text-xs text-[var(--text-muted)] border-t border-[var(--border-primary)]">
+              <p className="px-4 py-3 text-center text-xs text-muted-foreground border-t border-border">
                 Baris di atas hanya contoh bentuk isian; simpan data asli lewat form &quot;Tambah surat masuk&quot;.
               </p>
             )}
@@ -430,11 +430,11 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
 
       {tab === "keluar" && (
         <div className="space-y-6">
-          <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-2xl p-5">
-            <h2 className="font-semibold text-[var(--text-primary)] text-sm mb-1">
+          <div className="bg-card border border-border rounded-2xl p-5">
+            <h2 className="font-semibold text-foreground text-sm mb-1">
               {draftKeluar.id ? "Ubah surat keluar" : "Tambah surat keluar"}
             </h2>
-            <p className="text-xs text-[var(--text-muted)] mb-4">
+            <p className="text-xs text-muted-foreground mb-4">
               Kolom sama dengan file Excel surat keluar. Gunakan placeholder sebagai acuan format.
             </p>
             {keluarState?.error && (
@@ -443,7 +443,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
             <form action={keluarAction} className="grid sm:grid-cols-2 gap-3">
               <input type="hidden" name="id" value={draftKeluar.id} />
               <label className="sm:col-span-1 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Tanggal keluar *</span>
+                <span className="text-xs font-medium text-muted-foreground">Tanggal keluar *</span>
                 <input
                   type="date"
                   name="tanggal_keluar"
@@ -455,7 +455,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </label>
               <label className="sm:col-span-1 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Nomor surat *</span>
+                <span className="text-xs font-medium text-muted-foreground">Nomor surat *</span>
                 <input
                   type="text"
                   name="nomor_surat"
@@ -467,7 +467,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </label>
               <label className="sm:col-span-2 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Kepada *</span>
+                <span className="text-xs font-medium text-muted-foreground">Kepada *</span>
                 <input
                   type="text"
                   name="kepada"
@@ -479,7 +479,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </label>
               <label className="sm:col-span-2 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Perihal *</span>
+                <span className="text-xs font-medium text-muted-foreground">Perihal *</span>
                 <input
                   type="text"
                   name="perihal"
@@ -491,7 +491,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </label>
               <label className="sm:col-span-2 grid gap-1">
-                <span className="text-xs font-medium text-[var(--text-muted)]">Catatan</span>
+                <span className="text-xs font-medium text-muted-foreground">Catatan</span>
                 <textarea
                   name="catatan"
                   rows={2}
@@ -514,10 +514,10 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                 />
               </div>
               <div className="sm:col-span-2 flex flex-wrap gap-2">
-                <button
-                  type="submit"
-                  disabled={keluarPending}
-                  className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl text-sm"
+                  <button
+                    type="submit"
+                    disabled={keluarPending}
+                    className="bg-primary hover:bg-primary/90 disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl text-sm"
                 >
                   {keluarPending ? "Menyimpan…" : draftKeluar.id ? "Simpan perubahan" : "Simpan"}
                 </button>
@@ -525,7 +525,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                   <button
                     type="button"
                     onClick={() => setDraftKeluar(emptyKeluar())}
-                    className="px-5 py-2.5 rounded-xl text-sm font-medium border border-[var(--border-primary)] text-[var(--text-secondary)]"
+                    className="px-5 py-2.5 rounded-xl text-sm font-medium border border-border text-muted-foreground"
                   >
                     Batal edit
                   </button>
@@ -534,14 +534,14 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
             </form>
           </div>
 
-          <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-2xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-[var(--border-primary)] text-sm font-semibold text-[var(--text-primary)]">
+          <div className="bg-card border border-border rounded-2xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-border text-sm font-semibold text-foreground">
               Daftar surat keluar ({initialKeluar.length}) — semua kolom
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm min-w-[880px]">
                 <thead>
-                  <tr className="bg-[var(--surface-muted)] text-left text-[var(--text-muted)] text-[10px] uppercase tracking-wide">
+                  <tr className="bg-muted text-left text-muted-foreground text-[10px] uppercase tracking-wide">
                     <th className="px-2 py-2 font-semibold whitespace-nowrap">Tgl keluar</th>
                     <th className="px-2 py-2 font-semibold">Nomor surat</th>
                     <th className="px-2 py-2 font-semibold">Kepada</th>
@@ -551,9 +551,9 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                     <th className="px-2 py-2 font-semibold w-24">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--border-primary)]">
+                <tbody className="divide-y divide-border">
                   {initialKeluar.map((row) => (
-                    <tr key={row.id} className="text-[var(--text-primary)] align-top">
+                    <tr key={row.id} className="text-foreground align-top">
                       <td className="px-2 py-2 whitespace-nowrap text-xs">{formatIdDate(row.tanggal_keluar)}</td>
                       <td className="px-2 py-2 max-w-[130px] text-xs break-words" title={row.nomor_surat}>
                         {row.nomor_surat}
@@ -564,10 +564,10 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                       <td className="px-2 py-2 max-w-[180px] text-xs break-words" title={row.perihal}>
                         {row.perihal}
                       </td>
-                      <td className="px-2 py-2 max-w-[160px] text-xs break-words text-[var(--text-secondary)]">
+                      <td className="px-2 py-2 max-w-[160px] text-xs break-words text-muted-foreground">
                         {clip(row.catatan, 120)}
                       </td>
-                      <td className="px-2 py-2 max-w-[120px] text-[10px] font-mono break-all text-emerald-700 dark:text-emerald-400">
+                      <td className="px-2 py-2 max-w-[120px] text-[10px] font-mono break-all text-primary">
                         {row.lampiran_url ? (
                           <a href={row.lampiran_url} className="underline" target="_blank" rel="noreferrer">
                             {clip(row.lampiran_url, 40)}
@@ -581,7 +581,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                           <button
                             type="button"
                             onClick={() => editKeluar(row)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-muted)] hover:text-emerald-600"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-primary"
                             title="Edit"
                           >
                             <Pencil size={15} />
@@ -589,7 +589,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                           <button
                             type="button"
                             onClick={() => handleDeleteKeluar(row.id)}
-                            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
                             title="Hapus"
                           >
                             <Trash2 size={15} />
@@ -599,7 +599,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                     </tr>
                   ))}
                   {initialKeluar.length === 0 && (
-                    <tr className="bg-[var(--surface-muted)]/35 italic text-[var(--text-secondary)]">
+                    <tr className="bg-muted/35 italic text-muted-foreground">
                       <td className="px-2 py-2 text-xs whitespace-nowrap">
                         {formatIdDate(CONTOH_KELUAR.tanggal_keluar)}
                       </td>
@@ -608,7 +608,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
                       <td className="px-2 py-2 text-xs max-w-[180px] break-words">{CONTOH_KELUAR.perihal}</td>
                       <td className="px-2 py-2 text-xs max-w-[160px] break-words">{CONTOH_KELUAR.catatan}</td>
                       <td className="px-2 py-2 text-[10px] font-mono break-all">{clip(CONTOH_KELUAR.lampiran_url, 36)}</td>
-                      <td className="px-2 py-2 text-xs not-italic text-amber-800 dark:text-amber-200 font-medium">
+                      <td className="px-2 py-2 text-xs not-italic text-accent font-medium">
                         Contoh
                       </td>
                     </tr>
@@ -617,7 +617,7 @@ export default function AgendaSuratManager({ initialMasuk, initialKeluar }) {
               </table>
             </div>
             {initialKeluar.length === 0 && (
-              <p className="px-4 py-3 text-center text-xs text-[var(--text-muted)] border-t border-[var(--border-primary)]">
+              <p className="px-4 py-3 text-center text-xs text-muted-foreground border-t border-border">
                 Baris contoh tidak tersimpan di database. Isi form lalu simpan untuk data pertama Anda.
               </p>
             )}

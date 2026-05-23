@@ -32,8 +32,8 @@ export default function FeaturedProgramsManager({ initialPrograms }) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-        <h2 className="font-semibold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2">
+      <div className="bg-background dark:bg-card border border-border rounded-xl p-5">
+        <h2 className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
           <Plus size={16} className="text-emerald-600" />
           Tambah program unggulan
         </h2>
@@ -52,13 +52,13 @@ export default function FeaturedProgramsManager({ initialPrograms }) {
             name="title"
             required
             placeholder="Judul (contoh: Perkemahan & penjelajahan)"
-            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background dark:bg-muted text-foreground text-sm"
           />
           <textarea
             name="description"
             rows={3}
             placeholder="Deskripsi singkat"
-            className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+            className="w-full px-3 py-2 rounded-lg border border-border bg-background dark:bg-muted text-foreground text-sm"
           />
           <button
             type="submit"
@@ -70,24 +70,24 @@ export default function FeaturedProgramsManager({ initialPrograms }) {
         </form>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-sm font-semibold text-slate-900 dark:text-slate-100">
+      <div className="bg-background dark:bg-card border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border text-sm font-semibold text-foreground">
           Daftar program ({initialPrograms.length})
         </div>
-        <ul className="divide-y divide-slate-200 dark:divide-slate-800">
+        <ul className="divide-y divide-border">
           {initialPrograms.map((p) => (
             <li
               key={p.id}
               className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3"
             >
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-slate-900 dark:text-slate-100 text-sm">
+                <p className="font-medium text-foreground text-sm">
                   {p.title}
                 </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                   {p.description}
                 </p>
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   Urutan {p.sort_order} ·{" "}
                   {p.is_active ? "Ditampilkan di home" : "Disembunyikan"}
                 </p>
@@ -96,7 +96,7 @@ export default function FeaturedProgramsManager({ initialPrograms }) {
             </li>
           ))}
           {initialPrograms.length === 0 && (
-            <li className="px-4 py-8 text-center text-sm text-slate-500">
+            <li className="px-4 py-8 text-center text-sm text-muted-foreground">
               Belum ada data. Tambahkan program atau jalankan migration-v5.sql
               untuk data awal.
             </li>
@@ -147,7 +147,7 @@ function ProgramRowActions({ program }) {
         type="button"
         disabled={pending}
         onClick={() => move("up")}
-        className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40"
+        className="p-2 rounded-lg border border-border text-muted-foreground hover:bg-muted disabled:opacity-40"
         title="Naik"
       >
         <ChevronUp size={16} />
@@ -156,7 +156,7 @@ function ProgramRowActions({ program }) {
         type="button"
         disabled={pending}
         onClick={() => move("down")}
-        className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40"
+        className="p-2 rounded-lg border border-border text-muted-foreground hover:bg-muted disabled:opacity-40"
         title="Turun"
       >
         <ChevronDown size={16} />
@@ -165,7 +165,7 @@ function ProgramRowActions({ program }) {
         type="button"
         disabled={pending}
         onClick={toggle}
-        className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40"
+        className="p-2 rounded-lg border border-border text-muted-foreground hover:bg-muted disabled:opacity-40"
         title={program.is_active ? "Sembunyikan di home" : "Tampilkan di home"}
       >
         {program.is_active ? <EyeOff size={16} /> : <Eye size={16} />}

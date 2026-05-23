@@ -16,18 +16,18 @@ export default async function JabatanAdminPage() {
       <div className="flex items-center gap-3 mb-6">
         <Link
           href="/admin"
-          className="p-2 rounded-xl hover:bg-[var(--surface-muted)] text-[var(--text-muted)] transition-colors"
+          className="p-2 rounded-xl hover:bg-muted text-muted-foreground transition-colors"
         >
           <ArrowLeft size={18} />
         </Link>
         <div>
           <div className="flex items-center gap-2">
-            <Briefcase size={20} className="text-emerald-600 dark:text-emerald-400" />
-            <h1 className="text-2xl font-bold text-[var(--text-primary)]">
+            <Briefcase size={20} className="text-primary" />
+            <h1 className="text-2xl font-bold text-foreground">
               Kelola Jabatan
             </h1>
           </div>
-          <p className="text-[var(--text-secondary)] text-sm mt-0.5">
+          <p className="text-muted-foreground text-sm mt-0.5">
             Tambah, hapus, dan atur urutan jabatan Dewan Ambalan
           </p>
         </div>

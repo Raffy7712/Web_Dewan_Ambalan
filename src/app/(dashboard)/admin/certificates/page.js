@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 /* ── Shared helpers ────────────────────────────────────────── */
-const inputClass = "w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
+const inputClass = "w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-primary focus:border-primary";
 const labelClass = "block text-sm font-medium text-foreground mb-2";
 
 const PRAMUKA_CERT_TYPES = [
@@ -30,10 +30,10 @@ const PRAMUKA_CERT_TYPES = [
 
 function getStatusBadge(status) {
   const map = {
-    issued: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+    issued: 'bg-primary/10 text-primary',
     revoked: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
   };
-  return map[status] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
+    return map[status] || 'bg-muted text-foreground';
 }
 
 function getStatusLabel(status) {
@@ -69,7 +69,7 @@ function QRCertificateCard({ item }) {
       <div ref={qrRef} className="flex justify-center mb-3">
         <QRCodeCanvas value={verifyUrl} size={180} level="M" includeMargin={true} bgColor="#ffffff" fgColor="#000000" />
       </div>
-      <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm text-center">{item.kode}</p>
+      <p className="font-mono font-bold text-primary text-sm text-center">{item.kode}</p>
       {item.nomor && (
         <p className="text-xs text-muted-foreground text-center mt-0.5">{item.nomor}</p>
       )}
@@ -217,7 +217,7 @@ function CertificateDetailModal({ item, open, onClose }) {
       <div className="bg-card border border-border rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-5">
           <div className="flex items-center gap-2">
-            <Award size={20} className="text-emerald-600 dark:text-emerald-400" />
+            <Award size={20} className="text-primary" />
             <h3 className="text-lg font-bold text-foreground">Detail Sertifikat</h3>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
@@ -232,7 +232,7 @@ function CertificateDetailModal({ item, open, onClose }) {
         <div className="space-y-3 mb-5">
           <div className="flex justify-between">
             <span className="text-sm text-muted-foreground">Kode</span>
-            <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">{item.kode}</span>
+            <span className="font-mono text-sm font-bold text-primary">{item.kode}</span>
           </div>
           {item.nomor && (
             <div className="flex justify-between">
@@ -418,7 +418,7 @@ export default function AdminCertificatesPage() {
     a.click();
   };
 
-  const linkBtnClass = "inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors";
+  const linkBtnClass = "inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-colors";
 
   const tabs = [
     { key: 'generate', label: 'Generate', icon: Plus },
@@ -446,7 +446,7 @@ export default function AdminCertificatesPage() {
             className={cn(
               "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors",
               activeTab === tab.key
-                ? 'bg-emerald-600 text-white'
+                ? 'bg-primary text-white'
                 : 'bg-muted text-muted-foreground hover:text-foreground',
             )}
           >
@@ -462,7 +462,7 @@ export default function AdminCertificatesPage() {
           {/* Export */}
           <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <FileSpreadsheet size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <FileSpreadsheet size={18} className="text-primary shrink-0" />
               Unduh Excel (.xlsx)
             </div>
             <a href="/api/admin/vouchers/export?scope=certificate" className={linkBtnClass}>Sertifikat</a>
@@ -519,11 +519,11 @@ export default function AdminCertificatesPage() {
             {generated && (
               <div className="rounded-xl border border-border bg-card p-5 md:p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle size={18} className="text-emerald-500" />
+                  <CheckCircle size={18} className="text-primary" />
                   <h2 className="text-lg font-bold text-foreground">Berhasil ({generated.count})</h2>
                 </div>
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 rounded-lg p-3 mb-4">
-                  <p className="text-emerald-700 dark:text-emerald-300 font-medium text-sm">
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
+                  <p className="text-primary font-medium text-sm">
                     {generated.count} sertifikat berhasil dibuat
                   </p>
                 </div>
@@ -570,7 +570,7 @@ export default function AdminCertificatesPage() {
                 <input
                   type="text" placeholder="Cari kode, penerima, atau nomor..." value={search}
                   onChange={(e) => { setSearch(e.target.value); setPagination({ ...pagination, offset: 0 }); }}
-                  className="w-full pl-9 pr-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pl-9 pr-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-primary"
                 />
               </div>
               <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPagination({ ...pagination, offset: 0 }); }} className={inputClass}>
@@ -616,7 +616,7 @@ export default function AdminCertificatesPage() {
                     <tbody className="divide-y divide-border">
                       {certificates.map((c) => (
                         <tr key={c.id} className="hover:bg-muted/50 transition-colors">
-                          <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-emerald-600 dark:text-emerald-400">{c.kode}</td>
+                          <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-primary">{c.kode}</td>
                           <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden sm:table-cell">{c.nomor || '-'}</td>
                           <td className="px-4 md:px-6 py-3 text-sm text-foreground">{c.nama_penerima}</td>
                           <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden md:table-cell">{c.jenis_sertifikat}</td>
@@ -628,8 +628,8 @@ export default function AdminCertificatesPage() {
                           <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden 2xl:table-cell max-w-[200px] truncate">{c.keterangan || '-'}</td>
                           <td className="px-4 md:px-6 py-3 text-right">
                             <div className="flex justify-end gap-1">
-                              <button onClick={() => setViewCertificate(c)} className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Detail & QR"><QrCode size={15} /></button>
-                              <button onClick={() => setEditCertificate(c)} className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Edit"><Edit3 size={15} /></button>
+                              <button onClick={() => setViewCertificate(c)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors" title="Detail & QR"><QrCode size={15} /></button>
+                              <button onClick={() => setEditCertificate(c)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors" title="Edit"><Edit3 size={15} /></button>
                               <button onClick={() => setDeleteTarget({ id: c.id, name: c.kode })} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
                             </div>
                           </td>
@@ -680,7 +680,7 @@ export default function AdminCertificatesPage() {
       {toast && (
         <div className={cn(
           "fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-medium transition-all",
-          toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white',
+          toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-primary text-white',
         )}>
           {toast.message}
         </div>

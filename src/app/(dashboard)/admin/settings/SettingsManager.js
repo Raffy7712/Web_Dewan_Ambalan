@@ -44,24 +44,24 @@ export default function SettingsManager({
   return (
     <main className="max-w-3xl mx-auto px-4 py-8 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
           Site Settings
         </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <p className="text-muted-foreground">
           Kontrol perilaku global website dari dashboard admin.
         </p>
       </div>
 
       <form
         action={regAction}
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4"
+        className="bg-background dark:bg-card border border-border rounded-xl p-5 space-y-4"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-semibold text-slate-900 dark:text-white">
+            <h2 className="font-semibold text-foreground">
               Registrasi akun portal
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Jika nonaktif, halaman register ditutup dan backend menolak
               pendaftaran akun baru.
             </p>
@@ -91,7 +91,7 @@ export default function SettingsManager({
             name="enabled"
             value="false"
             disabled={regPending}
-            className="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-semibold disabled:opacity-60"
+            className="bg-muted-foreground hover:bg-muted-foreground/80 text-white px-4 py-2 rounded-lg font-semibold disabled:opacity-60"
           >
             Tutup registrasi
           </button>
@@ -108,14 +108,14 @@ export default function SettingsManager({
 
       <form
         action={ambAction}
-        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4"
+        className="bg-background dark:bg-card border border-border rounded-xl p-5 space-y-4"
       >
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h2 className="font-semibold text-slate-900 dark:text-white">
+            <h2 className="font-semibold text-foreground">
               Seleksi calon pengurus ambalan
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Mengatur form <span className="font-mono text-xs">/daftar-ambalan</span>
               , CTA di beranda, dan teks masa bakti.
             </p>
@@ -136,36 +136,36 @@ export default function SettingsManager({
             type="checkbox"
             name="ambalan_enabled"
             defaultChecked={ambalanEnabled}
-            className="h-4 w-4 rounded border-slate-400 text-emerald-600 focus:ring-emerald-500"
+            className="h-4 w-4 rounded border-border text-emerald-600 focus:ring-emerald-500"
           />
-          <span className="text-sm text-slate-700 dark:text-slate-300">
+          <span className="text-sm text-foreground">
             Buka akses form pendaftaran seleksi calon pengurus
           </span>
         </label>
 
-        <div className="grid sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <div className="grid sm:grid-cols-2 gap-4 pt-2 border-t border-border">
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <span className="text-sm font-medium text-foreground">
               Masa bakti (tampilan)
             </span>
             <input
               name="masa_bakti_display"
               defaultValue={masaDisplay}
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-border bg-background dark:bg-muted text-foreground text-sm"
               placeholder="2026/2027"
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <span className="text-sm font-medium text-foreground">
               Kunci periode database
             </span>
             <input
               name="masa_bakti_period_key"
               defaultValue={masaPeriodKey}
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-mono"
+              className="mt-1 w-full px-3 py-2 rounded-lg border border-border bg-background dark:bg-muted text-foreground text-sm font-mono"
               placeholder="2026-2027"
             />
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Harus cocok dengan unik pendaftaran per akun; ubah hanya saat ganti
               periode resmi.
             </p>

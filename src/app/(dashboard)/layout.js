@@ -7,9 +7,9 @@ export default async function DashboardLayout({ children }) {
   const isAdmin = session?.role === "admin";
 
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--surface-app)] text-[var(--text-primary)]">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Navbar isAdmin={isAdmin} />
-      <main className="flex-1 bg-[var(--surface-app)]">{children}</main>
+      <main className="flex-1 bg-background">{children}</main>
       <Footer />
     </div>
   );

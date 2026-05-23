@@ -10,17 +10,17 @@ import {
 import { Button } from '@/components/ui/button';
 
 /* ── Shared helpers ────────────────────────────────────────── */
-const inputClass = "w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
+const inputClass = "w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-primary focus:border-primary";
 const labelClass = "block text-sm font-medium text-foreground mb-2";
 
 function getStatusBadge(status) {
   const map = {
-    active: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+    active: 'bg-primary/10 text-primary',
     used: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
-    expired: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+    expired: 'bg-accent/10 text-accent',
     revoked: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300',
   };
-  return map[status] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
+  return map[status] || 'bg-muted text-foreground';
 }
 
 function getStatusLabel(status) {
@@ -40,7 +40,7 @@ function ConfirmModal({ open, title, message, onConfirm, onCancel, loading }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
         <div className="flex items-center gap-3 mb-4">
-          <AlertTriangle size={20} className="text-amber-500" />
+          <AlertTriangle size={20} className="text-accent" />
           <h3 className="text-lg font-bold text-foreground">{title}</h3>
         </div>
         <p className="text-sm text-muted-foreground mb-6">{message}</p>
@@ -261,7 +261,7 @@ export default function AdminVouchersPage() {
     a.click();
   };
 
-  const linkBtnClass = "inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors";
+  const linkBtnClass = "inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-colors";
 
   const tabs = [
     { key: 'generate', label: 'Generate', icon: Plus },
@@ -289,7 +289,7 @@ export default function AdminVouchersPage() {
             className={cn(
               "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors",
               activeTab === tab.key
-                ? 'bg-emerald-600 text-white'
+                ? 'bg-primary text-white'
                 : 'bg-muted text-muted-foreground hover:text-foreground',
             )}
           >
@@ -305,7 +305,7 @@ export default function AdminVouchersPage() {
           {/* Export */}
           <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <FileSpreadsheet size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <FileSpreadsheet size={18} className="text-primary shrink-0" />
               Unduh Excel (.xlsx)
             </div>
             <a href="/api/admin/vouchers/export?scope=voucher" className={linkBtnClass}>Voucher</a>
@@ -349,18 +349,18 @@ export default function AdminVouchersPage() {
             {generated && (
               <div className="rounded-xl border border-border bg-card p-5 md:p-6">
                 <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle size={18} className="text-emerald-500" />
+                  <CheckCircle size={18} className="text-primary" />
                   <h2 className="text-lg font-bold text-foreground">Berhasil ({generated.count})</h2>
                 </div>
-                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 rounded-lg p-3 mb-4">
-                  <p className="text-emerald-700 dark:text-emerald-300 font-medium text-sm">
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
+                  <p className="text-primary font-medium text-sm">
                     {generated.count} voucher berhasil dibuat
                   </p>
                 </div>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {generated.items.map((item, idx) => (
                     <div key={idx} className="bg-background rounded-lg p-3 border border-border">
-                      <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{item.kode}</p>
+                      <p className="font-mono font-bold text-primary text-sm">{item.kode}</p>
                       <p className="text-sm text-foreground mt-0.5">{item.judul}</p>
                       <p className="text-xs text-muted-foreground mt-1">{new Date(item.created_at).toLocaleString('id-ID')}</p>
                     </div>
@@ -388,7 +388,7 @@ export default function AdminVouchersPage() {
                 <input
                   type="text" placeholder="Cari kode atau judul..." value={search}
                   onChange={(e) => { setSearch(e.target.value); setPagination({ ...pagination, offset: 0 }); }}
-                  className="w-full pl-9 pr-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pl-9 pr-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-primary"
                 />
               </div>
               <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPagination({ ...pagination, offset: 0 }); }} className={inputClass}>
@@ -434,7 +434,7 @@ export default function AdminVouchersPage() {
                     <tbody className="divide-y divide-border">
                       {vouchers.map((v) => (
                         <tr key={v.id} className="hover:bg-muted/50 transition-colors">
-                          <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-emerald-600 dark:text-emerald-400">{v.kode}</td>
+                          <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-primary">{v.kode}</td>
                           <td className="px-4 md:px-6 py-3 text-sm text-foreground max-w-[200px] truncate">{v.judul}</td>
                           <td className="px-4 md:px-6 py-3 hidden sm:table-cell">
                             <span className={cn("inline-block px-2.5 py-0.5 rounded-full text-xs font-medium", getStatusBadge(v.status))}>{getStatusLabel(v.status)}</span>
@@ -444,7 +444,7 @@ export default function AdminVouchersPage() {
                           <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden 2xl:table-cell max-w-[200px] truncate">{v.keterangan || '-'}</td>
                           <td className="px-4 md:px-6 py-3 text-right">
                             <div className="flex justify-end gap-1">
-                              <button onClick={() => setEditVoucher(v)} className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Edit"><Edit3 size={15} /></button>
+                              <button onClick={() => setEditVoucher(v)} className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors" title="Edit"><Edit3 size={15} /></button>
                               <button onClick={() => setDeleteTarget({ id: v.id, name: v.kode })} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
                             </div>
                           </td>
@@ -494,7 +494,7 @@ export default function AdminVouchersPage() {
       {toast && (
         <div className={cn(
           "fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-medium transition-all",
-          toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white',
+          toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-primary text-white',
         )}>
           {toast.message}
         </div>

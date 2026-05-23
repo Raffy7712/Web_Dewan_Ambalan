@@ -31,11 +31,11 @@ export default function SuratMediaUpload({
   return (
     <div className="space-y-3">
       <label className="block">
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
+        <span className="text-sm font-medium text-foreground flex items-center gap-2">
           <FileUp size={16} />
           {label}
         </span>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-3">
+        <p className="text-xs text-muted-foreground mt-1 mb-3">
           Gambar/Foto lampiran surat. Max 1 file.
         </p>
       </label>
@@ -49,12 +49,12 @@ export default function SuratMediaUpload({
       />
 
       {url && (
-        <div className="flex items-center justify-between rounded-lg bg-emerald-50 dark:bg-emerald-900/20 p-3">
+        <div className="flex items-center justify-between rounded-lg bg-primary/5 p-3">
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline truncate flex-1"
+            className="text-xs text-primary hover:underline truncate flex-1"
             title={url}
           >
             {url.split("/").pop().slice(0, 50)}…

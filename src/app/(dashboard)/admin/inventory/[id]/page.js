@@ -147,15 +147,15 @@ export default function InventoryDetailPage({ params }) {
     } catch (err) { showToast('Error: ' + err.message, 'error'); }
   };
 
-  if (loading) return <div className="text-center p-8 text-[var(--text-secondary)]">Memuat data...</div>;
-  if (!item) return <div className="text-center p-8 text-[var(--text-secondary)]">Item tidak ditemukan</div>;
+  if (loading) return <div className="text-center p-8 text-muted-foreground">Memuat data...</div>;
+  if (!item) return <div className="text-center p-8 text-muted-foreground">Item tidak ditemukan</div>;
 
   const getConditionBadge = (cond) => {
     switch (cond) {
-      case 'baik': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
-      case 'perlu_perbaikan': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
+      case 'baik': return 'bg-primary/10 text-primary';
+      case 'perlu_perbaikan': return 'bg-accent/10 text-accent';
       case 'rusak': return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
-      default: return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
+      default: return 'bg-muted text-foreground';
     }
   };
 
@@ -175,23 +175,23 @@ export default function InventoryDetailPage({ params }) {
     return cat?.name || item.category_id;
   };
 
-  const inputClass = "w-full px-3 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
+  const inputClass = "w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-primary focus:border-primary";
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
       {/* Back Link */}
-      <Link href="/admin/inventory" className="inline-flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400 hover:underline mb-4">
+      <Link href="/admin/inventory" className="inline-flex items-center gap-2 text-sm text-primary hover:underline mb-4">
         <ArrowLeft size={16} /> Kembali ke inventaris
       </Link>
 
       {/* Header */}
-      <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6 mb-6">
+      <div className="rounded-xl border border-border bg-card p-5 md:p-6 mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
-            <p className="text-xs text-[var(--text-muted)] mb-1">Kode Item</p>
-            <p className="text-2xl md:text-3xl font-bold font-mono text-emerald-600 dark:text-emerald-400">{item.code}</p>
-            <h1 className="text-xl font-bold text-[var(--text-primary)] mt-2">{item.name}</h1>
-            {item.description && <p className="text-sm text-[var(--text-secondary)] mt-1">{item.description}</p>}
+            <p className="text-xs text-muted-foreground mb-1">Kode Item</p>
+            <p className="text-2xl md:text-3xl font-bold font-mono text-primary">{item.code}</p>
+            <h1 className="text-xl font-bold text-foreground mt-2">{item.name}</h1>
+            {item.description && <p className="text-sm text-muted-foreground mt-1">{item.description}</p>}
           </div>
           <div className="flex items-center gap-2">
             <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${getConditionBadge(item.condition)}`}>
@@ -199,10 +199,10 @@ export default function InventoryDetailPage({ params }) {
             </span>
             {!isEditing && (
               <div className="flex gap-1">
-                <button onClick={startEditing} className="p-2 rounded-lg hover:bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:text-emerald-600 transition-colors" title="Edit">
+                <button onClick={startEditing} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-colors" title="Edit">
                   <Edit3 size={16} />
                 </button>
-                <button onClick={() => setDeleteConfirm(true)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-[var(--text-secondary)] hover:text-red-600 transition-colors" title="Hapus">
+                <button onClick={() => setDeleteConfirm(true)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-muted-foreground hover:text-red-600 transition-colors" title="Hapus">
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -218,8 +218,8 @@ export default function InventoryDetailPage({ params }) {
       )}
 
       {/* Tab Navigation */}
-      <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] mb-6 overflow-hidden">
-        <div className="flex border-b border-[var(--border-primary)]">
+      <div className="rounded-xl border border-border bg-card mb-6 overflow-hidden">
+        <div className="flex border-b border-border">
           {[
             { key: 'overview', label: 'Overview', icon: null },
             { key: 'maintenance', label: 'Maintenance', icon: Wrench },
@@ -228,8 +228,8 @@ export default function InventoryDetailPage({ params }) {
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
               className={`flex items-center gap-1.5 px-5 py-3 text-sm font-medium transition-colors ${
                 activeTab === tab.key
-                  ? 'text-emerald-600 dark:text-emerald-400 border-b-2 border-emerald-600 dark:border-emerald-400'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                   ? 'text-primary border-b-2 border-primary'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}>
               {tab.icon && <tab.icon size={15} />}
               {tab.label}
@@ -240,23 +240,23 @@ export default function InventoryDetailPage({ params }) {
 
       {/* ── Overview Tab ────────────────────────────── */}
       {activeTab === 'overview' && (
-        <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+        <div className="rounded-xl border border-border bg-card p-5 md:p-6">
           {isEditing ? (
             <form onSubmit={handleEditSave} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Nama Barang *</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Nama Barang *</label>
                 <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required className={inputClass} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Kategori</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Kategori</label>
                   <select value={editForm.category_id} onChange={(e) => setEditForm({ ...editForm, category_id: e.target.value })} className={inputClass}>
                     <option value="">Tanpa kategori</option>
                     {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Kondisi</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Kondisi</label>
                   <select value={editForm.condition} onChange={(e) => setEditForm({ ...editForm, condition: e.target.value })} className={inputClass}>
                     <option value="baik">Baik</option>
                     <option value="perlu_perbaikan">Perlu Perbaikan</option>
@@ -265,16 +265,16 @@ export default function InventoryDetailPage({ params }) {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Deskripsi</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Deskripsi</label>
                 <textarea value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} rows={3} className={inputClass} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Jumlah</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Jumlah</label>
                   <input type="number" value={editForm.quantity} onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })} min="1" className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Unit</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Unit</label>
                   <select value={editForm.unit} onChange={(e) => setEditForm({ ...editForm, unit: e.target.value })} className={inputClass}>
                     <option value="unit">Unit</option>
                     <option value="pieces">Pieces</option>
@@ -284,25 +284,25 @@ export default function InventoryDetailPage({ params }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Lokasi</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Lokasi</label>
                   <input type="text" value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} className={inputClass} />
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Tanggal Pembelian</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Tanggal Pembelian</label>
                   <input type="date" value={editForm.purchase_date} onChange={(e) => setEditForm({ ...editForm, purchase_date: e.target.value })} className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Harga Pembelian</label>
+                  <label className="block text-sm font-medium text-foreground mb-2">Harga Pembelian</label>
                   <input type="number" value={editForm.purchase_price} onChange={(e) => setEditForm({ ...editForm, purchase_price: e.target.value })} step="0.01" className={inputClass} />
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={editLoading} className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-sm">
+                <button type="submit" disabled={editLoading} className="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 disabled:bg-muted-foreground/20 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-sm">
                   <Save size={16} /> {editLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
                 </button>
-                <button type="button" onClick={() => setIsEditing(false)} className="flex-1 bg-[var(--surface-muted)] hover:bg-[var(--surface-app)] text-[var(--text-secondary)] font-bold py-2.5 px-4 rounded-lg text-sm border border-[var(--border-primary)] transition-colors">
+                <button type="button" onClick={() => setIsEditing(false)} className="flex-1 bg-muted hover:bg-background text-muted-foreground font-bold py-2.5 px-4 rounded-lg text-sm border border-border transition-colors">
                   Batal
                 </button>
               </div>
@@ -320,8 +320,8 @@ export default function InventoryDetailPage({ params }) {
                 { label: 'Dibuat', value: item.created_at ? new Date(item.created_at).toLocaleDateString('id-ID') : '-' },
               ].map(({ label, value }) => (
                 <div key={label}>
-                  <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
-                  <p className="text-sm font-medium text-[var(--text-primary)]">{value}</p>
+                  <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                  <p className="text-sm font-medium text-foreground">{value}</p>
                 </div>
               ))}
             </div>
@@ -331,20 +331,20 @@ export default function InventoryDetailPage({ params }) {
 
       {/* ── Maintenance Tab ─────────────────────────── */}
       {activeTab === 'maintenance' && (
-        <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+        <div className="rounded-xl border border-border bg-card p-5 md:p-6">
           <div className="flex justify-between items-center mb-5">
-            <h2 className="text-lg font-bold text-[var(--text-primary)]">Riwayat Perawatan</h2>
+            <h2 className="text-lg font-bold text-foreground">Riwayat Perawatan</h2>
             <button onClick={() => setShowMaintenanceForm(!showMaintenanceForm)}
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
               <Plus size={15} /> Tambah
             </button>
           </div>
 
           {showMaintenanceForm && (
-            <form onSubmit={handleAddMaintenance} className="mb-6 p-4 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] space-y-4">
+            <form onSubmit={handleAddMaintenance} className="mb-6 p-4 border border-border rounded-lg bg-background space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Jenis Perawatan *</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Jenis Perawatan *</label>
                   <select name="maintenance_type" required className={inputClass}>
                     <option value="">-- Pilih --</option>
                     <option value="cleaning">Pembersihan</option>
@@ -354,24 +354,24 @@ export default function InventoryDetailPage({ params }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Biaya (Rp)</label>
+                  <label className="block text-sm font-medium text-foreground mb-1">Biaya (Rp)</label>
                   <input type="number" name="cost" step="0.01" className={inputClass} />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Deskripsi</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Deskripsi</label>
                 <textarea name="description" rows="2" className={inputClass} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Catatan</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Catatan</label>
                 <textarea name="notes" rows="2" className={inputClass} />
               </div>
               <div className="flex gap-2">
-                <button type="submit" className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+                <button type="submit" className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
                   <Save size={14} /> Simpan
                 </button>
                 <button type="button" onClick={() => setShowMaintenanceForm(false)}
-                  className="bg-[var(--surface-muted)] text-[var(--text-secondary)] font-medium py-2 px-4 rounded-lg text-sm border border-[var(--border-primary)] transition-colors">
+                  className="bg-muted text-muted-foreground font-medium py-2 px-4 rounded-lg text-sm border border-border transition-colors">
                   Batal
                 </button>
               </div>
@@ -380,17 +380,17 @@ export default function InventoryDetailPage({ params }) {
 
           <div className="space-y-3">
             {maintenance.length === 0 ? (
-              <p className="text-sm text-[var(--text-muted)]">Belum ada riwayat perawatan</p>
+              <p className="text-sm text-muted-foreground">Belum ada riwayat perawatan</p>
             ) : (
               maintenance.map((m) => (
-                <div key={m.id} className="border border-[var(--border-primary)] rounded-lg p-4 hover:bg-[var(--surface-muted)] transition-colors">
+                <div key={m.id} className="border border-border rounded-lg p-4 hover:bg-muted transition-colors">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-medium text-[var(--text-primary)] text-sm">{m.maintenance_type}</p>
-                      <p className="text-sm text-[var(--text-secondary)]">{m.description}</p>
-                      <p className="text-xs text-[var(--text-muted)] mt-1">{new Date(m.maintenance_date).toLocaleDateString('id-ID')}</p>
+                      <p className="font-medium text-foreground text-sm">{m.maintenance_type}</p>
+                      <p className="text-sm text-muted-foreground">{m.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{new Date(m.maintenance_date).toLocaleDateString('id-ID')}</p>
                     </div>
-                    {m.cost && <p className="font-bold text-[var(--text-primary)] text-sm">Rp {m.cost.toLocaleString('id-ID')}</p>}
+                    {m.cost && <p className="font-bold text-foreground text-sm">Rp {m.cost.toLocaleString('id-ID')}</p>}
                   </div>
                 </div>
               ))
@@ -401,19 +401,19 @@ export default function InventoryDetailPage({ params }) {
 
       {/* ── Checks Tab ──────────────────────────────── */}
       {activeTab === 'checks' && (
-        <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+        <div className="rounded-xl border border-border bg-card p-5 md:p-6">
           <div className="flex justify-between items-center mb-5">
-            <h2 className="text-lg font-bold text-[var(--text-primary)]">Riwayat Pengecekan</h2>
+            <h2 className="text-lg font-bold text-foreground">Riwayat Pengecekan</h2>
             <button onClick={() => setShowCheckForm(!showCheckForm)}
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
               <Plus size={15} /> Tambah
             </button>
           </div>
 
           {showCheckForm && (
-            <form onSubmit={handleAddCheck} className="mb-6 p-4 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] space-y-4">
+            <form onSubmit={handleAddCheck} className="mb-6 p-4 border border-border rounded-lg bg-background space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">Kondisi *</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Kondisi *</label>
                 <select name="condition" required className={inputClass}>
                   <option value="">-- Pilih --</option>
                   <option value="baik">Baik</option>
@@ -422,21 +422,21 @@ export default function InventoryDetailPage({ params }) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--text-primary)] mb-1">Catatan</label>
+                <label className="block text-sm font-medium text-foreground mb-1">Catatan</label>
                 <textarea name="notes" rows="2" className={inputClass} />
               </div>
               <div>
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" name="requires_maintenance" className="w-4 h-4 text-emerald-600 accent-emerald-600" />
-                  <span className="text-sm text-[var(--text-primary)]">Perlu Perawatan</span>
+                  <input type="checkbox" name="requires_maintenance" className="w-4 h-4 text-primary accent-primary" />
+                  <span className="text-sm text-foreground">Perlu Perawatan</span>
                 </label>
               </div>
               <div className="flex gap-2">
-                <button type="submit" className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+                <button type="submit" className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
                   <Save size={14} /> Simpan
                 </button>
                 <button type="button" onClick={() => setShowCheckForm(false)}
-                  className="bg-[var(--surface-muted)] text-[var(--text-secondary)] font-medium py-2 px-4 rounded-lg text-sm border border-[var(--border-primary)] transition-colors">
+                  className="bg-muted text-muted-foreground font-medium py-2 px-4 rounded-lg text-sm border border-border transition-colors">
                   Batal
                 </button>
               </div>
@@ -445,27 +445,27 @@ export default function InventoryDetailPage({ params }) {
 
           <div className="space-y-3">
             {checks.length === 0 ? (
-              <p className="text-sm text-[var(--text-muted)]">Belum ada riwayat pengecekan</p>
+              <p className="text-sm text-muted-foreground">Belum ada riwayat pengecekan</p>
             ) : (
               checks.map((check) => (
                 <div key={check.id}
                   className={`border rounded-lg p-4 ${
                     check.condition === 'baik'
-                      ? 'border-emerald-200 dark:border-emerald-800/40 bg-emerald-50 dark:bg-emerald-900/10'
+                       ? 'border-primary/20 bg-primary/5'
                       : check.condition === 'perlu_perbaikan'
-                      ? 'border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-900/10'
+                       ? 'border-accent/20 bg-accent/5'
                       : 'border-red-200 dark:border-red-800/40 bg-red-50 dark:bg-red-900/10'
                   }`}>
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-medium text-sm text-[var(--text-primary)]">
+                      <p className="font-medium text-sm text-foreground">
                         Kondisi: <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getConditionBadge(check.condition)}`}>{getConditionLabel(check.condition)}</span>
                       </p>
-                      <p className="text-sm text-[var(--text-secondary)] mt-1">{check.notes}</p>
-                      <p className="text-xs text-[var(--text-muted)] mt-2">{new Date(check.check_date).toLocaleDateString('id-ID')}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{check.notes}</p>
+                      <p className="text-xs text-muted-foreground mt-2">{new Date(check.check_date).toLocaleDateString('id-ID')}</p>
                     </div>
                     {check.requires_maintenance && (
-                      <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs px-2 py-1 rounded font-medium">Perlu Perbaikan</span>
+                      <span className="bg-accent/10 text-accent text-xs px-2 py-1 rounded font-medium">Perlu Perbaikan</span>
                     )}
                   </div>
                 </div>
@@ -478,12 +478,12 @@ export default function InventoryDetailPage({ params }) {
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+          <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
             <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle size={20} className="text-amber-500" />
-              <h3 className="text-lg font-bold text-[var(--text-primary)]">Konfirmasi Hapus</h3>
+              <AlertTriangle size={20} className="text-accent" />
+              <h3 className="text-lg font-bold text-foreground">Konfirmasi Hapus</h3>
             </div>
-            <p className="text-sm text-[var(--text-secondary)] mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               Apakah Anda yakin ingin menghapus item &quot;{item.name}&quot; ({item.code})? Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex gap-3">
@@ -492,7 +492,7 @@ export default function InventoryDetailPage({ params }) {
                 {deleteLoading ? 'Menghapus...' : 'Hapus'}
               </button>
               <button onClick={() => setDeleteConfirm(false)} disabled={deleteLoading}
-                className="flex-1 bg-[var(--surface-muted)] text-[var(--text-secondary)] font-medium py-2 px-4 rounded-lg text-sm border border-[var(--border-primary)]">
+                className="flex-1 bg-muted text-muted-foreground font-medium py-2 px-4 rounded-lg text-sm border border-border">
                 Batal
               </button>
             </div>
@@ -505,7 +505,7 @@ export default function InventoryDetailPage({ params }) {
         <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transition-all ${
           toast.type === 'error'
             ? 'bg-red-50 dark:bg-red-900/80 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
-            : 'bg-emerald-50 dark:bg-emerald-900/80 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+            : 'bg-primary/10 border-primary/20 text-primary'
         }`}>
           {toast.type === 'error' ? <AlertTriangle size={16} /> : <CheckCircle size={16} />}
           {toast.message}

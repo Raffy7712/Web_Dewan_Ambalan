@@ -34,32 +34,32 @@ export default function StaffRoleManager({
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 md:py-8">
-      <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
+      <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
         Manajemen admin
       </h1>
-      <p className="text-sm text-[var(--text-secondary)] mb-2 max-w-2xl">
+      <p className="text-sm text-muted-foreground mb-2 max-w-2xl">
         Ubah peran akun aktif (anggota, moderator, atau admin). Moderator mengikuti
         matriks izin di{" "}
         <Link
           href="/admin/permissions"
-          className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+          className="font-semibold text-primary hover:underline"
         >
           Role &amp; izin
         </Link>
         . Untuk memblokir atau membuka blokir akun, gunakan{" "}
         <Link
           href="/admin/users"
-          className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+          className="font-semibold text-primary hover:underline"
         >
           Akun &amp; blokir
         </Link>
         .
       </p>
-      <p className="text-xs text-[var(--text-muted)] mb-6">
+      <p className="text-xs text-muted-foreground mb-6">
         Admin aktif saat ini:{" "}
-        <span className="font-semibold text-[var(--text-primary)]">{adminActiveCount}</span>
+        <span className="font-semibold text-foreground">{adminActiveCount}</span>
         {adminActiveCount <= 1 ? (
-          <span className="text-amber-600 dark:text-amber-400">
+          <span className="text-accent">
             {" "}
             — tambahkan admin cadangan sebelum menurunkan peran admin terakhir.
           </span>
@@ -73,16 +73,16 @@ export default function StaffRoleManager({
         </div>
       )}
       {state?.success && (
-        <div className="mb-4 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-900/20 dark:text-emerald-200">
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
           <CheckCircle size={18} className="shrink-0 mt-0.5" />
           Peran berhasil diperbarui.
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)]">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card">
         <table className="w-full text-sm text-left">
           <thead>
-            <tr className="border-b border-[var(--border-primary)] text-[var(--text-muted)]">
+            <tr className="border-b border-border text-muted-foreground">
               <th className="px-4 py-3 font-semibold">Nama</th>
               <th className="px-4 py-3 font-semibold">Username</th>
               <th className="px-4 py-3 font-semibold hidden lg:table-cell">Email</th>
@@ -97,30 +97,30 @@ export default function StaffRoleManager({
               return (
                 <tr
                   key={a.id}
-                  className="border-b border-[var(--border-primary)] last:border-0 hover:bg-[var(--surface-muted)]/60"
+                  className="border-b border-border last:border-0 hover:bg-muted/60"
                 >
-                  <td className="px-4 py-3 font-medium text-[var(--text-primary)]">
+                  <td className="px-4 py-3 font-medium text-foreground">
                     <span className="flex items-center gap-1.5">
                       {a.display_name}
                       {a.role === "admin" && (
                         <Shield
                           size={14}
-                          className="text-emerald-600 shrink-0"
+                          className="text-primary shrink-0"
                           aria-label="admin"
                         />
                       )}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-[var(--text-secondary)] font-mono text-xs">
+                  <td className="px-4 py-3 text-muted-foreground font-mono text-xs">
                     {a.username}
                   </td>
-                  <td className="px-4 py-3 text-[var(--text-secondary)] text-xs hidden lg:table-cell max-w-[200px] truncate">
+                  <td className="px-4 py-3 text-muted-foreground text-xs hidden lg:table-cell max-w-[200px] truncate">
                     {a.email ?? "—"}
                   </td>
-                  <td className="px-4 py-3 capitalize text-[var(--text-secondary)]">
+                  <td className="px-4 py-3 capitalize text-muted-foreground">
                     {a.role}
                     {!a.is_active && (
-                      <span className="ml-1 text-xs text-slate-500">(nonaktif)</span>
+                      <span className="ml-1 text-xs text-muted-foreground">(nonaktif)</span>
                     )}
                     {a.banned && (
                       <span className="ml-1 text-xs text-red-600">(terblokir)</span>
@@ -128,7 +128,7 @@ export default function StaffRoleManager({
                   </td>
                   <td className="px-4 py-3">
                     {locked ? (
-                      <span className="text-xs text-[var(--text-muted)]">
+                      <span className="text-xs text-muted-foreground">
                         {!a.is_active
                           ? "—"
                           : isSelf
@@ -141,7 +141,7 @@ export default function StaffRoleManager({
                         <select
                           name="role"
                           defaultValue={a.role}
-                          className="rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-2 py-1.5 text-xs font-medium text-[var(--text-primary)]"
+                          className="rounded-lg border border-border bg-background px-2 py-1.5 text-xs font-medium text-foreground"
                         >
                           {ROLES.map((r) => (
                             <option key={r.value} value={r.value}>
@@ -152,7 +152,7 @@ export default function StaffRoleManager({
                         <button
                           type="submit"
                           disabled={pending}
-                          className="rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+                          className="rounded-lg bg-primary px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
                         >
                           Simpan
                         </button>

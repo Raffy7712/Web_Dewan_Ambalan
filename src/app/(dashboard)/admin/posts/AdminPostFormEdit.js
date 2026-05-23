@@ -73,7 +73,7 @@ export default function AdminPostFormEdit({ initialPost }) {
       >
         <div className="grid gap-4">
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <span className="text-sm font-medium text-foreground">
               Judul
             </span>
             <input
@@ -81,26 +81,26 @@ export default function AdminPostFormEdit({ initialPost }) {
               required
               maxLength={200}
               defaultValue={initialPost.title}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               placeholder="Judul singkat yang menarik"
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <span className="text-sm font-medium text-foreground">
               Slug URL (tidak dapat diubah)
             </span>
             <input
               type="text"
               value={initialPost.slug}
               disabled
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-mono text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-400"
+              className="mt-1 w-full rounded-lg border border-border bg-muted px-3 py-2 text-sm font-mono text-muted-foreground"
             />
-            <span className="text-xs text-slate-500 mt-1 block">
+            <span className="text-xs text-muted-foreground mt-1 block">
               Slug ini tidak dapat diubah untuk menjaga URL publik tetap stabil.
             </span>
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <span className="text-sm font-medium text-foreground">
               Ringkasan
             </span>
             <textarea
@@ -109,19 +109,19 @@ export default function AdminPostFormEdit({ initialPost }) {
               rows={3}
               maxLength={500}
               defaultValue={initialPost.description}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               placeholder="1–3 kalimat untuk daftar berita dan email notifikasi"
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <span className="text-sm font-medium text-foreground">
               Isi lengkap (opsional)
             </span>
             <textarea
               name="content"
               rows={8}
               defaultValue={initialPost.content || ""}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               placeholder="Narasi di halaman detail (boleh kosong untuk album foto saja)"
             />
           </label>
@@ -130,7 +130,7 @@ export default function AdminPostFormEdit({ initialPost }) {
         {initialPost.category === "kegiatan" && (
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              <span className="text-sm font-medium text-foreground">
                 Tanggal kegiatan
               </span>
               <input
@@ -138,18 +138,18 @@ export default function AdminPostFormEdit({ initialPost }) {
                 name="event_date"
                 required
                 defaultValue={initialPost.event_date || ""}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
               />
             </label>
             <label className="block sm:col-span-2">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              <span className="text-sm font-medium text-foreground">
                 Lokasi
               </span>
               <input
                 name="event_location"
                 required
                 defaultValue={initialPost.event_location || ""}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                 placeholder="Lapangan sekolah / Bumi perkemahan …"
               />
             </label>
@@ -158,11 +158,11 @@ export default function AdminPostFormEdit({ initialPost }) {
 
         <div className="space-y-4">
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground flex items-center gap-2">
               <ImagePlus size={16} />
               Upload foto (Cloudinary) — Ganti semuanya
             </span>
-            <p className="text-xs text-slate-500 mt-1 mb-3">
+            <p className="text-xs text-muted-foreground mt-1 mb-3">
               Drag & drop atau klik untuk upload. Minimal 1 dan maksimal 10 foto. Foto pertama menjadi sampul. Mengubah foto akan menghapus semua foto lama.
             </p>
             <CloudinaryMediaUpload
@@ -176,11 +176,11 @@ export default function AdminPostFormEdit({ initialPost }) {
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground flex items-center gap-2">
               <Video size={16} />
               Upload video (Cloudinary, opsional) — Ganti semuanya
             </span>
-            <p className="text-xs text-slate-500 mt-1 mb-3">
+            <p className="text-xs text-muted-foreground mt-1 mb-3">
               Maksimal 5 video. Kosongkan jika tidak ada. Mengubah video akan menghapus semua video lama.
             </p>
             <CloudinaryMediaUpload
@@ -203,9 +203,9 @@ export default function AdminPostFormEdit({ initialPost }) {
             type="checkbox"
             name="notify_email"
             defaultChecked
-            className="h-4 w-4 rounded border-slate-400 text-emerald-600"
+            className="h-4 w-4 rounded border-border text-emerald-600"
           />
-          <span className="text-sm text-slate-700 dark:text-slate-300">
+          <span className="text-sm text-foreground">
             Kirim email notifikasi tentang perubahan ke semua akun dengan alamat
             email terdaftar
           </span>
@@ -226,7 +226,7 @@ export default function AdminPostFormEdit({ initialPost }) {
           </button>
           <Link
             href="/admin/posts"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-3 text-sm font-semibold text-foreground hover:bg-muted"
           >
             Batal
           </Link>

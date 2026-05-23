@@ -74,7 +74,7 @@ export default function VoucherVerificationPage() {
       {/* Back Link */}
       <Link
         href="/home"
-        className="inline-flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400 hover:underline mb-4"
+        className="inline-flex items-center gap-2 text-sm text-primary hover:underline mb-4"
       >
         <ArrowLeft size={16} />
         Kembali ke beranda
@@ -83,25 +83,25 @@ export default function VoucherVerificationPage() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl flex items-center justify-center">
-            <ClipboardCheck size={20} className="text-emerald-700 dark:text-emerald-300" />
+          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+            <ClipboardCheck size={20} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               Verifikasi Voucher
             </h1>
           </div>
         </div>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <p className="text-sm text-muted-foreground">
           Masukkan kode voucher untuk memverifikasi validitasnya. Voucher diterbitkan oleh Dewan Ambalan.
         </p>
       </div>
 
       {/* Code Input */}
-      <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6 mb-6">
+      <div className="rounded-xl border border-border bg-card p-5 md:p-6 mb-6">
         <form id="verify-voucher-form" onSubmit={handleVerify}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Kode Voucher
             </label>
             <input
@@ -109,13 +109,13 @@ export default function VoucherVerificationPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="Contoh: VCH-2026-ABC123"
-              className="w-full px-4 py-2.5 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full px-4 py-2.5 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-primary focus:border-primary"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-sm"
+            className="w-full bg-primary hover:bg-primary/90 disabled:bg-muted-foreground/20 text-white font-bold py-2.5 px-4 rounded-lg transition-colors text-sm"
           >
             {loading ? 'Memverifikasi...' : 'Verifikasi Voucher'}
           </button>
@@ -137,47 +137,47 @@ export default function VoucherVerificationPage() {
         <div
           className={`rounded-xl border p-5 md:p-6 mb-6 ${
             scanned.valid
-              ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/40'
+              ? 'bg-primary/5 border-primary/20'
               : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/40'
           }`}
         >
           <div className="flex items-center gap-3 mb-4">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                scanned.valid ? 'bg-emerald-500' : 'bg-red-500'
+                scanned.valid ? 'bg-primary' : 'bg-red-500'
               }`}
             >
               {scanned.valid ? <CheckCircle size={18} /> : <XCircle size={18} />}
             </div>
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">
+            <h2 className="text-xl font-bold text-foreground">
               {scanned.valid ? 'Valid' : 'Tidak Valid'}
             </h2>
           </div>
 
           <div className="space-y-2 text-sm">
-            <p className="text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-primary)]">Pesan:</span> {scanned.message}
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">Pesan:</span> {scanned.message}
             </p>
-            <p className="text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-primary)]">Tipe:</span> Voucher
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">Tipe:</span> Voucher
             </p>
-            <p className="text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-primary)]">Kode:</span> <span className="font-mono text-emerald-600 dark:text-emerald-400">{scanned.item.code}</span>
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">Kode:</span> <span className="font-mono text-primary">{scanned.item.code}</span>
             </p>
-            <p className="text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-primary)]">Nama:</span> {scanned.item.title}
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">Nama:</span> {scanned.item.title}
             </p>
             {scanned.item.description && (
-              <p className="text-[var(--text-secondary)]">
-                <span className="font-medium text-[var(--text-primary)]">Deskripsi:</span> {scanned.item.description}
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Deskripsi:</span> {scanned.item.description}
               </p>
             )}
-            <p className="text-[var(--text-secondary)]">
-              <span className="font-medium text-[var(--text-primary)]">Status:</span> {scanned.item.status}
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">Status:</span> {scanned.item.status}
             </p>
             {scanned.item.expires_at && (
-              <p className="text-[var(--text-secondary)]">
-                <span className="font-medium text-[var(--text-primary)]">Kadaluarsa:</span>{' '}
+              <p className="text-muted-foreground">
+                <span className="font-medium text-foreground">Kadaluarsa:</span>{' '}
                 {new Date(scanned.item.expires_at).toLocaleDateString('id-ID')}
               </p>
             )}
@@ -187,10 +187,10 @@ export default function VoucherVerificationPage() {
 
       {/* Scan History */}
       {scanHistory.length > 0 && (
-        <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+        <div className="rounded-xl border border-border bg-card p-5 md:p-6">
           <div className="flex items-center gap-2 mb-4">
-            <History size={17} className="text-[var(--text-muted)]" />
-            <h2 className="text-lg font-bold text-[var(--text-primary)]">
+            <History size={17} className="text-muted-foreground" />
+            <h2 className="text-lg font-bold text-foreground">
               Riwayat Pemindaian ({scanHistory.length})
             </h2>
           </div>
@@ -200,18 +200,18 @@ export default function VoucherVerificationPage() {
                 key={idx}
                 className={`p-3 rounded-lg border-l-4 ${
                   scan.valid
-                    ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-500'
+                    ? 'bg-primary/5 border-primary'
                     : 'bg-red-50 dark:bg-red-900/10 border-red-500'
                 }`}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-mono text-sm font-medium text-[var(--text-primary)]">{scan.code}</p>
-                    <p className="text-xs text-[var(--text-muted)] mt-0.5">{scan.timestamp}</p>
+                    <p className="font-mono text-sm font-medium text-foreground">{scan.code}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{scan.timestamp}</p>
                   </div>
                   <span
                     className={`text-xs font-bold ${
-                      scan.valid ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+                      scan.valid ? 'text-primary' : 'text-red-600 dark:text-red-400'
                     }`}
                   >
                     {scan.valid ? 'Valid' : 'Invalid'}

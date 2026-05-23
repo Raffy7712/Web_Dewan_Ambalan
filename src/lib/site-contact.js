@@ -17,12 +17,12 @@ export function getSiteContact() {
   const email =
     process.env.FOOTER_CONTACT_EMAIL?.trim() || "pramuka@smkalfurqon.sch.id";
   const websiteUrlRaw = process.env.FOOTER_WEBSITE_URL?.trim() || "";
-  const websiteHrefDefault = "https://smkalfurqon.sch.id";
+  const websiteHrefDefault = "https://smk.al-furqon.id/";
   const websiteHref = websiteUrlRaw || websiteHrefDefault;
   const websiteLabel =
     process.env.FOOTER_WEBSITE_LABEL?.trim() ||
     websiteDisplayLabel(websiteHref) ||
-    "smkalfurqon.sch.id";
+    "smk.al-furqon.id";
   const addressLine =
     process.env.FOOTER_ADDRESS_LINE?.trim() ||
     "Jl. Raya Bantarkawung, Brebes, Jawa Tengah 52274";

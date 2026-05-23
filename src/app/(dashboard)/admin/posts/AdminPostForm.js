@@ -66,21 +66,21 @@ export default function AdminPostForm() {
       >
         <fieldset className="space-y-3">
           <label className="block">
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+            <span className="text-sm font-semibold text-foreground">
               Kategori posting
             </span>
             <select
               name="post_kind"
               value={kind}
               onChange={(e) => setKind(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
             >
               <option value="kegiatan">Kegiatan - Jadwal & acara dengan tanggal/lokasi</option>
               <option value="pengumuman">Pengumuman - Informasi & berita penting</option>
               <option value="galeri">Album Dokumentasi - Kumpulan foto kegiatan</option>
               <option value="prestasi">Prestasi - Pencapaian & penghargaan</option>
             </select>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+            <p className="text-xs text-muted-foreground mt-1.5">
               {kind === "kegiatan" && "Muncul di jadwal /kegiatan dan tab Berita → Kegiatan. Perlu tanggal & lokasi."}
               {kind === "pengumuman" && "Muncul di tab Berita → Pengumuman. Tanggal & lokasi opsional."}
               {kind === "galeri" && "Muncul di /galeri dan tab Berita → Album. Perlu 1-10 URL foto."}
@@ -91,32 +91,32 @@ export default function AdminPostForm() {
 
         <div className="grid gap-4">
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <span className="text-sm font-medium text-foreground">
               Judul
             </span>
             <input
               name="title"
               required
               maxLength={200}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               placeholder="Judul singkat yang menarik"
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <span className="text-sm font-medium text-foreground">
               Slug URL (opsional)
             </span>
             <input
               name="slug"
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-mono text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-mono text-foreground"
               placeholder="otomatis-dari-judul"
             />
-            <span className="text-xs text-slate-500 mt-1 block">
+            <span className="text-xs text-muted-foreground mt-1 block">
               Kosongkan untuk dibuat otomatis dari judul.
             </span>
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <span className="text-sm font-medium text-foreground">
               Ringkasan
             </span>
             <textarea
@@ -124,18 +124,18 @@ export default function AdminPostForm() {
               required
               rows={3}
               maxLength={500}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               placeholder="1–3 kalimat untuk daftar berita dan email notifikasi"
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <span className="text-sm font-medium text-foreground">
               Isi lengkap (opsional)
             </span>
             <textarea
               name="content"
               rows={8}
-              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
               placeholder="Narasi di halaman detail (boleh kosong untuk album foto saja)"
             />
           </label>
@@ -144,24 +144,24 @@ export default function AdminPostForm() {
         {kind === "kegiatan" && (
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              <span className="text-sm font-medium text-foreground">
                 Tanggal kegiatan
               </span>
               <input
                 type="date"
                 name="event_date"
                 required={kind === "kegiatan"}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
               />
             </label>
             <label className="block sm:col-span-2">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              <span className="text-sm font-medium text-foreground">
                 Lokasi
               </span>
               <input
                 name="event_location"
                 required={kind === "kegiatan"}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                 placeholder="Lapangan sekolah / Bumi perkemahan …"
               />
             </label>
@@ -170,11 +170,11 @@ export default function AdminPostForm() {
 
         <div className="space-y-4">
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground flex items-center gap-2">
               <ImagePlus size={16} />
               Upload foto (Cloudinary)
             </span>
-            <p className="text-xs text-slate-500 mt-1 mb-3">
+            <p className="text-xs text-muted-foreground mt-1 mb-3">
               Drag & drop atau klik untuk upload. Minimal 1 dan maksimal 10 foto. Foto pertama menjadi sampul.
             </p>
             <CloudinaryMediaUpload
@@ -185,11 +185,11 @@ export default function AdminPostForm() {
           </label>
 
           <label className="block">
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground flex items-center gap-2">
               <Video size={16} />
               Upload video (Cloudinary, opsional)
             </span>
-            <p className="text-xs text-slate-500 mt-1 mb-3">
+            <p className="text-xs text-muted-foreground mt-1 mb-3">
               Maksimal 5 video. Kosongkan jika tidak ada.
             </p>
             <CloudinaryMediaUpload
@@ -209,9 +209,9 @@ export default function AdminPostForm() {
             type="checkbox"
             name="notify_email"
             defaultChecked
-            className="h-4 w-4 rounded border-slate-400 text-emerald-600"
+            className="h-4 w-4 rounded border-border text-emerald-600"
           />
-          <span className="text-sm text-slate-700 dark:text-slate-300">
+          <span className="text-sm text-foreground">
             Kirim email notifikasi ke semua akun yang punya alamat email
             terdaftar
           </span>

@@ -71,7 +71,7 @@ export default function AdminPostsListPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
@@ -80,16 +80,16 @@ export default function AdminPostsListPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[var(--text-primary)]">
+          <h1 className="text-3xl font-bold text-foreground">
             Kelola Postingan
           </h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Total: {posts.length} postingan
           </p>
         </div>
         <Link
           href="/admin/posts/new"
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 transition-colors"
         >
           <Plus size={16} />
           Postingan Baru
@@ -104,35 +104,35 @@ export default function AdminPostsListPage() {
       )}
 
       {posts.length === 0 ? (
-        <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-8 text-center">
-          <p className="text-[var(--text-secondary)]">
+        <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <p className="text-muted-foreground">
             Belum ada postingan.{" "}
-            <Link href="/admin/posts/new" className="font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
+            <Link href="/admin/posts/new" className="font-semibold text-primary hover:underline">
               Buat postingan pertama
             </Link>
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)]">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[var(--border-primary)] bg-[var(--surface-elevated)]">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)]">
+              <tr className="border-b border-border bg-card">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                   Judul
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)]">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                   Kategori
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)]">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)]">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                   Penulis
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-[var(--text-muted)]">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">
                   Dipublikasi
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-[var(--text-muted)]">
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">
                   Aksi
                 </th>
               </tr>
@@ -141,18 +141,18 @@ export default function AdminPostsListPage() {
               {posts.map((post) => (
                 <tr
                   key={post.id}
-                  className="border-b border-[var(--border-primary)] hover:bg-[rgba(16,185,129,0.05)] dark:hover:bg-emerald-900/10 transition-colors"
+                  className="border-b border-border hover:bg-primary/5 transition-colors"
                 >
-                  <td className="px-4 py-3 text-sm text-[var(--text-primary)]">
+                  <td className="px-4 py-3 text-sm text-foreground">
                     <Link
                       href={`/admin/posts/${post.id}/edit`}
-                      className="font-medium text-emerald-600 hover:underline dark:text-emerald-400"
+                      className="font-medium text-primary hover:underline"
                     >
                       {post.title}
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-xs">
-                    <span className="inline-block rounded-full bg-slate-100 px-2.5 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    <span className="inline-block rounded-full bg-muted text-foreground">
                       {post.category === "kegiatan"
                         ? "Kegiatan"
                         : post.category === "pengumuman"
@@ -166,17 +166,17 @@ export default function AdminPostsListPage() {
                     <span
                       className={`inline-block rounded-full px-2.5 py-1 font-medium ${
                         post.status === "published"
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                          ? "bg-primary/10 text-primary"
                           : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
                       }`}
                     >
                       {post.status === "published" ? "Dipublikasi" : "Draft"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-[var(--text-secondary)]">
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
                     {post.accounts?.display_name || "Unknown"}
                   </td>
-                  <td className="px-4 py-3 text-xs text-[var(--text-secondary)]">
+                  <td className="px-4 py-3 text-xs text-muted-foreground">
                     {post.published_at
                       ? new Date(post.published_at).toLocaleDateString("id-ID", {
                           year: "numeric",
@@ -190,9 +190,9 @@ export default function AdminPostsListPage() {
                       <Link
                         href={`/admin/posts/${post.id}/edit`}
                         title="Edit"
-                        className="rounded p-1.5 hover:bg-[rgba(16,185,129,0.1)] dark:hover:bg-emerald-900/30 transition-colors"
+                        className="rounded p-1.5 hover:bg-primary/10 transition-colors"
                       >
-                        <Edit2 size={16} className="text-emerald-600 dark:text-emerald-400" />
+                        <Edit2 size={16} className="text-primary" />
                       </Link>
                       <button
                         onClick={() =>
@@ -204,10 +204,10 @@ export default function AdminPostsListPage() {
                             ? "Jadikan draft"
                             : "Publikasikan"
                         }
-                        className="rounded p-1.5 hover:bg-[rgba(16,185,129,0.1)] disabled:opacity-50 dark:hover:bg-emerald-900/30 transition-colors"
+                        className="rounded p-1.5 hover:bg-primary/10 disabled:opacity-50 transition-colors"
                       >
                         {post.status === "published" ? (
-                          <Eye size={16} className="text-emerald-600 dark:text-emerald-400" />
+                          <Eye size={16} className="text-primary" />
                         ) : (
                           <EyeOff size={16} className="text-yellow-600 dark:text-yellow-400" />
                         )}

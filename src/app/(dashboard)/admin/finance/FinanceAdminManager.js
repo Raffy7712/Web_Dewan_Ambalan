@@ -108,19 +108,19 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 md:py-8 space-y-8">
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
           <Wallet size={22} />
         </div>
         <div className="flex-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
             Laporan keuangan ambalan
           </h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Perbarui setiap bulan: saldo awal, transaksi pemasukan/pengeluaran,
             lalu publikasikan agar tampil di halaman transparansi{" "}
             <a
               href="/keuangan"
-              className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline"
+              className="text-primary font-semibold hover:underline"
             >
               /keuangan
             </a>
@@ -130,18 +130,18 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
       </div>
 
       {/* Export */}
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
-          <FileSpreadsheet size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <FileSpreadsheet size={18} className="text-primary shrink-0" />
           Unduh Excel (.xlsx)
         </div>
         <a
           href="/api/admin/finance/export"
-          className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:border-primary hover:text-primary transition-colors"
         >
           Laporan keuangan
         </a>
-        <p className="text-[11px] text-[var(--text-muted)] w-full">
+        <p className="text-[11px] text-muted-foreground w-full">
           Berisi 2 lembar: ringkasan per periode & detail seluruh transaksi.
         </p>
       </div>
@@ -158,14 +158,14 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
       )}
 
       {/* Tambah periode */}
-      <section className="rounded-2xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5">
-        <h2 className="font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-          <Plus size={18} className="text-emerald-600" />
+      <section className="rounded-2xl border border-border bg-card p-5">
+        <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Plus size={18} className="text-primary" />
           Periode bulan baru
         </h2>
         <form action={createAction} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
           <label className="block text-sm">
-            <span className="text-[var(--text-muted)] text-xs font-medium">
+            <span className="text-muted-foreground text-xs font-medium">
               Tahun
             </span>
             <input
@@ -175,17 +175,17 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
               min={2020}
               max={2100}
               defaultValue={yNow}
-              className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
             />
           </label>
           <label className="block text-sm">
-            <span className="text-[var(--text-muted)] text-xs font-medium">
+            <span className="text-muted-foreground text-xs font-medium">
               Bulan
             </span>
             <select
               name="month"
               required
-              className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
             >
               {MONTHS.map((m) => (
                 <option key={m.value} value={m.value}>
@@ -195,7 +195,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
             </select>
           </label>
           <label className="block text-sm sm:col-span-2 lg:col-span-1">
-            <span className="text-[var(--text-muted)] text-xs font-medium">
+            <span className="text-muted-foreground text-xs font-medium">
               Saldo awal (Rp)
             </span>
             <input
@@ -204,7 +204,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
               step="0.01"
               min="0"
               defaultValue="0"
-              className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
             />
           </label>
           <label className="flex items-center gap-2 text-sm pb-2 sm:col-span-2 lg:col-span-1">
@@ -212,13 +212,13 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
             Publikasikan ke publik
           </label>
           <label className="block text-sm sm:col-span-2 lg:col-span-4">
-            <span className="text-[var(--text-muted)] text-xs font-medium">
+            <span className="text-muted-foreground text-xs font-medium">
               Catatan publik (opsional)
             </span>
             <textarea
               name="catatan_publik"
               rows={2}
-              className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-sm"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
               placeholder="Mis. rincian singkat atau pengingat untuk anggota"
             />
           </label>
@@ -226,7 +226,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
             <button
               type="submit"
               disabled={createPending}
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
             >
               {createPending ? "Menyimpan…" : "Simpan periode"}
             </button>
@@ -235,10 +235,10 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
       </section>
 
       {months.length === 0 ? (
-        <p className="text-sm text-[var(--text-muted)] text-center py-8">
+        <p className="text-sm text-muted-foreground text-center py-8">
           Belum ada periode. Tambahkan bulan pertama di atas. Jika error
           persisten, jalankan{" "}
-          <code className="text-xs bg-[var(--surface-muted)] px-1 rounded">
+          <code className="text-xs bg-muted px-1 rounded">
             migration-v8.sql
           </code>{" "}
           di Supabase.
@@ -246,7 +246,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
       ) : (
         <div className="grid lg:grid-cols-5 gap-6">
           <div className="lg:col-span-2 space-y-2">
-            <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wide">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               Daftar periode
             </h2>
             <ul className="space-y-2">
@@ -261,21 +261,21 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                       onClick={() => setPickedId(m.id)}
                       className={`w-full text-left rounded-xl border px-4 py-3 transition-colors ${
                         active
-                          ? "border-emerald-500 bg-emerald-50/80 dark:bg-emerald-950/30"
-                          : "border-[var(--border-primary)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-muted)]"
+                           ? "border-primary bg-primary/5"
+                          : "border-border bg-card hover:bg-muted"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-[var(--text-primary)]">
+                        <span className="font-semibold text-foreground">
                           {monthLabel(m.year, m.month)}
                         </span>
                         {m.is_published ? (
-                          <Eye size={14} className="text-emerald-600 shrink-0" />
+                          <Eye size={14} className="text-primary shrink-0" />
                         ) : (
-                          <EyeOff size={14} className="text-[var(--text-muted)] shrink-0" />
+                          <EyeOff size={14} className="text-muted-foreground shrink-0" />
                         )}
                       </div>
-                      <p className="text-xs text-[var(--text-secondary)] mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Saldo akhir:{" "}
                         <span className="font-mono font-semibold">
                           {formatRupiah(t.saldoAkhir)}
@@ -290,9 +290,9 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
 
           {selected && (
             <div className="lg:col-span-3 space-y-6">
-              <section className="rounded-2xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5">
+              <section className="rounded-2xl border border-border bg-card p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-                  <h2 className="text-lg font-bold text-[var(--text-primary)]">
+                  <h2 className="text-lg font-bold text-foreground">
                     {monthLabel(selected.year, selected.month)}
                   </h2>
                   <button
@@ -309,7 +309,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                   <input type="hidden" name="month_id" value={selected.id} />
                   <div className="grid sm:grid-cols-2 gap-3">
                     <label className="block text-sm">
-                      <span className="text-xs text-[var(--text-muted)]">
+                      <span className="text-xs text-muted-foreground">
                         Saldo awal (Rp)
                       </span>
                       <input
@@ -320,7 +320,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                         required
                         key={selected.id + String(selected.saldo_awal)}
                         defaultValue={String(selected.saldo_awal)}
-                        className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-sm"
+                        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                       />
                     </label>
                     <label className="flex items-center gap-2 text-sm pt-6">
@@ -335,61 +335,61 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                     </label>
                   </div>
                   <label className="block text-sm">
-                    <span className="text-xs text-[var(--text-muted)]">
+                    <span className="text-xs text-muted-foreground">
                       Catatan untuk publik
                     </span>
                     <textarea
                       name="catatan_publik"
                       rows={3}
                       defaultValue={selected.catatan_publik ?? ""}
-                      className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                     />
                   </label>
                   <button
                     type="submit"
                     disabled={updatePending}
-                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                    className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60"
                   >
                     {updatePending ? "Menyimpan…" : "Simpan perubahan periode"}
                   </button>
                 </form>
 
-                <div className="mt-6 grid grid-cols-3 gap-3 rounded-xl bg-[var(--surface-muted)] p-4 text-center">
+                <div className="mt-6 grid grid-cols-3 gap-3 rounded-xl bg-muted p-4 text-center">
                   <div>
-                    <p className="text-[10px] uppercase text-[var(--text-muted)]">
+                    <p className="text-[10px] uppercase text-muted-foreground">
                       Pemasukan
                     </p>
-                    <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                    <p className="text-sm font-bold text-primary">
                       {formatRupiah(totals.pemasukan)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase text-[var(--text-muted)]">
+                    <p className="text-[10px] uppercase text-muted-foreground">
                       Pengeluaran
                     </p>
-                    <p className="text-sm font-bold text-amber-700 dark:text-amber-400">
+                    <p className="text-sm font-bold text-accent">
                       {formatRupiah(totals.pengeluaran)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase text-[var(--text-muted)]">
+                    <p className="text-[10px] uppercase text-muted-foreground">
                       Saldo akhir
                     </p>
-                    <p className="text-sm font-bold text-[var(--text-primary)]">
+                    <p className="text-sm font-bold text-foreground">
                       {formatRupiah(totals.saldoAkhir)}
                     </p>
                   </div>
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5">
-                <h3 className="font-semibold text-[var(--text-primary)] mb-3">
+              <section className="rounded-2xl border border-border bg-card p-5">
+                <h3 className="font-semibold text-foreground mb-3">
                   Transaksi
                 </h3>
-                <div className="overflow-x-auto rounded-lg border border-[var(--border-primary)]">
+                <div className="overflow-x-auto rounded-lg border border-border">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-[var(--border-primary)] bg-[var(--surface-muted)] text-left text-xs text-[var(--text-muted)]">
+                      <tr className="border-b border-border bg-muted text-left text-xs text-muted-foreground">
                         <th className="px-3 py-2">Tanggal</th>
                         <th className="px-3 py-2">Jenis</th>
                         <th className="px-3 py-2">Keterangan</th>
@@ -402,7 +402,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                         <tr>
                           <td
                             colSpan={5}
-                            className="px-3 py-6 text-center text-[var(--text-muted)]"
+                            className="px-3 py-6 text-center text-muted-foreground"
                           >
                             Belum ada transaksi.
                           </td>
@@ -411,7 +411,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                         txs.map((row) => (
                           <tr
                             key={row.id}
-                            className="border-b border-[var(--border-primary)] last:border-0"
+                            className="border-b border-border last:border-0"
                           >
                             <td className="px-3 py-2 whitespace-nowrap">
                               {row.tanggal}
@@ -420,8 +420,8 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                               <span
                                 className={
                                   row.jenis === "pemasukan"
-                                    ? "text-emerald-600 font-medium"
-                                    : "text-amber-700 font-medium"
+                                    ? "text-primary font-medium"
+                                    : "text-accent font-medium"
                                 }
                               >
                                 {row.jenis}
@@ -435,7 +435,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                               <button
                                 type="button"
                                 onClick={() => onDeleteTx(row.id)}
-                                className="p-1.5 rounded text-[var(--text-muted)] hover:text-red-600"
+                                className="p-1.5 rounded text-muted-foreground hover:text-red-600"
                                 title="Hapus"
                               >
                                 <Trash2 size={14} />
@@ -451,43 +451,43 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                 <form action={txAction} className="mt-4 grid sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
                   <input type="hidden" name="month_id" value={selected.id} />
                   <label className="block text-sm lg:col-span-1">
-                    <span className="text-xs text-[var(--text-muted)]">
+                    <span className="text-xs text-muted-foreground">
                       Tanggal
                     </span>
                     <input
                       name="tanggal"
                       type="date"
                       required
-                      className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-2 py-2 text-sm"
+                      className="mt-1 w-full rounded-lg border border-border bg-background px-2 py-2 text-sm"
                     />
                   </label>
                   <label className="block text-sm lg:col-span-1">
-                    <span className="text-xs text-[var(--text-muted)]">
+                    <span className="text-xs text-muted-foreground">
                       Jenis
                     </span>
                     <select
                       name="jenis"
                       required
-                      className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-2 py-2 text-sm"
+                      className="mt-1 w-full rounded-lg border border-border bg-background px-2 py-2 text-sm"
                     >
                       <option value="pemasukan">Pemasukan</option>
                       <option value="pengeluaran">Pengeluaran</option>
                     </select>
                   </label>
                   <label className="block text-sm lg:col-span-2">
-                    <span className="text-xs text-[var(--text-muted)]">
+                    <span className="text-xs text-muted-foreground">
                       Keterangan
                     </span>
                     <input
                       name="keterangan"
                       required
                       maxLength={300}
-                      className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-sm"
+                      className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                       placeholder="Iuran, pembelian, dll."
                     />
                   </label>
                   <label className="block text-sm lg:col-span-1">
-                    <span className="text-xs text-[var(--text-muted)]">
+                    <span className="text-xs text-muted-foreground">
                       Jumlah (Rp)
                     </span>
                     <input
@@ -496,13 +496,13 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                       step="0.01"
                       min="0.01"
                       required
-                      className="mt-1 w-full rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-2 py-2 text-sm"
+                      className="mt-1 w-full rounded-lg border border-border bg-background px-2 py-2 text-sm"
                     />
                   </label>
                   <button
                     type="submit"
                     disabled={txPending}
-                    className="lg:col-span-1 rounded-lg bg-slate-800 dark:bg-slate-200 dark:text-slate-900 text-white px-3 py-2 text-sm font-semibold hover:opacity-90 disabled:opacity-60"
+                    className="lg:col-span-1 rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
                   >
                     {txPending ? "…" : "Tambah"}
                   </button>

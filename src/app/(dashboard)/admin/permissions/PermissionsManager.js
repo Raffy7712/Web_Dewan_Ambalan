@@ -30,26 +30,26 @@ export default function PermissionsManager({ keys, matrix }) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
-      <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Role Permissions</h1>
-      <p className="text-slate-600 dark:text-slate-400 mb-6">
+      <h1 className="text-3xl font-bold text-foreground mb-2">Role Permissions</h1>
+      <p className="text-muted-foreground mb-6">
         Permission granular untuk kontrol akses modul admin.
       </p>
-      <div className="overflow-x-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
+      <div className="overflow-x-auto bg-background dark:bg-card border border-border rounded-xl">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800">
-              <th className="text-left px-4 py-3 text-slate-700 dark:text-slate-300">Permission</th>
+            <tr className="border-b border-border">
+              <th className="text-left px-4 py-3 text-foreground">Permission</th>
               {ROLES.map((role) => (
-                <th key={role} className="text-left px-4 py-3 capitalize text-slate-700 dark:text-slate-300">{role}</th>
+                <th key={role} className="text-left px-4 py-3 capitalize text-foreground">{role}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {keys.map((key) => (
-              <tr key={key.key} className="border-b border-slate-100 dark:border-slate-800">
+              <tr key={key.key} className="border-b border-border">
                 <td className="px-4 py-3">
-                  <p className="font-medium text-slate-900 dark:text-slate-100">{key.label}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{key.key}</p>
+                  <p className="font-medium text-foreground">{key.label}</p>
+                  <p className="text-xs text-muted-foreground">{key.key}</p>
                 </td>
                 {ROLES.map((role) => {
                   const allowed = isAllowed(role, key.key);
@@ -62,7 +62,7 @@ export default function PermissionsManager({ keys, matrix }) {
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
                           allowed
                             ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                            : "bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                            : "bg-muted text-muted-foreground"
                         }`}
                       >
                         {allowed ? "Allowed" : "Denied"}

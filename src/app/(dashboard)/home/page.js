@@ -129,15 +129,15 @@ export default async function HomePage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[var(--surface-app)] text-[var(--text-primary)]">
-      <section className="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white py-8 sm:py-12 md:py-16 px-3 sm:px-4">
+    <main className="min-h-screen bg-background text-foreground">
+      <section className="bg-gradient-to-br from-primary to-primary/80 text-white py-8 sm:py-12 md:py-16 px-3 sm:px-4">
         <div className="max-w-6xl mx-auto">
-          <p className="text-emerald-200 text-xs font-semibold tracking-wide mb-1 sm:mb-2">
+          <p className="text-primary-foreground/80 text-xs font-semibold tracking-wide mb-1 sm:mb-2">
             {heroEyebrow}
           </p>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">{heroTitle}</h1>
-          <p className="text-base sm:text-lg font-bold text-emerald-50 mb-2 sm:mb-3">{heroSchoolLine}</p>
-          <p className="text-emerald-100 max-w-2xl text-base sm:text-lg">{heroDescription}</p>
+          <p className="text-base sm:text-lg font-bold text-primary-foreground mb-2 sm:mb-3">{heroSchoolLine}</p>
+          <p className="text-primary-foreground max-w-2xl text-base sm:text-lg">{heroDescription}</p>
         </div>
       </section>
 
@@ -148,18 +148,18 @@ export default async function HomePage() {
             return (
               <div
                 key={i}
-                className="bg-[var(--surface-elevated)] p-3 sm:p-5 rounded-lg shadow-sm border border-[var(--border-primary)] text-center hover:shadow-md transition-all"
+                className="bg-card p-3 sm:p-5 rounded-lg shadow-sm border border-border text-center hover:shadow-md transition-all"
               >
                 <div className="flex justify-center mb-1.5 sm:mb-2">
                   <Icon
-                    className="text-emerald-600 dark:text-emerald-400"
+                    className="text-primary"
                     size={20}
                   />
                 </div>
-                <div className="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="text-lg sm:text-2xl md:text-3xl font-bold text-primary">
                   {stat.value}
                 </div>
-                <div className="text-[10px] sm:text-xs text-[var(--text-secondary)] uppercase tracking-wider mt-0.5 sm:mt-1 line-clamp-2">
+                <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mt-0.5 sm:mt-1 line-clamp-2">
                   {stat.label}
                 </div>
               </div>
@@ -169,18 +169,18 @@ export default async function HomePage() {
 
         <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <section className="space-y-3 sm:space-y-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">
               {sectionFocusTitle}
             </h2>
             {focusItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-[var(--surface-elevated)] p-3 sm:p-5 rounded-lg border border-[var(--border-primary)] shadow-sm hover:shadow-md transition-all"
+                className="bg-card p-3 sm:p-5 rounded-lg border border-border shadow-sm hover:shadow-md transition-all"
               >
-                <h3 className="font-bold text-[var(--text-primary)] mb-1.5 sm:mb-2 text-sm sm:text-base">
+                <h3 className="font-bold text-foreground mb-1.5 sm:mb-2 text-sm sm:text-base">
                   {item.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {item.description}
                 </p>
               </div>
@@ -188,7 +188,7 @@ export default async function HomePage() {
           </section>
 
           <section className="space-y-3 sm:space-y-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
+            <h2 className="text-xl sm:text-2xl font-bold text-foreground">
               {sectionUpcomingTitle}
             </h2>
             <div className="space-y-2 sm:space-y-3">
@@ -197,25 +197,25 @@ export default async function HomePage() {
                   <Link
                     key={keg.key}
                     href={keg.href}
-                    className="block bg-[var(--surface-elevated)] p-3 sm:p-4 rounded-lg border border-[var(--border-primary)] shadow-sm hover:shadow-md transition-all"
+                    className="block bg-card p-3 sm:p-4 rounded-lg border border-border shadow-sm hover:shadow-md transition-all"
                   >
                     <div className="flex justify-between items-start gap-2 sm:gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-[var(--text-primary)] text-sm sm:text-base">
+                        <div className="font-semibold text-foreground text-sm sm:text-base">
                           {keg.title}
                         </div>
-                        <div className="text-[10px] sm:text-xs text-[var(--text-muted)] mt-0.5 sm:mt-1 truncate">
+                        <div className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
                           {keg.tanggal} · {keg.lokasi}
                         </div>
                       </div>
-                      <span className="text-[10px] sm:text-xs font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 whitespace-nowrap flex-shrink-0">
+                      <span className="text-[10px] sm:text-xs font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-primary/10 text-primary whitespace-nowrap flex-shrink-0">
                         {keg.kategori}
                       </span>
                     </div>
                   </Link>
                 ))
               ) : (
-                <div className="bg-[var(--surface-elevated)] p-4 sm:p-6 rounded-lg border border-dashed border-[var(--border-primary)] text-center text-[var(--text-secondary)]">
+                <div className="bg-card p-4 sm:p-6 rounded-lg border border-dashed border-border text-center text-muted-foreground">
                   <p className="text-xs sm:text-sm">
                     Tidak ada kegiatan terdekat untuk saat ini.
                   </p>
@@ -226,12 +226,12 @@ export default async function HomePage() {
         </div>
 
         {ambalanOpen && (
-          <section className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900 text-white p-4 sm:p-8 rounded-lg text-center shadow-lg border border-slate-700 dark:border-slate-800">
+          <section className="bg-card dark:bg-card text-white p-4 sm:p-8 rounded-lg text-center shadow-lg border border-border">
             <h2 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3">{ctaBlockTitle}</h2>
-            <p className="text-slate-300 mb-4 sm:mb-6 max-w-2xl mx-auto text-xs sm:text-base">{ctaDescription}</p>
+            <p className="text-muted-foreground mb-4 sm:mb-6 max-w-2xl mx-auto text-xs sm:text-base">{ctaDescription}</p>
             <Link
               href="/daftar-ambalan"
-              className="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white px-5 sm:px-8 py-2 sm:py-3 rounded-lg font-bold transition-colors shadow-lg text-xs sm:text-base"
+              className="inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white px-5 sm:px-8 py-2 sm:py-3 rounded-lg font-bold transition-colors shadow-lg text-xs sm:text-base"
             >
               {ctaButtonLabel}
             </Link>
@@ -239,7 +239,7 @@ export default async function HomePage() {
         )}
 
         {!ambalanOpen && (
-          <section className="border border-[var(--border-primary)] rounded-lg p-4 sm:p-6 text-center bg-[var(--surface-elevated)] text-[var(--text-secondary)] text-xs sm:text-sm">
+          <section className="border border-border rounded-lg p-4 sm:p-6 text-center bg-card text-muted-foreground text-xs sm:text-sm">
             {ctaClosedMessage}
           </section>
         )}

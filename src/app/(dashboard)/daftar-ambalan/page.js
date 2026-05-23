@@ -96,7 +96,7 @@ export default async function DaftarAmbalanPage() {
         Kembali ke beranda portal
       </Link>
 
-      <section className="rounded-xl overflow-hidden bg-gradient-to-br from-emerald-900 via-slate-900 to-amber-900 text-white p-6 md:p-8 mb-8">
+      <section className="rounded-xl overflow-hidden bg-gradient-to-br from-primary/80 via-card to-accent/80 text-white p-6 md:p-8 mb-8">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 text-xs font-semibold text-amber-200 mb-4">
             <CalendarDays size={14} />

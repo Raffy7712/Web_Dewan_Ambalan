@@ -25,7 +25,7 @@ export default async function Footer() {
   );
 
   return (
-    <footer className="bg-foreground text-slate-200 border-t border-emerald-900/40 mt-auto">
+    <footer className="bg-slate-950 text-foreground border-t border-primary/30 mt-auto">
       <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* Brand */}
         <div>
@@ -33,23 +33,23 @@ export default async function Footer() {
             href="/home"
             className="flex items-center gap-2.5 mb-4 group w-fit"
           >
-            <div className="w-9 h-9 rounded-md overflow-hidden bg-amber-700 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-md overflow-hidden bg-accent flex items-center justify-center flex-shrink-0">
               <LogoImage size={36} />
             </div>
             <div>
-              <p className="text-emerald-400 text-[10px] font-semibold uppercase tracking-wider leading-tight">
+              <p className="text-primary text-[10px] font-semibold uppercase tracking-wider leading-tight">
                 Gudep Brebes 02.165 / 02.166
               </p>
               <p className="text-white font-bold text-sm leading-tight mt-1">
                 Dewan Ambalan SMK Al Furqon Bantarkawung
               </p>
-              <p className="text-emerald-300 text-xs font-semibold mt-0.5">SMK Al Furqon</p>
+              <p className="text-primary text-xs font-semibold mt-0.5">SMK Al Furqon</p>
             </div>
           </Link>
-          <p className="text-slate-400 text-sm leading-relaxed">
+          <p className="text-muted-foreground text-sm leading-relaxed">
             Kwartir Ranting Bantarkawung · Kwartir Cabang Brebes.
           </p>
-          <p className="text-amber-400 text-xs mt-3 italic font-medium">{motto}</p>
+          <p className="text-accent text-xs mt-3 italic font-medium">{motto}</p>
         </div>
 
         {/* Navigation */}
@@ -62,7 +62,7 @@ export default async function Footer() {
               <li key={href}>
                 <Link
                   href={href}
-                className="text-slate-400 hover:text-white text-sm transition-colors flex items-center gap-1.5 group"
+                className="text-muted-foreground hover:text-white text-sm transition-colors flex items-center gap-1.5 group"
                 >
                   <ExternalLink
                     size={12}
@@ -81,19 +81,19 @@ export default async function Footer() {
             Kontak
           </h4>
           <ul className="space-y-3">
-            <li className="flex items-start gap-2.5 text-sm text-slate-400">
+            <li className="flex items-start gap-2.5 text-sm text-muted-foreground">
               <MapPin
                 size={15}
-                className="flex-shrink-0 mt-0.5 text-amber-500"
+                className="flex-shrink-0 mt-0.5 text-accent"
               />
               {addressLine}
             </li>
-            <li className="flex items-center gap-2.5 text-sm text-slate-400">
-              <Phone size={15} className="flex-shrink-0 text-amber-500" />
+            <li className="flex items-center gap-2.5 text-sm text-muted-foreground">
+              <Phone size={15} className="flex-shrink-0 text-accent" />
               {contactPhone}
             </li>
-            <li className="flex items-center gap-2.5 text-sm text-slate-400">
-              <Mail size={15} className="flex-shrink-0 text-amber-500" />
+            <li className="flex items-center gap-2.5 text-sm text-muted-foreground">
+              <Mail size={15} className="flex-shrink-0 text-accent" />
               <a
                 href={`mailto:${contactEmail}`}
                 className="hover:text-white transition-colors"
@@ -101,8 +101,8 @@ export default async function Footer() {
                 {contactEmail}
               </a>
             </li>
-            <li className="flex items-center gap-2.5 text-sm text-slate-400">
-              <Globe size={15} className="flex-shrink-0 text-amber-500" />
+            <li className="flex items-center gap-2.5 text-sm text-muted-foreground">
+              <Globe size={15} className="flex-shrink-0 text-accent" />
               <a
                 href={websiteHref}
                 target="_blank"
@@ -117,8 +117,8 @@ export default async function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-emerald-900/50 py-4 px-4 text-center">
-        <p className="text-slate-500 text-xs">
+      <div className="border-t border-primary/30 py-4 px-4 text-center">
+        <p className="text-muted-foreground text-xs">
           &copy; {new Date().getFullYear()} Dewan Ambalan SMK Al Furqon
           Bantarkawung. Semua hak dilindungi.
         </p>

@@ -14,10 +14,8 @@ function formatTanggal(iso) {
 }
 
 const CATEGORY_CLS = {
-  pengumuman:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  kegiatan:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+  pengumuman: "bg-primary/10 text-primary",
+  kegiatan: "bg-accent/10 text-accent",
   prestasi:
     "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300",
   galeri: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-200",
@@ -94,14 +92,14 @@ export default async function BeritaPage({ searchParams }) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <main className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-8">
+      <section className="bg-card border-b border-border py-8">
         <div className="max-w-6xl mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
             {heroTitle}
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">{heroSubtitle}</p>
+          <p className="text-muted-foreground">{heroSubtitle}</p>
         </div>
       </section>
 
@@ -116,8 +114,8 @@ export default async function BeritaPage({ searchParams }) {
                 href={key ? `/berita?kategori=${key}` : "/berita"}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   isActive
-                    ? "bg-emerald-600 text-white"
-                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500"
+                    ? "bg-primary text-white"
+                    : "bg-card text-muted-foreground border border-border hover:border-primary"
                 }`}
               >
                 {label}
@@ -127,14 +125,14 @@ export default async function BeritaPage({ searchParams }) {
         </div>
 
         {posts.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-            <Newspaper size={48} className="mx-auto mb-3 text-slate-400" />
-            <p className="font-medium text-slate-600 dark:text-slate-400">
+          <div className="text-center py-12 bg-card rounded-lg border border-border">
+            <Newspaper size={48} className="mx-auto mb-3 text-muted-foreground" />
+            <p className="font-medium text-muted-foreground">
               {emptyNoPosts}
             </p>
             <Link
               href="/berita"
-              className="mt-3 inline-block text-sm text-emerald-600 dark:text-emerald-400 hover:underline"
+              className="mt-3 inline-block text-sm text-primary hover:underline"
             >
               {emptyViewAll}
             </Link>
@@ -147,9 +145,9 @@ export default async function BeritaPage({ searchParams }) {
                 href={`/berita/${featured.slug}`}
                 className="group block mb-8"
               >
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden hover:shadow-lg transition-all">
+                <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all">
                   {featured.cover_image_url ? (
-                    <div className="relative w-full h-56 md:h-80 bg-slate-200 dark:bg-slate-800">
+                    <div className="relative w-full h-56 md:h-80 bg-muted">
                       <img
                         src={getDisplayUrl(featured.cover_image_url)}
                         alt={featured.title}
@@ -160,7 +158,7 @@ export default async function BeritaPage({ searchParams }) {
                         {(() => {
                           const cls =
                             CATEGORY_CLS[featured.category] ??
-                            "bg-slate-100 text-slate-700";
+                            "bg-muted text-foreground";
                           return (
                             <span
                               className={`text-xs px-3 py-1 rounded-full font-semibold inline-block mb-3 ${cls}`}
@@ -181,23 +179,23 @@ export default async function BeritaPage({ searchParams }) {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="p-6 border-b border-border">
                       {(() => {
                         const cls =
-                          CATEGORY_CLS[featured.category] ??
-                          "bg-slate-100 text-slate-700";
-                        return (
-                          <span
-                            className={`text-xs px-3 py-1 rounded-full font-semibold inline-block mb-3 ${cls}`}
-                          >
-                            {categoryLabel(featured.category)}
-                          </span>
-                        );
-                      })()}
-                      <h2 className="text-slate-900 dark:text-white text-2xl font-bold mb-2">
+                            CATEGORY_CLS[featured.category] ??
+                            "bg-muted text-muted-foreground";
+                          return (
+                            <span
+                              className={`text-xs px-3 py-1 rounded-full font-semibold inline-block mb-3 ${cls}`}
+                            >
+                              {categoryLabel(featured.category)}
+                            </span>
+                          );
+                        })()}
+                        <h2 className="text-foreground text-2xl font-bold mb-2">
                         {featured.title}
                       </h2>
-                      <p className="text-slate-600 dark:text-slate-400 text-sm">
+                      <p className="text-muted-foreground text-sm">
                         {formatTanggal(
                           featured.published_at ?? featured.created_at,
                         )}{" "}
@@ -207,10 +205,10 @@ export default async function BeritaPage({ searchParams }) {
                   )}
                   {featured.description && (
                     <div className="p-6">
-                      <p className="text-slate-700 dark:text-slate-300 line-clamp-2 mb-3">
+                      <p className="text-foreground line-clamp-2 mb-3">
                         {featured.description}
                       </p>
-                      <span className="inline-flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-sm group-hover:gap-3 transition-all">
+                      <span className="inline-flex items-center gap-2 text-primary font-semibold text-sm group-hover:gap-3 transition-all">
                         {readMoreLabel} <ChevronRight size={16} />
                       </span>
                     </div>
@@ -222,22 +220,22 @@ export default async function BeritaPage({ searchParams }) {
             {/* Articles Grid */}
             {rest.length > 0 && (
               <>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6 mt-10">
+                <h2 className="text-lg font-bold text-foreground mb-6 mt-10">
                   {otherPostsTitle}
                 </h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {rest.map((p) => {
                     const cls =
                       CATEGORY_CLS[p.category] ??
-                      "bg-slate-100 text-slate-700";
+                      "bg-muted text-foreground";
                     return (
                       <Link
                         key={p.id}
                         href={`/berita/${p.slug}`}
-                        className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden hover:shadow-lg transition-all"
+                        className="group bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all"
                       >
                         {p.cover_image_url && (
-                          <div className="w-full h-40 bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                          <div className="w-full h-40 bg-muted overflow-hidden">
                             <img
                               src={getDisplayUrl(p.cover_image_url)}
                               alt={p.title}
@@ -251,15 +249,15 @@ export default async function BeritaPage({ searchParams }) {
                           >
                             {categoryLabel(p.category)}
                           </span>
-                          <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2 line-clamp-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                          <h3 className="font-bold text-foreground text-base mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                             {p.title}
                           </h3>
                           {p.description && (
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
+                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                               {p.description}
                             </p>
                           )}
-                          <div className="text-xs text-slate-500 dark:text-slate-400">
+                          <div className="text-xs text-muted-foreground">
                             {formatTanggal(p.published_at ?? p.created_at)}
                           </div>
                         </div>

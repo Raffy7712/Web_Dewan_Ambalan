@@ -37,13 +37,13 @@ export default function AnggotaAdminPanel({ jabatanList, initialUsers }) {
   }
 
   return (
-    <div className="mt-10 bg-white dark:bg-[#150f2d] border border-emerald-100 dark:border-purple-900/40 rounded-xl p-6">
+    <div className="mt-10 bg-card border border-primary/20 rounded-xl p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Users size={18} className="text-emerald-600 dark:text-emerald-400" />
-        <h3 className="font-bold text-gray-800 dark:text-purple-50 text-lg">
+        <Users size={18} className="text-primary" />
+        <h3 className="font-bold text-foreground text-lg">
           Kelola Struktur Dewan Ambalan
         </h3>
-        <span className="text-xs bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-semibold">
+        <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full font-semibold">
           Admin Only
         </span>
       </div>
@@ -51,7 +51,7 @@ export default function AnggotaAdminPanel({ jabatanList, initialUsers }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-emerald-100 dark:border-purple-900/40 text-left">
+            <tr className="border-b border-primary/20 text-left">
               <th className="pb-2 text-gray-500 dark:text-purple-400 font-medium">
                 Anggota
               </th>
@@ -67,7 +67,7 @@ export default function AnggotaAdminPanel({ jabatanList, initialUsers }) {
             {allUsers.map((u) => (
               <tr
                 key={u.id}
-                className="border-b border-emerald-50 dark:border-purple-900/20 last:border-0"
+                className="border-b border-primary/10 last:border-0"
               >
                 <td className="py-2.5">
                   <p className="font-semibold text-gray-800 dark:text-purple-100">
@@ -91,7 +91,7 @@ export default function AnggotaAdminPanel({ jabatanList, initialUsers }) {
                         onChange={(e) =>
                           handleAssign(u.id, e.target.value || null)
                         }
-                        className="appearance-none bg-white dark:bg-[#1e1640] border border-gray-300 dark:border-purple-700 text-gray-800 dark:text-purple-200 text-xs rounded-lg pl-3 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-60"
+                        className="appearance-none bg-background border border-border text-foreground text-xs rounded-lg pl-3 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-60"
                       >
                         <option value="">Anggota Pramuka</option>
                         {jabatanList.map((j) => (
@@ -108,7 +108,7 @@ export default function AnggotaAdminPanel({ jabatanList, initialUsers }) {
                     {msg[u.id] === "saved" && (
                       <CheckCircle
                         size={15}
-                        className="text-emerald-500 flex-shrink-0"
+                        className="text-primary flex-shrink-0"
                       />
                     )}
                     {msg[u.id] && msg[u.id] !== "saved" && (

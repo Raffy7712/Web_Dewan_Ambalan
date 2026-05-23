@@ -53,11 +53,11 @@ export default function Navbar({ isAdmin = false }) {
           className="flex items-center gap-3 flex-shrink-0 group"
           onClick={() => setOpen(false)}
         >
-          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-emerald-600 to-emerald-700 flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg">
             <LogoImage size={36} />
           </div>
           <div className="hidden sm:block leading-tight">
-            <p className="text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold uppercase tracking-wider leading-none">
+            <p className="text-primary text-[10px] font-semibold uppercase tracking-wider leading-none">
               Gudep Brebes 02.165 / 02.166
             </p>
             <p className="text-muted-foreground text-[11px] leading-tight mt-0.5">
@@ -82,10 +82,10 @@ export default function Navbar({ isAdmin = false }) {
                   "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
                   active
                     ? isAdminLink
-                      ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
-                      : "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                      ? "bg-accent/10 text-accent"
+                      : "bg-primary/10 text-primary"
                     : isAdminLink
-                    ? "text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                    ? "text-accent hover:text-accent hover:bg-accent/5"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted",
                 )}
               >
@@ -112,7 +112,7 @@ export default function Navbar({ isAdmin = false }) {
           {/* Profile link (desktop) */}
           <Link
             href="/profil"
-            className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-colors"
+            className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
             title="Profil"
           >
             <UserCircle size={20} />
@@ -135,10 +135,10 @@ export default function Navbar({ isAdmin = false }) {
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                   active
                     ? isAdminLink
-                      ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
-                      : "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                      ? "bg-accent/10 text-accent"
+                      : "bg-primary/10 text-primary"
                     : isAdminLink
-                    ? "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                    ? "text-accent hover:bg-accent/5"
                     : "text-muted-foreground hover:bg-muted",
                 )}
               >
