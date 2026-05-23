@@ -43,11 +43,12 @@ export async function GET(request) {
       return;
     }
 
+    const vocStatusMap = { active: "Aktif", used: "Digunakan", expired: "Kadaluarsa", revoked: "Dibatalkan" };
     const rows = (data ?? []).map((r) => ({
       Kode: r.kode ?? "",
       Judul: r.judul ?? "",
       Deskripsi: r.keterangan ?? "",
-      Status: r.status ?? "",
+      Status: vocStatusMap[r.status] || r.status || "",
       "Kadaluarsa": r.kadaluarsa
         ? new Date(r.kadaluarsa).toLocaleDateString("id-ID")
         : "-",
@@ -74,7 +75,7 @@ export async function GET(request) {
     const { data, error } = await db
       .from("certificates")
       .select(
-        "kode, nama_penerima, jenis_sertifikat, penerbit, status, created_at",
+        "kode, nomor, nama_penerima, jenis_sertifikat, penerbit, status, created_at, keterangan",
       )
       .order("created_at", { ascending: false });
 
@@ -87,27 +88,32 @@ export async function GET(request) {
       return;
     }
 
+    const certStatusMap = { issued: "Diterbitkan", revoked: "Dibatalkan" };
     const rows = (data ?? []).map((r) => ({
       Kode: r.kode ?? "",
+      Nomor: r.nomor ?? "",
       "Nama Penerima": r.nama_penerima ?? "",
       "Jenis Sertifikat": r.jenis_sertifikat ?? "",
-      "Penerbit": r.penerbit ?? "",
-      Status: r.status ?? "",
+      Penerbit: r.penerbit ?? "",
+      Status: certStatusMap[r.status] || r.status || "",
       "Dibuat": r.created_at
         ? new Date(r.created_at).toLocaleDateString("id-ID")
         : "",
+      Keterangan: r.keterangan ?? "",
     }));
 
     const ws = XLSX.utils.json_to_sheet(
       rows.length > 0 ? rows : [{ Keterangan: "Belum ada data sertifikat" }],
     );
     ws["!cols"] = [
-      { wch: 20 }, // Kode
+      { wch: 22 }, // Kode
+      { wch: 38 }, // Nomor
       { wch: 25 }, // Nama Penerima
       { wch: 22 }, // Jenis Sertifikat
-      { wch: 25 }, // Dewan Ambalan
-      { wch: 12 }, // Status
+      { wch: 25 }, // Penerbit
+      { wch: 14 }, // Status
       { wch: 14 }, // Dibuat
+      { wch: 40 }, // Keterangan
     ];
     XLSX.utils.book_append_sheet(wb, ws, "Sertifikat");
   }
