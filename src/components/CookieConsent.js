@@ -12,8 +12,8 @@ function hasConsentCookie() {
 }
 
 function setConsent(value) {
-  const maxAge = 60 * 60 * 24 * 180;
-  document.cookie = `${CONSENT_COOKIE}=${value}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+  const expires = new Date(Date.now() + 15552000000).toUTCString();
+  document.cookie = `${CONSENT_COOKIE}=${value}; expires=${expires}; Path=/; SameSite=Lax; Secure`;
 }
 
 export default function CookieConsent() {
