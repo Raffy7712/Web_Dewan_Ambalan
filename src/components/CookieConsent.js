@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Cookie, ShieldCheck, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const CONSENT_COOKIE = "da_cookie_consent";
 
@@ -43,28 +44,28 @@ export default function CookieConsent() {
             </p>
           </div>
           <div className="flex flex-shrink-0 gap-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon"
               onClick={() => {
                 setConsent("essential");
                 setVisible(false);
               }}
-              className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
               aria-label="Gunakan cookies penting saja"
             >
               <X size={16} />
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => {
                 setConsent("accepted");
                 setVisible(false);
               }}
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-600"
             >
               <ShieldCheck size={16} />
               Setuju
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { cn } from '@/lib/utils';
 import {
   Ticket, Plus, Search, FileSpreadsheet, Edit3, Trash2,
   ChevronLeft, ChevronRight, X, CheckCircle, AlertTriangle,
   Download
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /* ── Shared helpers ────────────────────────────────────────── */
-const inputClass = "w-full px-4 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
-const labelClass = "block text-sm font-medium text-[var(--text-primary)] mb-2";
+const inputClass = "w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
+const labelClass = "block text-sm font-medium text-foreground mb-2";
 
 function getStatusBadge(status) {
   const map = {
@@ -36,19 +38,19 @@ function ConfirmModal({ open, title, message, onConfirm, onCancel, loading }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+      <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle size={20} className="text-amber-500" />
-          <h3 className="text-lg font-bold text-[var(--text-primary)]">{title}</h3>
+          <h3 className="text-lg font-bold text-foreground">{title}</h3>
         </div>
-        <p className="text-sm text-[var(--text-secondary)] mb-6">{message}</p>
+        <p className="text-sm text-muted-foreground mb-6">{message}</p>
         <div className="flex gap-3">
-          <button onClick={onConfirm} disabled={loading} className="flex-1 bg-red-600 hover:bg-red-500 disabled:bg-slate-400 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+          <Button onClick={onConfirm} disabled={loading} variant="destructive" className="flex-1">
             {loading ? 'Menghapus...' : 'Hapus'}
-          </button>
-          <button onClick={onCancel} disabled={loading} className="flex-1 bg-[var(--surface-muted)] text-[var(--text-secondary)] font-medium py-2 px-4 rounded-lg text-sm border border-[var(--border-primary)] transition-colors">
+          </Button>
+          <Button onClick={onCancel} disabled={loading} variant="outline" className="flex-1">
             Batal
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -82,10 +84,10 @@ function EditVoucherModal({ item, open, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-card border border-border rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-5">
-          <h3 className="text-lg font-bold text-[var(--text-primary)]">Edit Voucher</h3>
-          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"><X size={18} /></button>
+          <h3 className="text-lg font-bold text-foreground">Edit Voucher</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -114,12 +116,12 @@ function EditVoucherModal({ item, open, onClose, onSave }) {
             <input type="date" value={form.kadaluarsa} onChange={(e) => setForm({ ...form, kadaluarsa: e.target.value })} className={inputClass} />
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={saving} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+            <Button type="submit" disabled={saving} className="flex-1">
               {saving ? 'Menyimpan...' : 'Simpan'}
-            </button>
-            <button type="button" onClick={onClose} className="flex-1 bg-[var(--surface-muted)] text-[var(--text-secondary)] font-medium py-2 px-4 rounded-lg text-sm border border-[var(--border-primary)]">
+            </Button>
+            <Button type="button" onClick={onClose} variant="outline" className="flex-1">
               Batal
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -259,7 +261,7 @@ export default function AdminVouchersPage() {
     a.click();
   };
 
-  const linkBtnClass = "inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors";
+  const linkBtnClass = "inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors";
 
   const tabs = [
     { key: 'generate', label: 'Generate', icon: Plus },
@@ -270,10 +272,10 @@ export default function AdminVouchersPage() {
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
           Kelola Voucher
         </h1>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <p className="text-sm text-muted-foreground">
           Generate dan kelola voucher Dewan Ambalan. Verifikasi voucher bisa dilakukan di halaman publik.
         </p>
       </div>
@@ -284,11 +286,12 @@ export default function AdminVouchersPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors ${
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors",
               activeTab === tab.key
                 ? 'bg-emerald-600 text-white'
-                : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
+                : 'bg-muted text-muted-foreground hover:text-foreground',
+            )}
           >
             <tab.icon size={15} />
             {tab.label}
@@ -300,20 +303,20 @@ export default function AdminVouchersPage() {
       {activeTab === 'generate' && (
         <>
           {/* Export */}
-          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <FileSpreadsheet size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
               Unduh Excel (.xlsx)
             </div>
             <a href="/api/admin/vouchers/export?scope=voucher" className={linkBtnClass}>Voucher</a>
-            <p className="text-[11px] text-[var(--text-muted)] w-full">
+            <p className="text-[11px] text-muted-foreground w-full">
               Unduhan memakai sesi login Anda (cookie). Buka tautan di tab yang sama setelah login sebagai admin.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Form */}
-            <div className="lg:col-span-2 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+            <div className="lg:col-span-2 rounded-xl border border-border bg-card p-5 md:p-6">
               <form onSubmit={handleGenerate} className="space-y-5">
                 <div>
                   <label className={labelClass}>Jumlah</label>
@@ -336,18 +339,18 @@ export default function AdminVouchersPage() {
                     <p className="text-red-700 dark:text-red-300 text-sm">{genError}</p>
                   </div>
                 )}
-                <button type="submit" disabled={genLoading} className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2.5 px-4 rounded-lg transition-colors">
+                <Button type="submit" disabled={genLoading} className="w-full">
                   {genLoading ? 'Membuat...' : 'Generate Voucher'}
-                </button>
+                </Button>
               </form>
             </div>
 
             {/* Results Preview */}
             {generated && (
-              <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+              <div className="rounded-xl border border-border bg-card p-5 md:p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle size={18} className="text-emerald-500" />
-                  <h2 className="text-lg font-bold text-[var(--text-primary)]">Berhasil ({generated.count})</h2>
+                  <h2 className="text-lg font-bold text-foreground">Berhasil ({generated.count})</h2>
                 </div>
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 rounded-lg p-3 mb-4">
                   <p className="text-emerald-700 dark:text-emerald-300 font-medium text-sm">
@@ -356,17 +359,17 @@ export default function AdminVouchersPage() {
                 </div>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {generated.items.map((item, idx) => (
-                    <div key={idx} className="bg-[var(--surface-app)] rounded-lg p-3 border border-[var(--border-primary)]">
+                    <div key={idx} className="bg-background rounded-lg p-3 border border-border">
                       <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{item.kode}</p>
-                      <p className="text-sm text-[var(--text-primary)] mt-0.5">{item.judul}</p>
-                      <p className="text-xs text-[var(--text-muted)] mt-1">{new Date(item.created_at).toLocaleString('id-ID')}</p>
+                      <p className="text-sm text-foreground mt-0.5">{item.judul}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{new Date(item.created_at).toLocaleString('id-ID')}</p>
                     </div>
                   ))}
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <button onClick={handleDownloadCsv} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">
-                    <Download size={14} className="inline mr-1.5" /> CSV
-                  </button>
+                  <Button onClick={handleDownloadCsv} className="flex-1 text-sm">
+                    <Download size={14} /> CSV
+                  </Button>
                 </div>
               </div>
             )}
@@ -378,14 +381,14 @@ export default function AdminVouchersPage() {
       {activeTab === 'list' && (
         <div>
           {/* Filters */}
-          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4 mb-6">
+          <div className="rounded-xl border border-border bg-card p-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="relative md:col-span-2">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text" placeholder="Cari kode atau judul..." value={search}
                   onChange={(e) => { setSearch(e.target.value); setPagination({ ...pagination, offset: 0 }); }}
-                  className="w-full pl-9 pr-4 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pl-9 pr-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
               <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPagination({ ...pagination, offset: 0 }); }} className={inputClass}>
@@ -405,44 +408,44 @@ export default function AdminVouchersPage() {
           )}
 
           {/* Table */}
-          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
             {listLoading ? (
-              <div className="p-8 text-center"><p className="text-[var(--text-secondary)]">Memuat data...</p></div>
+              <div className="p-8 text-center"><p className="text-muted-foreground">Memuat data...</p></div>
             ) : vouchers.length === 0 ? (
               <div className="p-8 text-center">
-                <Ticket size={40} className="mx-auto text-[var(--text-muted)] mb-3" />
-                <p className="text-[var(--text-secondary)]">Tidak ada voucher ditemukan</p>
+                <Ticket size={40} className="mx-auto text-muted-foreground mb-3" />
+                <p className="text-muted-foreground">Tidak ada voucher ditemukan</p>
               </div>
             ) : (
               <>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-[var(--surface-muted)] border-b border-[var(--border-primary)]">
+                    <thead className="bg-muted border-b border-border">
                       <tr>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Kode</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Judul</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Status</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden md:table-cell">Kadaluarsa</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden lg:table-cell">Dibuat</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden 2xl:table-cell min-w-[200px]">Keterangan</th>
-                        <th className="px-4 md:px-6 py-3 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Aksi</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Kode</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Judul</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Status</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Kadaluarsa</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Dibuat</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden 2xl:table-cell min-w-[200px]">Keterangan</th>
+                        <th className="px-4 md:px-6 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Aksi</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[var(--border-primary)]">
+                    <tbody className="divide-y divide-border">
                       {vouchers.map((v) => (
-                        <tr key={v.id} className="hover:bg-[var(--surface-muted)]/50 transition-colors">
+                        <tr key={v.id} className="hover:bg-muted/50 transition-colors">
                           <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-emerald-600 dark:text-emerald-400">{v.kode}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-primary)] max-w-[200px] truncate">{v.judul}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-foreground max-w-[200px] truncate">{v.judul}</td>
                           <td className="px-4 md:px-6 py-3 hidden sm:table-cell">
-                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(v.status)}`}>{getStatusLabel(v.status)}</span>
+                            <span className={cn("inline-block px-2.5 py-0.5 rounded-full text-xs font-medium", getStatusBadge(v.status))}>{getStatusLabel(v.status)}</span>
                           </td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden md:table-cell">{v.kadaluarsa ? new Date(v.kadaluarsa).toLocaleDateString('id-ID') : '-'}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden lg:table-cell">{v.created_at ? new Date(v.created_at).toLocaleDateString('id-ID') : '-'}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden 2xl:table-cell max-w-[200px] truncate">{v.keterangan || '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden md:table-cell">{v.kadaluarsa ? new Date(v.kadaluarsa).toLocaleDateString('id-ID') : '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden lg:table-cell">{v.created_at ? new Date(v.created_at).toLocaleDateString('id-ID') : '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden 2xl:table-cell max-w-[200px] truncate">{v.keterangan || '-'}</td>
                           <td className="px-4 md:px-6 py-3 text-right">
                             <div className="flex justify-end gap-1">
-                              <button onClick={() => setEditVoucher(v)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Edit"><Edit3 size={15} /></button>
-                              <button onClick={() => setDeleteTarget({ id: v.id, name: v.kode })} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
+                              <button onClick={() => setEditVoucher(v)} className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Edit"><Edit3 size={15} /></button>
+                              <button onClick={() => setDeleteTarget({ id: v.id, name: v.kode })} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
                             </div>
                           </td>
                         </tr>
@@ -452,20 +455,20 @@ export default function AdminVouchersPage() {
                 </div>
                 {/* Pagination */}
                 {pagination.total > pagination.limit && (
-                  <div className="flex items-center justify-between px-4 md:px-6 py-3 border-t border-[var(--border-primary)]">
-                    <p className="text-xs text-[var(--text-muted)]">
+                  <div className="flex items-center justify-between px-4 md:px-6 py-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
                       {pagination.offset + 1}–{Math.min(pagination.offset + pagination.limit, pagination.total)} dari {pagination.total}
                     </p>
                     <div className="flex gap-1">
                       <button
                         onClick={() => setPagination({ ...pagination, offset: Math.max(0, pagination.offset - pagination.limit) })}
                         disabled={pagination.offset === 0}
-                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-30 transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                       ><ChevronLeft size={16} /></button>
                       <button
                         onClick={() => setPagination({ ...pagination, offset: pagination.offset + pagination.limit })}
                         disabled={pagination.offset + pagination.limit >= pagination.total}
-                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-30 transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                       ><ChevronRight size={16} /></button>
                     </div>
                   </div>
@@ -489,9 +492,10 @@ export default function AdminVouchersPage() {
 
       {/* Toast */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-medium transition-all ${
-          toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'
-        }`}>
+        <div className={cn(
+          "fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-medium transition-all",
+          toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white',
+        )}>
           {toast.message}
         </div>
       )}

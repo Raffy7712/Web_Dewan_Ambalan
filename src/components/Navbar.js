@@ -3,6 +3,7 @@ import Link from "next/link";
 import LogoImage from "./LogoImage";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 import {
   Menu,
   X,
@@ -39,13 +40,12 @@ export default function Navbar({ isAdmin = false }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Admin sees all public links + admin link
   const visibleNavLinks = isAdmin
     ? [...publicNavLinks, ...adminOnlyLinks]
     : publicNavLinks;
 
   return (
-    <nav className="sticky top-0 z-50 bg-[var(--surface-elevated)] border-b border-[var(--border-primary)] shadow-sm">
+    <nav className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link
@@ -60,10 +60,10 @@ export default function Navbar({ isAdmin = false }) {
             <p className="text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold uppercase tracking-wider leading-none">
               Gudep Brebes 02.165 / 02.166
             </p>
-            <p className="text-[var(--text-secondary)] text-[11px] leading-tight mt-0.5">
+            <p className="text-muted-foreground text-[11px] leading-tight mt-0.5">
               Dewan Ambalan SMK Al Furqon Bantarkawung
             </p>
-            <p className="text-[var(--text-primary)] text-sm font-bold leading-tight">
+            <p className="text-foreground text-sm font-bold leading-tight">
               SMK Al Furqon
             </p>
           </div>
@@ -78,15 +78,16 @@ export default function Navbar({ isAdmin = false }) {
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
                   active
                     ? isAdminLink
                       ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
                       : "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
                     : isAdminLink
                     ? "text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-muted)]"
-                }`}
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                )}
               >
                 <Icon size={16} />
                 <span className="hidden lg:inline">{label}</span>
@@ -101,7 +102,7 @@ export default function Navbar({ isAdmin = false }) {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--surface-muted)] transition-colors"
+            className="md:hidden p-2 rounded-lg text-muted-foreground hover:bg-muted transition-colors"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -121,7 +122,7 @@ export default function Navbar({ isAdmin = false }) {
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden bg-[var(--surface-elevated)] border-t border-[var(--border-primary)] px-4 py-3 flex flex-col gap-1">
+        <div className="md:hidden bg-card border-t border-border px-4 py-3 flex flex-col gap-1">
           {visibleNavLinks.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + "/");
             const isAdminLink = href === "/admin";
@@ -130,15 +131,16 @@ export default function Navbar({ isAdmin = false }) {
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                   active
                     ? isAdminLink
                       ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
                       : "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
                     : isAdminLink
                     ? "text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                    : "text-[var(--text-secondary)] hover:bg-[var(--surface-muted)]"
-                }`}
+                    : "text-muted-foreground hover:bg-muted",
+                )}
               >
                 <Icon size={18} />
                 {label}
@@ -148,7 +150,7 @@ export default function Navbar({ isAdmin = false }) {
           <Link
             href="/profil"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--surface-muted)] transition-all"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted transition-all"
           >
             <UserCircle size={18} />
             Profil

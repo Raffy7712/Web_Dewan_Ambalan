@@ -1,16 +1,19 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { cn } from '@/lib/utils';
 import {
   Award, Plus, Search, FileSpreadsheet, Edit3, Trash2,
   ChevronLeft, ChevronRight, X, CheckCircle, AlertTriangle,
   Download, QrCode, Copy
 } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 /* ── Shared helpers ────────────────────────────────────────── */
-const inputClass = "w-full px-4 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
-const labelClass = "block text-sm font-medium text-[var(--text-primary)] mb-2";
+const inputClass = "w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500";
+const labelClass = "block text-sm font-medium text-foreground mb-2";
 
 const PRAMUKA_CERT_TYPES = [
   'Sertifikat Penghargaan',
@@ -62,30 +65,32 @@ function QRCertificateCard({ item }) {
     : `https://da-alf.web.id/certificates?code=${item.kode}`;
 
   return (
-    <div className="bg-[var(--surface-app)] rounded-lg p-4 border border-[var(--border-primary)]">
+    <div className="bg-background rounded-lg p-4 border border-border">
       <div ref={qrRef} className="flex justify-center mb-3">
         <QRCodeCanvas value={verifyUrl} size={180} level="M" includeMargin={true} bgColor="#ffffff" fgColor="#000000" />
       </div>
       <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm text-center">{item.kode}</p>
       {item.nomor && (
-        <p className="text-xs text-[var(--text-muted)] text-center mt-0.5">{item.nomor}</p>
+        <p className="text-xs text-muted-foreground text-center mt-0.5">{item.nomor}</p>
       )}
-      <p className="text-sm text-[var(--text-primary)] mt-1 text-center">{item.nama_penerima || item.title}</p>
-      <p className="text-xs text-[var(--text-muted)] mt-1 text-center">{new Date(item.created_at).toLocaleString('id-ID')}</p>
+      <p className="text-sm text-foreground mt-1 text-center">{item.nama_penerima || item.title}</p>
+      <p className="text-xs text-muted-foreground mt-1 text-center">{new Date(item.created_at).toLocaleString('id-ID')}</p>
       <div className="flex gap-2 mt-3">
-        <button
+        <Button
           onClick={() => downloadQRCode(qrRef.current, `QR-${item.kode}.png`)}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors"
+          size="sm"
+          className="flex-1"
         >
           <Download size={13} /> QR Code
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => { navigator.clipboard.writeText(verifyUrl); }}
-          className="inline-flex items-center justify-center gap-1.5 bg-[var(--surface-muted)] border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-emerald-600 font-medium py-2 px-3 rounded-lg text-xs transition-colors"
+          variant="outline"
+          size="sm"
           title="Salin link verifikasi"
         >
           <Copy size={13} />
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -96,19 +101,19 @@ function ConfirmModal({ open, title, message, onConfirm, onCancel, loading }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+      <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle size={20} className="text-amber-500" />
-          <h3 className="text-lg font-bold text-[var(--text-primary)]">{title}</h3>
+          <h3 className="text-lg font-bold text-foreground">{title}</h3>
         </div>
-        <p className="text-sm text-[var(--text-secondary)] mb-6">{message}</p>
+        <p className="text-sm text-muted-foreground mb-6">{message}</p>
         <div className="flex gap-3">
-          <button onClick={onConfirm} disabled={loading} className="flex-1 bg-red-600 hover:bg-red-500 disabled:bg-slate-400 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+          <Button onClick={onConfirm} disabled={loading} variant="destructive" className="flex-1">
             {loading ? 'Menghapus...' : 'Hapus'}
-          </button>
-          <button onClick={onCancel} disabled={loading} className="flex-1 bg-[var(--surface-muted)] text-[var(--text-secondary)] font-medium py-2 px-4 rounded-lg text-sm border border-[var(--border-primary)] transition-colors">
+          </Button>
+          <Button onClick={onCancel} disabled={loading} variant="outline" className="flex-1">
             Batal
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -144,10 +149,10 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-card border border-border rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-5">
-          <h3 className="text-lg font-bold text-[var(--text-primary)]">Edit Sertifikat</h3>
-          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"><X size={18} /></button>
+          <h3 className="text-lg font-bold text-foreground">Edit Sertifikat</h3>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -185,12 +190,12 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
             </select>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="submit" disabled={saving} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+            <Button type="submit" disabled={saving} className="flex-1">
               {saving ? 'Menyimpan...' : 'Simpan'}
-            </button>
-            <button type="button" onClick={onClose} className="flex-1 bg-[var(--surface-muted)] text-[var(--text-secondary)] font-medium py-2 px-4 rounded-lg text-sm border border-[var(--border-primary)]">
+            </Button>
+            <Button type="button" onClick={onClose} variant="outline" className="flex-1">
               Batal
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -209,65 +214,66 @@ function CertificateDetailModal({ item, open, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-[var(--surface-elevated)] border border-[var(--border-primary)] rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-card border border-border rounded-xl p-6 max-w-lg w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-5">
           <div className="flex items-center gap-2">
             <Award size={20} className="text-emerald-600 dark:text-emerald-400" />
-            <h3 className="text-lg font-bold text-[var(--text-primary)]">Detail Sertifikat</h3>
+            <h3 className="text-lg font-bold text-foreground">Detail Sertifikat</h3>
           </div>
-          <button onClick={onClose} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"><X size={18} /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
         </div>
 
         <div className="flex justify-center mb-5">
-          <div ref={qrRef} className="inline-block p-3 bg-white rounded-xl border border-[var(--border-primary)]">
+          <div ref={qrRef} className="inline-block p-3 bg-white rounded-xl border border-border">
             <QRCodeCanvas value={verifyUrl} size={200} level="M" includeMargin={false} bgColor="#ffffff" fgColor="#000000" />
           </div>
         </div>
 
         <div className="space-y-3 mb-5">
           <div className="flex justify-between">
-            <span className="text-sm text-[var(--text-secondary)]">Kode</span>
+            <span className="text-sm text-muted-foreground">Kode</span>
             <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">{item.kode}</span>
           </div>
           {item.nomor && (
             <div className="flex justify-between">
-              <span className="text-sm text-[var(--text-secondary)]">No. Sertifikat</span>
-              <span className="text-sm font-medium text-[var(--text-primary)]">{item.nomor}</span>
+              <span className="text-sm text-muted-foreground">No. Sertifikat</span>
+              <span className="text-sm font-medium text-foreground">{item.nomor}</span>
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-sm text-[var(--text-secondary)]">Penerima</span>
-            <span className="text-sm font-medium text-[var(--text-primary)]">{item.nama_penerima}</span>
+            <span className="text-sm text-muted-foreground">Penerima</span>
+            <span className="text-sm font-medium text-foreground">{item.nama_penerima}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-sm text-[var(--text-secondary)]">Jenis</span>
-            <span className="text-sm text-[var(--text-primary)]">{item.jenis_sertifikat}</span>
+            <span className="text-sm text-muted-foreground">Jenis</span>
+            <span className="text-sm text-foreground">{item.jenis_sertifikat}</span>
           </div>
           {item.keterangan && (
             <div className="pt-1">
-              <span className="text-sm text-[var(--text-secondary)] block mb-1">Deskripsi</span>
-              <p className="text-sm text-[var(--text-primary)] bg-[var(--surface-muted)] rounded-lg p-3 leading-relaxed">{item.keterangan}</p>
+              <span className="text-sm text-muted-foreground block mb-1">Deskripsi</span>
+              <p className="text-sm text-foreground bg-muted rounded-lg p-3 leading-relaxed">{item.keterangan}</p>
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-sm text-[var(--text-secondary)]">Status</span>
-            <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(item.status)}`}>{getStatusLabel(item.status)}</span>
+            <span className="text-sm text-muted-foreground">Status</span>
+            <span className={cn("inline-block px-2.5 py-0.5 rounded-full text-xs font-medium", getStatusBadge(item.status))}>{getStatusLabel(item.status)}</span>
           </div>
         </div>
 
         <div className="flex gap-2">
-          <button
+          <Button
             onClick={() => downloadQRCode(qrRef.current, `QR-${item.kode}.png`)}
-            className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-colors"
+            className="flex-1"
           >
             <Download size={15} /> Download QR
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => { navigator.clipboard.writeText(verifyUrl); }}
-            className="flex-1 inline-flex items-center justify-center gap-2 bg-[var(--surface-muted)] border border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-emerald-600 font-medium py-2.5 px-4 rounded-lg text-sm transition-colors"
+            variant="outline"
+            className="flex-1"
           >
             <Copy size={15} /> Salin Link
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -412,7 +418,7 @@ export default function AdminCertificatesPage() {
     a.click();
   };
 
-  const linkBtnClass = "inline-flex items-center gap-1.5 rounded-lg border border-[var(--border-primary)] bg-[var(--surface-app)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors";
+  const linkBtnClass = "inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground hover:border-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors";
 
   const tabs = [
     { key: 'generate', label: 'Generate', icon: Plus },
@@ -423,10 +429,10 @@ export default function AdminCertificatesPage() {
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-1">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-1">
           Kelola Sertifikat
         </h1>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <p className="text-sm text-muted-foreground">
           Terbitkan dan kelola sertifikat Dewan Ambalan untuk anggota Pramuka. Verifikasi sertifikat bisa dilakukan di halaman publik.
         </p>
       </div>
@@ -437,11 +443,12 @@ export default function AdminCertificatesPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors ${
+            className={cn(
+              "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors",
               activeTab === tab.key
                 ? 'bg-emerald-600 text-white'
-                : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-            }`}
+                : 'bg-muted text-muted-foreground hover:text-foreground',
+            )}
           >
             <tab.icon size={15} />
             {tab.label}
@@ -453,20 +460,20 @@ export default function AdminCertificatesPage() {
       {activeTab === 'generate' && (
         <>
           {/* Export */}
-          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <FileSpreadsheet size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
               Unduh Excel (.xlsx)
             </div>
             <a href="/api/admin/vouchers/export?scope=certificate" className={linkBtnClass}>Sertifikat</a>
-            <p className="text-[11px] text-[var(--text-muted)] w-full">
+            <p className="text-[11px] text-muted-foreground w-full">
               Unduhan memakai sesi login Anda (cookie). Buka tautan di tab yang sama setelah login sebagai admin.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Form */}
-            <div className="lg:col-span-2 rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+            <div className="lg:col-span-2 rounded-xl border border-border bg-card p-5 md:p-6">
               <form onSubmit={handleGenerate} className="space-y-5">
                 <div>
                   <label className={labelClass}>Jumlah</label>
@@ -475,7 +482,7 @@ export default function AdminCertificatesPage() {
                 <div>
                   <label className={labelClass}>Nomor Sertifikat</label>
                   <input type="text" value={nomorSertifikat} onChange={(e) => setNomorSertifikat(e.target.value)} placeholder="Contoh: 001/11.29.02.165-02.166-C/2026" maxLength={100} className={inputClass} />
-                  <p className="text-[11px] text-[var(--text-muted)] mt-1">Nomor urut sertifikat, diisi manual. Format bebas sesuai kebutuhan.</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Nomor urut sertifikat, diisi manual. Format bebas sesuai kebutuhan.</p>
                 </div>
                 <div>
                   <label className={labelClass}>Nama Penerima *</label>
@@ -495,25 +502,25 @@ export default function AdminCertificatesPage() {
                 <div>
                   <label className={labelClass}>Deskripsi / Alasan Penerbitan</label>
                   <textarea value={certDescription} onChange={(e) => setCertDescription(e.target.value)} placeholder="Jelaskan nama penerima dan alasan sertifikat ini diterbitkan..." rows={3} maxLength={1000} className={inputClass} />
-                  <p className="text-[11px] text-[var(--text-muted)] mt-1">Contoh: &quot;Diberikan kepada Ahmad atas pencapaian Lulus SKU Penegak Bantara&quot;</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Contoh: &quot;Diberikan kepada Ahmad atas pencapaian Lulus SKU Penegak Bantara&quot;</p>
                 </div>
                 {genError && (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 rounded-lg p-4">
                     <p className="text-red-700 dark:text-red-300 text-sm">{genError}</p>
                   </div>
                 )}
-                <button type="submit" disabled={genLoading} className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2.5 px-4 rounded-lg transition-colors">
+                <Button type="submit" disabled={genLoading} className="w-full">
                   {genLoading ? 'Membuat...' : 'Generate Sertifikat'}
-                </button>
+                </Button>
               </form>
             </div>
 
             {/* Results Preview */}
             {generated && (
-              <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-5 md:p-6">
+              <div className="rounded-xl border border-border bg-card p-5 md:p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle size={18} className="text-emerald-500" />
-                  <h2 className="text-lg font-bold text-[var(--text-primary)]">Berhasil ({generated.count})</h2>
+                  <h2 className="text-lg font-bold text-foreground">Berhasil ({generated.count})</h2>
                 </div>
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 rounded-lg p-3 mb-4">
                   <p className="text-emerald-700 dark:text-emerald-300 font-medium text-sm">
@@ -526,11 +533,11 @@ export default function AdminCertificatesPage() {
                   ))}
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <button onClick={handleDownloadCsv} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">
-                    <Download size={14} className="inline mr-1.5" /> CSV
-                  </button>
+                  <Button onClick={handleDownloadCsv} className="flex-1 text-sm">
+                    <Download size={14} /> CSV
+                  </Button>
                   {generated.items.length > 0 && (
-                    <button
+                    <Button
                       onClick={() => {
                         generated.items.forEach((item, idx) => {
                           setTimeout(() => {
@@ -539,10 +546,11 @@ export default function AdminCertificatesPage() {
                           }, idx * 300);
                         });
                       }}
-                      className="flex-1 bg-[var(--surface-app)] border border-[var(--border-primary)] hover:border-emerald-500 text-[var(--text-primary)] font-bold py-2 px-4 rounded-lg transition-colors text-sm"
+                      variant="outline"
+                      className="flex-1 text-sm"
                     >
-                      <QrCode size={14} className="inline mr-1.5" /> Download Semua QR
-                    </button>
+                      <QrCode size={14} /> Download Semua QR
+                    </Button>
                   )}
                 </div>
               </div>
@@ -555,14 +563,14 @@ export default function AdminCertificatesPage() {
       {activeTab === 'list' && (
         <div>
           {/* Filters */}
-          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] p-4 mb-6">
+          <div className="rounded-xl border border-border bg-card p-4 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="relative md:col-span-2">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text" placeholder="Cari kode, penerima, atau nomor..." value={search}
                   onChange={(e) => { setSearch(e.target.value); setPagination({ ...pagination, offset: 0 }); }}
-                  className="w-full pl-9 pr-4 py-2 border border-[var(--border-primary)] rounded-lg bg-[var(--surface-app)] text-[var(--text-primary)] text-sm focus:ring-2 focus:ring-emerald-500"
+                  className="w-full pl-9 pr-4 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
               <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPagination({ ...pagination, offset: 0 }); }} className={inputClass}>
@@ -580,49 +588,49 @@ export default function AdminCertificatesPage() {
           )}
 
           {/* Table */}
-          <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--surface-elevated)] overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
             {listLoading ? (
-              <div className="p-8 text-center"><p className="text-[var(--text-secondary)]">Memuat data...</p></div>
+              <div className="p-8 text-center"><p className="text-muted-foreground">Memuat data...</p></div>
             ) : certificates.length === 0 ? (
               <div className="p-8 text-center">
-                <Award size={40} className="mx-auto text-[var(--text-muted)] mb-3" />
-                <p className="text-[var(--text-secondary)]">Tidak ada sertifikat ditemukan</p>
+                <Award size={40} className="mx-auto text-muted-foreground mb-3" />
+                <p className="text-muted-foreground">Tidak ada sertifikat ditemukan</p>
               </div>
             ) : (
               <>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-[var(--surface-muted)] border-b border-[var(--border-primary)]">
+                    <thead className="bg-muted border-b border-border">
                       <tr>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Kode</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Nomor</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Penerima</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden md:table-cell">Jenis</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden xl:table-cell">Penerbit</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden lg:table-cell">Status</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden lg:table-cell">Dibuat</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden 2xl:table-cell min-w-[200px]">Keterangan</th>
-                        <th className="px-4 md:px-6 py-3 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Aksi</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Kode</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Nomor</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Penerima</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Jenis</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden xl:table-cell">Penerbit</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Status</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Dibuat</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden 2xl:table-cell min-w-[200px]">Keterangan</th>
+                        <th className="px-4 md:px-6 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Aksi</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[var(--border-primary)]">
+                    <tbody className="divide-y divide-border">
                       {certificates.map((c) => (
-                        <tr key={c.id} className="hover:bg-[var(--surface-muted)]/50 transition-colors">
+                        <tr key={c.id} className="hover:bg-muted/50 transition-colors">
                           <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-emerald-600 dark:text-emerald-400">{c.kode}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden sm:table-cell">{c.nomor || '-'}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-primary)]">{c.nama_penerima}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden md:table-cell">{c.jenis_sertifikat}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden xl:table-cell">{c.penerbit || '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden sm:table-cell">{c.nomor || '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-foreground">{c.nama_penerima}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden md:table-cell">{c.jenis_sertifikat}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden xl:table-cell">{c.penerbit || '-'}</td>
                           <td className="px-4 md:px-6 py-3 hidden lg:table-cell">
-                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(c.status)}`}>{getStatusLabel(c.status)}</span>
+                            <span className={cn("inline-block px-2.5 py-0.5 rounded-full text-xs font-medium", getStatusBadge(c.status))}>{getStatusLabel(c.status)}</span>
                           </td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden lg:table-cell">{c.created_at ? new Date(c.created_at).toLocaleDateString('id-ID') : '-'}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden 2xl:table-cell max-w-[200px] truncate">{c.keterangan || '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden lg:table-cell">{c.created_at ? new Date(c.created_at).toLocaleDateString('id-ID') : '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-muted-foreground hidden 2xl:table-cell max-w-[200px] truncate">{c.keterangan || '-'}</td>
                           <td className="px-4 md:px-6 py-3 text-right">
                             <div className="flex justify-end gap-1">
-                              <button onClick={() => setViewCertificate(c)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Detail & QR"><QrCode size={15} /></button>
-                              <button onClick={() => setEditCertificate(c)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Edit"><Edit3 size={15} /></button>
-                              <button onClick={() => setDeleteTarget({ id: c.id, name: c.kode })} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
+                              <button onClick={() => setViewCertificate(c)} className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Detail & QR"><QrCode size={15} /></button>
+                              <button onClick={() => setEditCertificate(c)} className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Edit"><Edit3 size={15} /></button>
+                              <button onClick={() => setDeleteTarget({ id: c.id, name: c.kode })} className="p-1.5 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
                             </div>
                           </td>
                         </tr>
@@ -632,20 +640,20 @@ export default function AdminCertificatesPage() {
                 </div>
                 {/* Pagination */}
                 {pagination.total > pagination.limit && (
-                  <div className="flex items-center justify-between px-4 md:px-6 py-3 border-t border-[var(--border-primary)]">
-                    <p className="text-xs text-[var(--text-muted)]">
+                  <div className="flex items-center justify-between px-4 md:px-6 py-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
                       {pagination.offset + 1}–{Math.min(pagination.offset + pagination.limit, pagination.total)} dari {pagination.total}
                     </p>
                     <div className="flex gap-1">
                       <button
                         onClick={() => setPagination({ ...pagination, offset: Math.max(0, pagination.offset - pagination.limit) })}
                         disabled={pagination.offset === 0}
-                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-30 transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                       ><ChevronLeft size={16} /></button>
                       <button
                         onClick={() => setPagination({ ...pagination, offset: pagination.offset + pagination.limit })}
                         disabled={pagination.offset + pagination.limit >= pagination.total}
-                        className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] disabled:opacity-30 transition-colors"
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                       ><ChevronRight size={16} /></button>
                     </div>
                   </div>
@@ -670,9 +678,10 @@ export default function AdminCertificatesPage() {
 
       {/* Toast */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-medium transition-all ${
-          toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'
-        }`}>
+        <div className={cn(
+          "fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-xl text-sm font-medium transition-all",
+          toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white',
+        )}>
           {toast.message}
         </div>
       )}
