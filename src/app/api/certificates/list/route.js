@@ -40,7 +40,7 @@ export async function GET(request) {
     if (error) {
       console.error("Error fetching certificates:", error);
       return NextResponse.json(
-        { error: "Failed to fetch certificates" },
+        { error: error.message || "Failed to fetch certificates", detail: error },
         { status: 500 }
       );
     }
@@ -53,7 +53,7 @@ export async function GET(request) {
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: error?.message || "Internal server error", detail: String(error) },
       { status: 500 }
     );
   }
