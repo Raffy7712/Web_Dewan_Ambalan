@@ -35,7 +35,7 @@ function createQueryBuilder() {
       return builder;
     },
     select(cols = "*", opts = {}) {
-      _action = "select";
+      if (!_action) _action = "select";
       _columns = cols || "*";
       if (opts.count === "exact") _countMode = true;
       return builder;
