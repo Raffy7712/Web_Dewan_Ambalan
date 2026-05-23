@@ -211,11 +211,11 @@ function createQueryBuilder() {
 
     if (_action === "select") {
       let countSql = null;
+      let countParams = [];
       if (_countMode) {
         // Build count query (same WHERE, no LIMIT/OFFSET)
         countSql = `SELECT COUNT(*) as count FROM ${_table}`;
         const countWhereParts = [];
-        const countParams = [];
         const countIdx = { idx: 1 };
         for (const f of _filters) {
           addFilterClause(f, countWhereParts, countParams, countIdx);
