@@ -161,11 +161,16 @@ export async function addJabatanAction(prevState, formData) {
 
   if (!nama) return { error: "Nama jabatan wajib diisi." };
 
-  const maxResult = await query(
-    "SELECT urutan FROM jabatan ORDER BY urutan DESC LIMIT 1"
-  );
-  const maxRow = maxResult.rows[0] ?? null;
-  const urutan = (maxRow?.urutan ?? 0) + 1;
+  let urutan;
+  try {
+    const maxResult = await query(
+      "SELECT urutan FROM jabatan ORDER BY urutan DESC LIMIT 1"
+    );
+    const maxRow = maxResult.rows[0] ?? null;
+    urutan = (maxRow?.urutan ?? 0) + 1;
+  } catch {
+    urutan = 1;
+  }
 
   try {
     await query(
@@ -473,11 +478,16 @@ export async function addFeaturedProgramAction(prevState, formData) {
   const description = formData.get("description")?.toString().trim() ?? "";
   if (!title) return { error: "Judul wajib diisi." };
 
-  const maxResult = await query(
-    "SELECT sort_order FROM featured_programs ORDER BY sort_order DESC LIMIT 1"
-  );
-  const maxRow = maxResult.rows[0] ?? null;
-  const sort_order = (maxRow?.sort_order ?? 0) + 1;
+  let sort_order;
+  try {
+    const maxResult = await query(
+      "SELECT sort_order FROM featured_programs ORDER BY sort_order DESC LIMIT 1"
+    );
+    const maxRow = maxResult.rows[0] ?? null;
+    sort_order = (maxRow?.sort_order ?? 0) + 1;
+  } catch {
+    sort_order = 1;
+  }
 
   try {
     await query(

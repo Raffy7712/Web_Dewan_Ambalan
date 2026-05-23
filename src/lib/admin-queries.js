@@ -113,40 +113,52 @@ export async function getMyAmbalanApplication(accountId, period = "2026-2027") {
 }
 
 export async function getRegistrationSetting() {
-  const { rows } = await query(
-    `SELECT value_json FROM site_settings WHERE key = $1`,
-    ["registration_enabled"]
-  );
-  const data = rows[0] ?? null;
-  return data?.value_json?.enabled !== false;
+  try {
+    const { rows } = await query(
+      `SELECT value_json FROM site_settings WHERE key = $1`,
+      ["registration_enabled"]
+    );
+    const data = rows[0] ?? null;
+    return data?.value_json?.enabled !== false;
+  } catch {
+    return true;
+  }
 }
 
 export async function getAmbalanRegistrationSetting() {
-  const { rows } = await query(
-    `SELECT value_json FROM site_settings WHERE key = $1`,
-    ["ambalan_registration_enabled"]
-  );
-  const data = rows[0] ?? null;
-  return data?.value_json?.enabled !== false;
+  try {
+    const { rows } = await query(
+      `SELECT value_json FROM site_settings WHERE key = $1`,
+      ["ambalan_registration_enabled"]
+    );
+    const data = rows[0] ?? null;
+    return data?.value_json?.enabled !== false;
+  } catch {
+    return false;
+  }
 }
 
 export async function getMasaBaktiSetting() {
-  const { rows } = await query(
-    `SELECT value_json FROM site_settings WHERE key = $1`,
-    ["masa_bakti"]
-  );
-  const data = rows[0] ?? null;
-  const j = data?.value_json ?? {};
-  return {
-    display:
-      typeof j.display === "string" && j.display.length > 0
-        ? j.display
-        : "2026/2027",
-    period_key:
-      typeof j.period_key === "string" && j.period_key.length > 0
-        ? j.period_key
-        : "2026-2027",
-  };
+  try {
+    const { rows } = await query(
+      `SELECT value_json FROM site_settings WHERE key = $1`,
+      ["masa_bakti"]
+    );
+    const data = rows[0] ?? null;
+    const j = data?.value_json ?? {};
+    return {
+      display:
+        typeof j.display === "string" && j.display.length > 0
+          ? j.display
+          : "2026/2027",
+      period_key:
+        typeof j.period_key === "string" && j.period_key.length > 0
+          ? j.period_key
+          : "2026-2027",
+    };
+  } catch {
+    return { display: "2026/2027", period_key: "2026-2027" };
+  }
 }
 
 /** Admin: semua baris program unggulan termasuk nonaktif. */
@@ -214,19 +226,23 @@ export async function getPostForEdit(postId) {
 }
 
 export async function getPermissionMatrix() {
-  const [keysResult, matrixResult] = await Promise.all([
-    query(
-      `SELECT key, label, module FROM permission_keys ORDER BY module ASC`,
-      []
-    ),
-    query(
-      `SELECT role, permission_key, allowed FROM role_permissions`,
-      []
-    ),
-  ]);
+  try {
+    const [keysResult, matrixResult] = await Promise.all([
+      query(
+        `SELECT key, label, module FROM permission_keys ORDER BY module ASC`,
+        []
+      ),
+      query(
+        `SELECT role, permission_key, allowed FROM role_permissions`,
+        []
+      ),
+    ]);
 
-  return {
-    keys: keysResult.rows ?? [],
-    matrix: matrixResult.rows ?? [],
-  };
+    return {
+      keys: keysResult.rows ?? [],
+      matrix: matrixResult.rows ?? [],
+    };
+  } catch {
+    return { keys: [], matrix: [] };
+  }
 }

@@ -20,13 +20,20 @@ export async function getFinanceDataAdmin() {
   if (list.length === 0) return { months: [], transactionsByMonth: {} };
 
   const ids = list.map((m) => m.id);
-  const { rows: txs } = await query(
-    `SELECT id, month_id, tanggal, jenis, keterangan, jumlah
-     FROM finance_transactions
-     WHERE month_id = ANY($1)
-     ORDER BY tanggal ASC`,
-    [ids]
-  );
+  let txs;
+  try {
+    const result = await query(
+      `SELECT id, month_id, tanggal, jenis, keterangan, jumlah
+       FROM finance_transactions
+       WHERE month_id = ANY($1)
+       ORDER BY tanggal ASC`,
+      [ids]
+    );
+    txs = result.rows ?? [];
+  } catch (err) {
+    console.error("getFinanceDataAdmin transactions:", err.message);
+    txs = [];
+  }
 
   const transactionsByMonth = Object.fromEntries(ids.map((id) => [id, []]));
   for (const t of txs ?? []) {
@@ -59,13 +66,20 @@ export async function getFinanceDataPublic() {
   }
 
   const ids = list.map((m) => m.id);
-  const { rows: txs } = await query(
-    `SELECT id, month_id, tanggal, jenis, keterangan, jumlah
-     FROM finance_transactions
-     WHERE month_id = ANY($1)
-     ORDER BY tanggal ASC`,
-    [ids]
-  );
+  let txs;
+  try {
+    const result = await query(
+      `SELECT id, month_id, tanggal, jenis, keterangan, jumlah
+       FROM finance_transactions
+       WHERE month_id = ANY($1)
+       ORDER BY tanggal ASC`,
+      [ids]
+    );
+    txs = result.rows ?? [];
+  } catch (err) {
+    console.error("getFinanceDataPublic transactions:", err.message);
+    txs = [];
+  }
 
   const transactionsByMonth = Object.fromEntries(ids.map((id) => [id, []]));
   for (const t of txs ?? []) {

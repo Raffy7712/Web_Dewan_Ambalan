@@ -37,11 +37,15 @@ function slugify(title) {
 async function uniqueSlug(base) {
   let slug = base;
   for (let i = 0; i < 20; i++) {
-    const result = await query(
-      "SELECT id FROM posts WHERE slug = $1",
-      [slug]
-    );
-    if (!result.rows[0]) return slug;
+    try {
+      const result = await query(
+        "SELECT id FROM posts WHERE slug = $1",
+        [slug]
+      );
+      if (!result.rows[0]) return slug;
+    } catch {
+      return `${base}-${Date.now()}`;
+    }
     slug = `${base}-${Math.random().toString(36).slice(2, 6)}`;
   }
   return `${base}-${Date.now()}`;

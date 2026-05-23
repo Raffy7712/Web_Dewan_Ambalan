@@ -169,18 +169,28 @@ export async function sendVerificationAction(prevState, formData) {
     return { error: "Password dan konfirmasi tidak cocok." };
   }
 
-  const existingUserResult = await query(
-    "SELECT id FROM accounts WHERE username = $1",
-    [username]
-  );
+  let existingUserResult;
+  try {
+    existingUserResult = await query(
+      "SELECT id FROM accounts WHERE username = $1",
+      [username]
+    );
+  } catch {
+    existingUserResult = { rows: [] };
+  }
   if (existingUserResult.rows[0]) {
     return { error: "Username sudah dipakai. Pilih username lain." };
   }
 
-  const existingEmailResult = await query(
-    "SELECT id FROM accounts WHERE email = $1",
-    [email]
-  );
+  let existingEmailResult;
+  try {
+    existingEmailResult = await query(
+      "SELECT id FROM accounts WHERE email = $1",
+      [email]
+    );
+  } catch {
+    existingEmailResult = { rows: [] };
+  }
   if (existingEmailResult.rows[0]) {
     return { error: "Email sudah terdaftar. Gunakan email lain atau login." };
   }
@@ -191,10 +201,14 @@ export async function sendVerificationAction(prevState, formData) {
   if (!rgIp.ok) return { error: rateLimitMessage(rgIp.retryAfterMs) };
   if (!rgEm.ok) return { error: rateLimitMessage(rgEm.retryAfterMs) };
 
-  await query(
-    "DELETE FROM otp_tokens WHERE email = $1 AND type = $2 AND used_at IS NULL",
-    [email, "email_verify"]
-  );
+  try {
+    await query(
+      "DELETE FROM otp_tokens WHERE email = $1 AND type = $2 AND used_at IS NULL",
+      [email, "email_verify"]
+    );
+  } catch {
+    // non-critical cleanup
+  }
 
   const otp = String(crypto.randomInt(100000, 999999));
   const expires_at = new Date(Date.now() + 15 * 60 * 1000).toISOString();
@@ -255,27 +269,42 @@ export async function verifyAndRegisterAction(prevState, formData) {
   const rv = consumeRegisterVerifyIp(ip);
   if (!rv.ok) return { error: rateLimitMessage(rv.retryAfterMs) };
 
-  const tokenResult = await query(
-    "SELECT id, expires_at, used_at FROM otp_tokens WHERE email = $1 AND token_hash = $2 AND type = $3 AND used_at IS NULL",
-    [email, hashOtp(otp), "email_verify"]
-  );
-  const token = tokenResult.rows[0] ?? null;
+  let token;
+  try {
+    const tokenResult = await query(
+      "SELECT id, expires_at, used_at FROM otp_tokens WHERE email = $1 AND token_hash = $2 AND type = $3 AND used_at IS NULL",
+      [email, hashOtp(otp), "email_verify"]
+    );
+    token = tokenResult.rows[0] ?? null;
+  } catch {
+    return { error: "Gagal memverifikasi kode OTP." };
+  }
 
   if (!token) return { error: "Kode OTP salah atau tidak ditemukan." };
   if (new Date(token.expires_at) < new Date()) {
     return { error: "Kode OTP sudah kadaluarsa. Klik 'Kirim Ulang OTP'." };
   }
 
-  const existingUserResult = await query(
-    "SELECT id FROM accounts WHERE username = $1",
-    [username]
-  );
+  let existingUserResult;
+  try {
+    existingUserResult = await query(
+      "SELECT id FROM accounts WHERE username = $1",
+      [username]
+    );
+  } catch {
+    existingUserResult = { rows: [] };
+  }
   if (existingUserResult.rows[0]) return { error: "Username sudah dipakai saat ini." };
 
-  const existingEmailResult = await query(
-    "SELECT id FROM accounts WHERE email = $1",
-    [email]
-  );
+  let existingEmailResult;
+  try {
+    existingEmailResult = await query(
+      "SELECT id FROM accounts WHERE email = $1",
+      [email]
+    );
+  } catch {
+    existingEmailResult = { rows: [] };
+  }
   if (existingEmailResult.rows[0]) return { error: "Email sudah terdaftar." };
 
   const client = await getClient();
