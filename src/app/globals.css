@@ -1,120 +1,132 @@
 @import "tailwindcss";
 
-/* ── Class-based dark mode for Tailwind v4 ───────────────────
-   Applies dark: prefix when .dark is on <html> or any parent.
-   Usage: document.documentElement.classList.toggle('dark')    */
+/* ── Class-based dark mode for Tailwind v4 ─────────────────── */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ── Theme tokens ────────────────────────────────────────────*/
+
+/* ── Modern Pramuka palette — shadcn-compatible ── */
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius: 0.5rem;
+}
+
 :root {
-    --surface-app: #f8fafc;
-    --surface-elevated: #ffffff;
-    --surface-muted: #f1f5f9;
-    --surface-contrast: #0f172a;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --border-primary: #e2e8f0;
-    --accent: #059669;
-    --accent-contrast: #ffffff;
+  --background: 48 33% 96%;
+  --foreground: 24 10% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 24 10% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 24 10% 10%;
+  --primary: 142 76% 29%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 28 87% 40%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 60 5% 90%;
+  --muted-foreground: 25 5% 45%;
+  --accent: 38 92% 50%;
+  --accent-foreground: 24 10% 10%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 24 6% 80%;
+  --input: 24 6% 80%;
+  --ring: 142 76% 29%;
+
+  /* Legacy tokens — backward compat */
+  --surface-app: hsl(var(--background));
+  --surface-elevated: hsl(var(--card));
+  --surface-muted: hsl(var(--muted));
+  --surface-contrast: hsl(var(--foreground));
+  --text-primary: hsl(var(--foreground));
+  --text-secondary: hsl(var(--muted-foreground));
+  --text-muted: hsl(var(--muted-foreground));
+  --border-primary: hsl(var(--border));
+  --accent: hsl(var(--primary));
+  --accent-contrast: hsl(var(--primary-foreground));
 }
 
 html.dark {
-    --surface-app: #020617;
-    --surface-elevated: #0f172a;
-    --surface-muted: #1e293b;
-    --surface-contrast: #020617;
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --border-primary: #1e293b;
-    --accent: #34d399;
-    --accent-contrast: #052e16;
+  --background: 24 10% 4%;
+  --foreground: 60 9% 90%;
+  --card: 24 10% 8%;
+  --card-foreground: 60 9% 90%;
+  --popover: 24 10% 8%;
+  --popover-foreground: 60 9% 90%;
+  --primary: 142 72% 49%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 28 87% 45%;
+  --secondary-foreground: 0 0% 0%;
+  --muted: 24 10% 15%;
+  --muted-foreground: 60 5% 60%;
+  --accent: 38 92% 50%;
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 24 10% 18%;
+  --input: 24 10% 18%;
+  --ring: 142 72% 49%;
+
+  /* Legacy tokens — backward compat */
+  --surface-app: hsl(var(--background));
+  --surface-elevated: hsl(var(--card));
+  --surface-muted: hsl(var(--muted));
+  --surface-contrast: hsl(var(--foreground));
+  --text-primary: hsl(var(--foreground));
+  --text-secondary: hsl(var(--muted-foreground));
+  --text-muted: hsl(var(--muted-foreground));
+  --border-primary: hsl(var(--border));
+  --accent: hsl(var(--primary));
+  --accent-contrast: hsl(var(--primary-foreground));
 }
 
 /* ── Base ────────────────────────────────────────────────────*/
 html {
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 }
 
 body {
-    background-color: var(--surface-app);
-    color: var(--text-primary);
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
-    font-family: var(--font-geist-sans, system-ui, sans-serif);
-}
-
-html.dark body {
-    background-color: var(--surface-app);
-    color: var(--text-primary);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: var(--font-geist-sans, system-ui, sans-serif);
 }
 
 html.dark {
-    background-color: var(--surface-app);
-    color-scheme: dark;
+  color-scheme: dark;
 }
 
 /* ── Scrollbar ───────────────────────────────────────────────*/
-::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: #94a3b8;
-    border-radius: 99px;
-}
-html.dark ::-webkit-scrollbar-thumb {
-    background: #047857;
-}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground)); border-radius: 99px; }
+html.dark ::-webkit-scrollbar-thumb { background: hsl(var(--primary)); }
 
 /* ── Article prose ───────────────────────────────────────────*/
-.article-content p {
-    margin-bottom: 1rem;
-    line-height: 1.75;
-}
-.article-content h2 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-top: 1.75rem;
-    margin-bottom: 0.75rem;
-}
-.article-content h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-top: 1.25rem;
-    margin-bottom: 0.5rem;
-}
-.article-content ul,
-.article-content ol {
-    padding-left: 1.5rem;
-    margin-bottom: 1rem;
-}
-.article-content li {
-    margin-bottom: 0.25rem;
-}
-.article-content strong {
-    font-weight: 700;
-    color: #047857;
-}
-html.dark .article-content strong {
-    color: #6ee7b7;
-}
+.article-content p { margin-bottom: 1rem; line-height: 1.75; }
+.article-content h2 { font-size: 1.25rem; font-weight: 700; margin-top: 1.75rem; margin-bottom: 0.75rem; }
+.article-content h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+.article-content ul, .article-content ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.article-content li { margin-bottom: 0.25rem; }
+.article-content strong { font-weight: 700; color: hsl(var(--primary)); }
 
 /* ── Line-clamp ──────────────────────────────────────────────*/
-.line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
