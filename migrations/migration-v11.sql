@@ -4,7 +4,7 @@
 -- ============================================================
 
 -- Table: vouchers
-CREATE TABLE IF NOT EXISTS public.vouchers (
+CREATE TABLE IF NOT EXISTS vouchers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code VARCHAR(50) UNIQUE NOT NULL,
   qr_code TEXT, -- JSON encoded QR data atau base64
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public.vouchers (
 );
 
 -- Table: certificates
-CREATE TABLE IF NOT EXISTS public.certificates (
+CREATE TABLE IF NOT EXISTS certificates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code VARCHAR(50) UNIQUE NOT NULL,
   qr_code TEXT,
@@ -37,10 +37,10 @@ CREATE TABLE IF NOT EXISTS public.certificates (
 );
 
 -- Table: verification_scans (untuk tracking setiap scan)
-CREATE TABLE IF NOT EXISTS public.verification_scans (
+CREATE TABLE IF NOT EXISTS verification_scans (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  voucher_id UUID REFERENCES public.vouchers(id) ON DELETE CASCADE,
-  certificate_id UUID REFERENCES public.certificates(id) ON DELETE CASCADE,
+  voucher_id UUID REFERENCES vouchers(id) ON DELETE CASCADE,
+  certificate_id UUID REFERENCES certificates(id) ON DELETE CASCADE,
   scanned_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   scanned_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   verification_type VARCHAR(20) NOT NULL CHECK (verification_type IN ('qr', 'barcode', 'code')),
@@ -49,40 +49,40 @@ CREATE TABLE IF NOT EXISTS public.verification_scans (
 );
 
 -- Create indexes untuk performance
-CREATE INDEX idx_vouchers_code ON public.vouchers(code);
-CREATE INDEX idx_vouchers_status ON public.vouchers(status);
-CREATE INDEX idx_vouchers_created_by ON public.vouchers(created_by);
-CREATE INDEX idx_certificates_code ON public.certificates(code);
-CREATE INDEX idx_certificates_status ON public.certificates(status);
-CREATE INDEX idx_verification_scans_voucher_id ON public.verification_scans(voucher_id);
-CREATE INDEX idx_verification_scans_certificate_id ON public.verification_scans(certificate_id);
-CREATE INDEX idx_verification_scans_scanned_at ON public.verification_scans(scanned_at);
+CREATE INDEX idx_vouchers_code ON vouchers(code);
+CREATE INDEX idx_vouchers_status ON vouchers(status);
+CREATE INDEX idx_vouchers_created_by ON vouchers(created_by);
+CREATE INDEX idx_certificates_code ON certificates(code);
+CREATE INDEX idx_certificates_status ON certificates(status);
+CREATE INDEX idx_verification_scans_voucher_id ON verification_scans(voucher_id);
+CREATE INDEX idx_verification_scans_certificate_id ON verification_scans(certificate_id);
+CREATE INDEX idx_verification_scans_scanned_at ON verification_scans(scanned_at);
 
 -- RLS (Row Level Security)
-ALTER TABLE public.vouchers ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.verification_scans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vouchers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE certificates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verification_scans ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies untuk vouchers
-CREATE POLICY "Vouchers readable by authenticated users" ON public.vouchers
+CREATE POLICY "Vouchers readable by authenticated users" ON vouchers
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Only creators can update own vouchers" ON public.vouchers
+CREATE POLICY "Only creators can update own vouchers" ON vouchers
   FOR UPDATE USING (created_by = auth.uid());
 
-CREATE POLICY "Anyone can create vouchers" ON public.vouchers
+CREATE POLICY "Anyone can create vouchers" ON vouchers
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- RLS Policies untuk certificates
-CREATE POLICY "Certificates readable by authenticated users" ON public.certificates
+CREATE POLICY "Certificates readable by authenticated users" ON certificates
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Anyone authenticated can manage certificates" ON public.certificates
+CREATE POLICY "Anyone authenticated can manage certificates" ON certificates
   FOR ALL USING (auth.role() = 'authenticated');
 
 -- RLS Policies untuk verification_scans
-CREATE POLICY "Scans readable by authenticated users" ON public.verification_scans
+CREATE POLICY "Scans readable by authenticated users" ON verification_scans
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Authenticated users can create scans" ON public.verification_scans
+CREATE POLICY "Authenticated users can create scans" ON verification_scans
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');

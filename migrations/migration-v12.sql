@@ -4,7 +4,7 @@
 -- ============================================================
 
 -- Table: inventory_categories
-CREATE TABLE IF NOT EXISTS public.inventory_categories (
+CREATE TABLE IF NOT EXISTS inventory_categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL UNIQUE,
   description TEXT,
@@ -13,11 +13,11 @@ CREATE TABLE IF NOT EXISTS public.inventory_categories (
 );
 
 -- Table: inventory_items
-CREATE TABLE IF NOT EXISTS public.inventory_items (
+CREATE TABLE IF NOT EXISTS inventory_items (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code VARCHAR(50) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
-  category_id UUID REFERENCES public.inventory_categories(id) ON DELETE SET NULL,
+  category_id UUID REFERENCES inventory_categories(id) ON DELETE SET NULL,
   description TEXT,
   quantity INT DEFAULT 1,
   unit VARCHAR(50), -- "unit", "pieces", "set", etc.
@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS public.inventory_items (
 );
 
 -- Table: maintenance_logs
-CREATE TABLE IF NOT EXISTS public.maintenance_logs (
+CREATE TABLE IF NOT EXISTS maintenance_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  item_id UUID NOT NULL REFERENCES public.inventory_items(id) ON DELETE CASCADE,
+  item_id UUID NOT NULL REFERENCES inventory_items(id) ON DELETE CASCADE,
   maintenance_date TIMESTAMP WITH TIME ZONE DEFAULT now(),
   maintenance_type VARCHAR(100) NOT NULL, -- e.g., "cleaning", "repair", "calibration", etc.
   description TEXT,
@@ -48,9 +48,9 @@ CREATE TABLE IF NOT EXISTS public.maintenance_logs (
 );
 
 -- Table: item_checks
-CREATE TABLE IF NOT EXISTS public.item_checks (
+CREATE TABLE IF NOT EXISTS item_checks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  item_id UUID NOT NULL REFERENCES public.inventory_items(id) ON DELETE CASCADE,
+  item_id UUID NOT NULL REFERENCES inventory_items(id) ON DELETE CASCADE,
   check_date TIMESTAMP WITH TIME ZONE DEFAULT now(),
   checked_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   condition VARCHAR(20) NOT NULL CHECK (condition IN ('baik', 'perlu_perbaikan', 'rusak')),
@@ -60,48 +60,48 @@ CREATE TABLE IF NOT EXISTS public.item_checks (
 );
 
 -- Create indexes untuk performance
-CREATE INDEX idx_inventory_items_code ON public.inventory_items(code);
-CREATE INDEX idx_inventory_items_category_id ON public.inventory_items(category_id);
-CREATE INDEX idx_inventory_items_condition ON public.inventory_items(condition);
-CREATE INDEX idx_inventory_items_location ON public.inventory_items(location);
-CREATE INDEX idx_maintenance_logs_item_id ON public.maintenance_logs(item_id);
-CREATE INDEX idx_maintenance_logs_date ON public.maintenance_logs(maintenance_date);
-CREATE INDEX idx_item_checks_item_id ON public.item_checks(item_id);
-CREATE INDEX idx_item_checks_date ON public.item_checks(check_date);
+CREATE INDEX idx_inventory_items_code ON inventory_items(code);
+CREATE INDEX idx_inventory_items_category_id ON inventory_items(category_id);
+CREATE INDEX idx_inventory_items_condition ON inventory_items(condition);
+CREATE INDEX idx_inventory_items_location ON inventory_items(location);
+CREATE INDEX idx_maintenance_logs_item_id ON maintenance_logs(item_id);
+CREATE INDEX idx_maintenance_logs_date ON maintenance_logs(maintenance_date);
+CREATE INDEX idx_item_checks_item_id ON item_checks(item_id);
+CREATE INDEX idx_item_checks_date ON item_checks(check_date);
 
 -- RLS (Row Level Security)
-ALTER TABLE public.inventory_categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.inventory_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.maintenance_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.item_checks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE maintenance_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE item_checks ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies untuk inventory_categories
-CREATE POLICY "Categories readable by authenticated users" ON public.inventory_categories
+CREATE POLICY "Categories readable by authenticated users" ON inventory_categories
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Anyone authenticated can modify categories" ON public.inventory_categories
+CREATE POLICY "Anyone authenticated can modify categories" ON inventory_categories
   FOR ALL USING (auth.role() = 'authenticated');
 
 -- RLS Policies untuk inventory_items
-CREATE POLICY "Items readable by authenticated users" ON public.inventory_items
+CREATE POLICY "Items readable by authenticated users" ON inventory_items
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Creators can update own items" ON public.inventory_items
+CREATE POLICY "Creators can update own items" ON inventory_items
   FOR UPDATE USING (created_by = auth.uid());
 
-CREATE POLICY "Authenticated users can create items" ON public.inventory_items
+CREATE POLICY "Authenticated users can create items" ON inventory_items
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- RLS Policies untuk maintenance_logs
-CREATE POLICY "Maintenance logs readable by authenticated users" ON public.maintenance_logs
+CREATE POLICY "Maintenance logs readable by authenticated users" ON maintenance_logs
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Authenticated users can create maintenance logs" ON public.maintenance_logs
+CREATE POLICY "Authenticated users can create maintenance logs" ON maintenance_logs
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- RLS Policies untuk item_checks
-CREATE POLICY "Item checks readable by authenticated users" ON public.item_checks
+CREATE POLICY "Item checks readable by authenticated users" ON item_checks
   FOR SELECT USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Authenticated users can create item checks" ON public.item_checks
+CREATE POLICY "Authenticated users can create item checks" ON item_checks
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
