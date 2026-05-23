@@ -50,7 +50,7 @@ function schedulePageViewLog(request, event) {
   }
 }
 
-export async function middleware(request, event) {
+export async function proxy(request, event) {
   const { pathname } = request.nextUrl;
   schedulePageViewLog(request, event);
 
