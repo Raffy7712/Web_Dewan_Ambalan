@@ -401,7 +401,7 @@ export default function AdminCertificatesPage() {
     };
     const headers = ['Code', 'Nomor Sertifikat', 'Penerima', 'Jenis', 'Status', 'Created At'];
     const rows = generated.items.map((item) =>
-      [item.code, item.nomor_sertifikat || '', item.recipient_name, item.certificate_type, item.status, new Date(item.created_at).toLocaleString('id-ID')]
+      [item.code, item.nomor_sertifikat || '', item.recipient_name, item.certificate_type, getStatusLabel(item.status), new Date(item.created_at).toLocaleString('id-ID')]
     );
     const csv = [headers.map(escapeCsv).join(','), ...rows.map((row) => row.map(escapeCsv).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });

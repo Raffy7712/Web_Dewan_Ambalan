@@ -248,7 +248,7 @@ export default function AdminVouchersPage() {
     };
     const headers = ['Code', 'Title', 'Description', 'Status', 'Created At'];
     const rows = generated.items.map((item) =>
-      [item.code, item.title, item.description || '', item.status, new Date(item.created_at).toLocaleString('id-ID')]
+      [item.code, item.title, item.description || '', getStatusLabel(item.status), new Date(item.created_at).toLocaleString('id-ID')]
     );
     const csv = [headers.map(escapeCsv).join(','), ...rows.map((row) => row.map(escapeCsv).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
