@@ -30,7 +30,8 @@ import {
 import { parseUserAgent } from "@/lib/device-utils";
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
-import { redirect, headers } from "next/navigation";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 function hashOtp(otp) {
   return crypto.createHash("sha256").update(otp).digest("hex");
@@ -108,7 +109,7 @@ export async function loginAction(prevState, formData) {
   }
 
   // Get user agent for device fingerprinting
-  const headersList = headers();
+  const headersList = await headers();
   const userAgent = headersList.get("user-agent") || "Unknown";
   const deviceName = parseUserAgent(userAgent);
 

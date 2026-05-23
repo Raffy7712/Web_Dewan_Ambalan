@@ -17,7 +17,6 @@ export default function LogoImage({ size = 32 }) {
       height={size}
       className="object-contain w-full h-full"
       onError={() => setFailed(true)}
-      priority
     />
   );
 }
