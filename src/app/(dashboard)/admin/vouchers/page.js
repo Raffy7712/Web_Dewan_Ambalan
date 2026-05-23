@@ -63,10 +63,10 @@ function EditVoucherModal({ item, open, onClose, onSave }) {
   useEffect(() => {
     if (item) {
       setForm({
-        title: item.title || '',
-        description: item.description || '',
+        judul: item.judul || '',
+        keterangan: item.keterangan || '',
         status: item.status || 'active',
-        expires_at: item.expires_at ? item.expires_at.slice(0, 10) : '',
+        kadaluarsa: item.kadaluarsa ? item.kadaluarsa.slice(0, 10) : '',
       });
     }
   }, [item]);
@@ -90,15 +90,15 @@ function EditVoucherModal({ item, open, onClose, onSave }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className={labelClass}>Kode</label>
-            <input type="text" value={item.code} disabled className={`${inputClass} opacity-60`} />
+            <input type="text" value={item.kode} disabled className={`${inputClass} opacity-60`} />
           </div>
           <div>
             <label className={labelClass}>Judul *</label>
-            <input type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required maxLength={200} className={inputClass} />
+            <input type="text" value={form.judul} onChange={(e) => setForm({ ...form, judul: e.target.value })} required maxLength={200} className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Deskripsi</label>
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} maxLength={500} className={inputClass} />
+            <textarea value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })} rows={3} maxLength={500} className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Status</label>
@@ -111,7 +111,7 @@ function EditVoucherModal({ item, open, onClose, onSave }) {
           </div>
           <div>
             <label className={labelClass}>Kadaluarsa</label>
-            <input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} className={inputClass} />
+            <input type="date" value={form.kadaluarsa} onChange={(e) => setForm({ ...form, kadaluarsa: e.target.value })} className={inputClass} />
           </div>
           <div className="flex gap-3 pt-2">
             <button type="submit" disabled={saving} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-400 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
@@ -192,7 +192,7 @@ export default function AdminVouchersPage() {
         quantity: parseInt(quantity),
         title,
         description,
-        expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+        kadaluarsa: expiresAt ? new Date(expiresAt).toISOString() : null,
       };
       const res = await fetch('/api/vouchers/generate', {
         method: 'POST',
@@ -246,9 +246,9 @@ export default function AdminVouchersPage() {
       if (str.includes(",") || str.includes('"') || str.includes("\n")) return `"${str.replace(/"/g, '""')}"`;
       return str;
     };
-    const headers = ['Code', 'Title', 'Description', 'Status', 'Created At'];
+    const headers = ['Kode', 'Judul', 'Keterangan', 'Status', 'Kadaluarsa', 'Dibuat'];
     const rows = generated.items.map((item) =>
-      [item.code, item.title, item.description || '', getStatusLabel(item.status), new Date(item.created_at).toLocaleString('id-ID')]
+      [item.kode, item.judul, item.keterangan || '', getStatusLabel(item.status), item.kadaluarsa ? new Date(item.kadaluarsa).toLocaleDateString('id-ID') : '-', new Date(item.created_at).toLocaleString('id-ID')]
     );
     const csv = [headers.map(escapeCsv).join(','), ...rows.map((row) => row.map(escapeCsv).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -357,8 +357,8 @@ export default function AdminVouchersPage() {
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {generated.items.map((item, idx) => (
                     <div key={idx} className="bg-[var(--surface-app)] rounded-lg p-3 border border-[var(--border-primary)]">
-                      <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{item.code}</p>
-                      <p className="text-sm text-[var(--text-primary)] mt-0.5">{item.title}</p>
+                      <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">{item.kode}</p>
+                      <p className="text-sm text-[var(--text-primary)] mt-0.5">{item.judul}</p>
                       <p className="text-xs text-[var(--text-muted)] mt-1">{new Date(item.created_at).toLocaleString('id-ID')}</p>
                     </div>
                   ))}
@@ -423,22 +423,26 @@ export default function AdminVouchersPage() {
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Judul</th>
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Status</th>
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden md:table-cell">Kadaluarsa</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden lg:table-cell">Dibuat</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden 2xl:table-cell min-w-[200px]">Keterangan</th>
                         <th className="px-4 md:px-6 py-3 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--border-primary)]">
                       {vouchers.map((v) => (
                         <tr key={v.id} className="hover:bg-[var(--surface-muted)]/50 transition-colors">
-                          <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-emerald-600 dark:text-emerald-400">{v.code}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-primary)] max-w-[200px] truncate">{v.title}</td>
+                          <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-emerald-600 dark:text-emerald-400">{v.kode}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-primary)] max-w-[200px] truncate">{v.judul}</td>
                           <td className="px-4 md:px-6 py-3 hidden sm:table-cell">
                             <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(v.status)}`}>{getStatusLabel(v.status)}</span>
                           </td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden md:table-cell">{v.expires_at ? new Date(v.expires_at).toLocaleDateString('id-ID') : '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden md:table-cell">{v.kadaluarsa ? new Date(v.kadaluarsa).toLocaleDateString('id-ID') : '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden lg:table-cell">{v.created_at ? new Date(v.created_at).toLocaleDateString('id-ID') : '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden 2xl:table-cell max-w-[200px] truncate">{v.keterangan || '-'}</td>
                           <td className="px-4 md:px-6 py-3 text-right">
                             <div className="flex justify-end gap-1">
                               <button onClick={() => setEditVoucher(v)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Edit"><Edit3 size={15} /></button>
-                              <button onClick={() => setDeleteTarget({ id: v.id, name: v.code })} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
+                              <button onClick={() => setDeleteTarget({ id: v.id, name: v.kode })} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
                             </div>
                           </td>
                         </tr>

@@ -18,7 +18,7 @@ export async function GET(request, { params }) {
     const db = createAdminClient();
     const { data, error } = await db
       .from("vouchers")
-      .select("id, code, qr_code, barcode, title, description, status, expires_at, created_at, updated_at")
+      .select("id, kode, qr_code, barcode, judul, keterangan, status, kadaluarsa, created_at, updated_at")
       .eq("id", id)
       .single();
 
@@ -45,7 +45,7 @@ export async function PUT(request, { params }) {
     }
 
     const body = await request.json();
-    const allowedFields = ["title", "description", "status", "expires_at"];
+    const allowedFields = ["judul", "keterangan", "status", "kadaluarsa"];
     const updatePayload = {};
 
     for (const field of allowedFields) {
@@ -53,13 +53,13 @@ export async function PUT(request, { params }) {
         if (field === "status" && !["active", "used", "expired", "revoked"].includes(body[field])) {
           return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
         }
-        if (field === "title" && body[field].length > 200) {
-          return NextResponse.json({ error: "Title max 200 chars" }, { status: 400 });
+        if (field === "judul" && body[field].length > 200) {
+          return NextResponse.json({ error: "Judul max 200 chars" }, { status: 400 });
         }
-        if (field === "description" && body[field].length > 500) {
-          return NextResponse.json({ error: "Description max 500 chars" }, { status: 400 });
+        if (field === "keterangan" && body[field].length > 500) {
+          return NextResponse.json({ error: "Keterangan max 500 chars" }, { status: 400 });
         }
-        if (field === "expires_at" && body[field] === "") {
+        if (field === "kadaluarsa" && body[field] === "") {
           updatePayload[field] = null;
           continue;
         }

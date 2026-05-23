@@ -25,7 +25,7 @@ export async function POST(request) {
     let itemType = null;
 
     const voucherResult = await query(
-      `SELECT * FROM vouchers WHERE code = $1`,
+      `SELECT * FROM vouchers WHERE kode = $1`,
       [code]
     );
 
@@ -35,7 +35,7 @@ export async function POST(request) {
     } else {
       // Try certificate
       const certResult = await query(
-        `SELECT * FROM certificates WHERE code = $1`,
+        `SELECT * FROM certificates WHERE kode = $1`,
         [code]
       );
 
@@ -66,7 +66,7 @@ export async function POST(request) {
       } else if (item.status === "revoked") {
         isValid = false;
         validationMessage = "Voucher telah dibatalkan";
-      } else if (item.expires_at && new Date(item.expires_at) < new Date()) {
+      } else if (item.kadaluarsa && new Date(item.kadaluarsa) < new Date()) {
         isValid = false;
         validationMessage = "Voucher sudah melewati tanggal kadaluarsa";
       } else {
@@ -107,13 +107,13 @@ export async function POST(request) {
       type: itemType,
       item: {
         id: item.id,
-        code: item.code,
-        title: item.title || item.certificate_type,
-        description: item.description || null,
+        code: item.kode,
+        title: item.judul || item.jenis_sertifikat,
+        description: item.keterangan || null,
         status: item.status,
-        ...(itemType === "voucher" && { expires_at: item.expires_at }),
+        ...(itemType === "voucher" && { expires_at: item.kadaluarsa }),
         ...(itemType === "certificate" && {
-          recipient_name: item.recipient_name,
+          recipient_name: item.nama_penerima,
           issue_date: item.issue_date,
         }),
       },
@@ -145,7 +145,7 @@ export async function GET(request, { params }) {
     let itemType = null;
 
     const voucherResult = await query(
-      `SELECT * FROM vouchers WHERE code = $1`,
+      `SELECT * FROM vouchers WHERE kode = $1`,
       [code]
     );
 
@@ -154,7 +154,7 @@ export async function GET(request, { params }) {
       itemType = "voucher";
     } else {
       const certResult = await query(
-        `SELECT * FROM certificates WHERE code = $1`,
+        `SELECT * FROM certificates WHERE kode = $1`,
         [code]
       );
 

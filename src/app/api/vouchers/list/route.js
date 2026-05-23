@@ -17,7 +17,7 @@ export async function GET(request) {
     const db = createAdminClient();
     let query = db
       .from("vouchers")
-      .select("id, code, title, description, status, expires_at, created_at", { count: "exact" });
+      .select("id, kode, judul, keterangan, status, kadaluarsa, created_at", { count: "exact" });
 
     if (status) {
       query = query.eq("status", status);
@@ -25,7 +25,7 @@ export async function GET(request) {
 
     if (search) {
       const escaped = search.replace(/%/g, "\\%").replace(/_/g, "\\_");
-      query = query.or(`code.ilike.%${escaped}%,title.ilike.%${escaped}%`);
+      query = query.or(`kode.ilike.%${escaped}%,judul.ilike.%${escaped}%`);
     }
 
     const { data, count, error } = await query

@@ -30,7 +30,7 @@ export async function GET(request) {
     const { data, error } = await db
       .from("vouchers")
       .select(
-        "code, title, description, status, expires_at, created_at",
+        "kode, judul, keterangan, status, kadaluarsa, created_at",
       )
       .order("created_at", { ascending: false });
 
@@ -44,12 +44,12 @@ export async function GET(request) {
     }
 
     const rows = (data ?? []).map((r) => ({
-      Kode: r.code ?? "",
-      Judul: r.title ?? "",
-      Deskripsi: r.description ?? "",
+      Kode: r.kode ?? "",
+      Judul: r.judul ?? "",
+      Deskripsi: r.keterangan ?? "",
       Status: r.status ?? "",
-      "Kadaluarsa": r.expires_at
-        ? new Date(r.expires_at).toLocaleDateString("id-ID")
+      "Kadaluarsa": r.kadaluarsa
+        ? new Date(r.kadaluarsa).toLocaleDateString("id-ID")
         : "-",
       "Dibuat": r.created_at
         ? new Date(r.created_at).toLocaleDateString("id-ID")
@@ -74,7 +74,7 @@ export async function GET(request) {
     const { data, error } = await db
       .from("certificates")
       .select(
-        "code, recipient_name, certificate_type, dewan_ambalan, status, created_at",
+        "kode, nama_penerima, jenis_sertifikat, penerbit, status, created_at",
       )
       .order("created_at", { ascending: false });
 
@@ -88,10 +88,10 @@ export async function GET(request) {
     }
 
     const rows = (data ?? []).map((r) => ({
-      Kode: r.code ?? "",
-      "Nama Penerima": r.recipient_name ?? "",
-      "Jenis Sertifikat": r.certificate_type ?? "",
-      "Dewan Ambalan": r.dewan_ambalan ?? "",
+      Kode: r.kode ?? "",
+      "Nama Penerima": r.nama_penerima ?? "",
+      "Jenis Sertifikat": r.jenis_sertifikat ?? "",
+      "Penerbit": r.penerbit ?? "",
       Status: r.status ?? "",
       "Dibuat": r.created_at
         ? new Date(r.created_at).toLocaleDateString("id-ID")

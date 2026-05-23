@@ -58,23 +58,23 @@ function downloadQRCode(canvasContainer, filename) {
 function QRCertificateCard({ item }) {
   const qrRef = useRef(null);
   const verifyUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/certificates?code=${item.code}`
-    : `https://da-alf.web.id/certificates?code=${item.code}`;
+    ? `${window.location.origin}/certificates?code=${item.kode}`
+    : `https://da-alf.web.id/certificates?code=${item.kode}`;
 
   return (
     <div className="bg-[var(--surface-app)] rounded-lg p-4 border border-[var(--border-primary)]">
       <div ref={qrRef} className="flex justify-center mb-3">
         <QRCodeCanvas value={verifyUrl} size={180} level="M" includeMargin={true} bgColor="#ffffff" fgColor="#000000" />
       </div>
-      <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm text-center">{item.code}</p>
-      {item.nomor_sertifikat && (
-        <p className="text-xs text-[var(--text-muted)] text-center mt-0.5">{item.nomor_sertifikat}</p>
+      <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm text-center">{item.kode}</p>
+      {item.nomor && (
+        <p className="text-xs text-[var(--text-muted)] text-center mt-0.5">{item.nomor}</p>
       )}
-      <p className="text-sm text-[var(--text-primary)] mt-1 text-center">{item.recipient_name || item.title}</p>
+      <p className="text-sm text-[var(--text-primary)] mt-1 text-center">{item.nama_penerima || item.title}</p>
       <p className="text-xs text-[var(--text-muted)] mt-1 text-center">{new Date(item.created_at).toLocaleString('id-ID')}</p>
       <div className="flex gap-2 mt-3">
         <button
-          onClick={() => downloadQRCode(qrRef.current, `QR-${item.code}.png`)}
+          onClick={() => downloadQRCode(qrRef.current, `QR-${item.kode}.png`)}
           className="flex-1 inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors"
         >
           <Download size={13} /> QR Code
@@ -123,11 +123,11 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
   useEffect(() => {
     if (item) {
       setForm({
-        recipient_name: item.recipient_name || '',
-        certificate_type: item.certificate_type || '',
-        dewan_ambalan: item.dewan_ambalan || '',
-        nomor_sertifikat: item.nomor_sertifikat || '',
-        description: item.description || '',
+        nama_penerima: item.nama_penerima || '',
+        jenis_sertifikat: item.jenis_sertifikat || '',
+        penerbit: item.penerbit || '',
+        nomor: item.nomor || '',
+        keterangan: item.keterangan || '',
         status: item.status || 'issued',
       });
     }
@@ -152,30 +152,30 @@ function EditCertificateModal({ item, open, onClose, onSave }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className={labelClass}>Kode</label>
-            <input type="text" value={item.code} disabled className={`${inputClass} opacity-60`} />
+            <input type="text" value={item.kode} disabled className={`${inputClass} opacity-60`} />
           </div>
           <div>
             <label className={labelClass}>Nomor Sertifikat</label>
-            <input type="text" value={form.nomor_sertifikat} onChange={(e) => setForm({ ...form, nomor_sertifikat: e.target.value })} placeholder="Contoh: 001/11.29.02.165-02.166-C/2026" maxLength={100} className={inputClass} />
+            <input type="text" value={form.nomor} onChange={(e) => setForm({ ...form, nomor: e.target.value })} placeholder="Contoh: 001/11.29.02.165-02.166-C/2026" maxLength={100} className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Nama Penerima *</label>
-            <input type="text" value={form.recipient_name} onChange={(e) => setForm({ ...form, recipient_name: e.target.value })} required maxLength={200} className={inputClass} />
+            <input type="text" value={form.nama_penerima} onChange={(e) => setForm({ ...form, nama_penerima: e.target.value })} required maxLength={200} className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Jenis Sertifikat *</label>
-            <select value={form.certificate_type} onChange={(e) => setForm({ ...form, certificate_type: e.target.value })} required className={inputClass}>
+            <select value={form.jenis_sertifikat} onChange={(e) => setForm({ ...form, jenis_sertifikat: e.target.value })} required className={inputClass}>
               <option value="">-- Pilih Jenis --</option>
               {PRAMUKA_CERT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
           <div>
             <label className={labelClass}>Penerbit</label>
-            <input type="text" value={form.dewan_ambalan} onChange={(e) => setForm({ ...form, dewan_ambalan: e.target.value })} placeholder="Nama penerbit sertifikat" className={inputClass} />
+            <input type="text" value={form.penerbit} onChange={(e) => setForm({ ...form, penerbit: e.target.value })} placeholder="Nama penerbit sertifikat" className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Deskripsi / Alasan Penerbitan</label>
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Jelaskan nama penerima dan alasan sertifikat ini diterbitkan..." rows={3} maxLength={1000} className={inputClass} />
+            <textarea value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })} placeholder="Jelaskan nama penerima dan alasan sertifikat ini diterbitkan..." rows={3} maxLength={1000} className={inputClass} />
           </div>
           <div>
             <label className={labelClass}>Status</label>
@@ -204,8 +204,8 @@ function CertificateDetailModal({ item, open, onClose }) {
   if (!open || !item) return null;
 
   const verifyUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/certificates?code=${item.code}`
-    : `https://da-alf.web.id/certificates?code=${item.code}`;
+    ? `${window.location.origin}/certificates?code=${item.kode}`
+    : `https://da-alf.web.id/certificates?code=${item.kode}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -227,26 +227,26 @@ function CertificateDetailModal({ item, open, onClose }) {
         <div className="space-y-3 mb-5">
           <div className="flex justify-between">
             <span className="text-sm text-[var(--text-secondary)]">Kode</span>
-            <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">{item.code}</span>
+            <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">{item.kode}</span>
           </div>
-          {item.nomor_sertifikat && (
+          {item.nomor && (
             <div className="flex justify-between">
               <span className="text-sm text-[var(--text-secondary)]">No. Sertifikat</span>
-              <span className="text-sm font-medium text-[var(--text-primary)]">{item.nomor_sertifikat}</span>
+              <span className="text-sm font-medium text-[var(--text-primary)]">{item.nomor}</span>
             </div>
           )}
           <div className="flex justify-between">
             <span className="text-sm text-[var(--text-secondary)]">Penerima</span>
-            <span className="text-sm font-medium text-[var(--text-primary)]">{item.recipient_name}</span>
+            <span className="text-sm font-medium text-[var(--text-primary)]">{item.nama_penerima}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-sm text-[var(--text-secondary)]">Jenis</span>
-            <span className="text-sm text-[var(--text-primary)]">{item.certificate_type}</span>
+            <span className="text-sm text-[var(--text-primary)]">{item.jenis_sertifikat}</span>
           </div>
-          {item.description && (
+          {item.keterangan && (
             <div className="pt-1">
               <span className="text-sm text-[var(--text-secondary)] block mb-1">Deskripsi</span>
-              <p className="text-sm text-[var(--text-primary)] bg-[var(--surface-muted)] rounded-lg p-3 leading-relaxed">{item.description}</p>
+              <p className="text-sm text-[var(--text-primary)] bg-[var(--surface-muted)] rounded-lg p-3 leading-relaxed">{item.keterangan}</p>
             </div>
           )}
           <div className="flex justify-between">
@@ -257,7 +257,7 @@ function CertificateDetailModal({ item, open, onClose }) {
 
         <div className="flex gap-2">
           <button
-            onClick={() => downloadQRCode(qrRef.current, `QR-${item.code}.png`)}
+            onClick={() => downloadQRCode(qrRef.current, `QR-${item.kode}.png`)}
             className="flex-1 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-colors"
           >
             <Download size={15} /> Download QR
@@ -341,11 +341,11 @@ export default function AdminCertificatesPage() {
         type: 'certificate',
         quantity: parseInt(quantity),
         title: `Sertifikat ${certificateType} - ${recipientName}`,
-        recipient_name: recipientName,
-        certificate_type: certificateType,
-        dewan_ambalan: dewanAmbalan,
-        nomor_sertifikat: nomorSertifikat || null,
-        description: certDescription || null,
+        nama_penerima: recipientName,
+        jenis_sertifikat: certificateType,
+        penerbit: dewanAmbalan,
+        nomor: nomorSertifikat || null,
+        keterangan: certDescription || null,
       };
       const res = await fetch('/api/vouchers/generate', {
         method: 'POST',
@@ -399,9 +399,9 @@ export default function AdminCertificatesPage() {
       if (str.includes(",") || str.includes('"') || str.includes("\n")) return `"${str.replace(/"/g, '""')}"`;
       return str;
     };
-    const headers = ['Code', 'Nomor Sertifikat', 'Penerima', 'Jenis', 'Status', 'Created At'];
+    const headers = ['Kode', 'Nomor', 'Nama Penerima', 'Jenis Sertifikat', 'Penerbit', 'Status', 'Dibuat', 'Keterangan'];
     const rows = generated.items.map((item) =>
-      [item.code, item.nomor_sertifikat || '', item.recipient_name, item.certificate_type, getStatusLabel(item.status), new Date(item.created_at).toLocaleString('id-ID')]
+      [item.kode, item.nomor || '', item.nama_penerima, item.jenis_sertifikat, item.penerbit || '-', getStatusLabel(item.status), new Date(item.created_at).toLocaleString('id-ID'), item.keterangan || '']
     );
     const csv = [headers.map(escapeCsv).join(','), ...rows.map((row) => row.map(escapeCsv).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -535,7 +535,7 @@ export default function AdminCertificatesPage() {
                         generated.items.forEach((item, idx) => {
                           setTimeout(() => {
                             const container = document.getElementById(`qr-result-${idx}`);
-                            if (container) downloadQRCode(container, `QR-${item.code}.png`);
+                            if (container) downloadQRCode(container, `QR-${item.kode}.png`);
                           }, idx * 300);
                         });
                       }}
@@ -595,28 +595,34 @@ export default function AdminCertificatesPage() {
                     <thead className="bg-[var(--surface-muted)] border-b border-[var(--border-primary)]">
                       <tr>
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Kode</th>
-                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">No. Sertifikat</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Nomor</th>
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Penerima</th>
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden md:table-cell">Jenis</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden xl:table-cell">Penerbit</th>
                         <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden lg:table-cell">Status</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden lg:table-cell">Dibuat</th>
+                        <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden 2xl:table-cell min-w-[200px]">Keterangan</th>
                         <th className="px-4 md:px-6 py-3 text-right text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--border-primary)]">
                       {certificates.map((c) => (
                         <tr key={c.id} className="hover:bg-[var(--surface-muted)]/50 transition-colors">
-                          <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-emerald-600 dark:text-emerald-400">{c.code}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden sm:table-cell">{c.nomor_sertifikat || '-'}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-primary)]">{c.recipient_name}</td>
-                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden md:table-cell">{c.certificate_type}</td>
+                          <td className="px-4 md:px-6 py-3 font-mono text-sm font-medium text-emerald-600 dark:text-emerald-400">{c.kode}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden sm:table-cell">{c.nomor || '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-primary)]">{c.nama_penerima}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden md:table-cell">{c.jenis_sertifikat}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden xl:table-cell">{c.penerbit || '-'}</td>
                           <td className="px-4 md:px-6 py-3 hidden lg:table-cell">
                             <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(c.status)}`}>{getStatusLabel(c.status)}</span>
                           </td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden lg:table-cell">{c.created_at ? new Date(c.created_at).toLocaleDateString('id-ID') : '-'}</td>
+                          <td className="px-4 md:px-6 py-3 text-sm text-[var(--text-secondary)] hidden 2xl:table-cell max-w-[200px] truncate">{c.keterangan || '-'}</td>
                           <td className="px-4 md:px-6 py-3 text-right">
                             <div className="flex justify-end gap-1">
                               <button onClick={() => setViewCertificate(c)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Detail & QR"><QrCode size={15} /></button>
                               <button onClick={() => setEditCertificate(c)} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" title="Edit"><Edit3 size={15} /></button>
-                              <button onClick={() => setDeleteTarget({ id: c.id, name: c.code })} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
+                              <button onClick={() => setDeleteTarget({ id: c.id, name: c.kode })} className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" title="Hapus"><Trash2 size={15} /></button>
                             </div>
                           </td>
                         </tr>

@@ -19,7 +19,7 @@ export async function POST(request) {
     const { code, nomor_sertifikat } = body;
 
     if ((!code && !nomor_sertifikat) || (code && typeof code !== "string") || (nomor_sertifikat && typeof nomor_sertifikat !== "string")) {
-      return json({ error: "code atau nomor_sertifikat diperlukan" }, 400);
+      return json({ error: "code atau nomor diperlukan" }, 400);
     }
 
     const db = createAdminClient();
@@ -27,12 +27,12 @@ export async function POST(request) {
     let item = null;
     let itemType = null;
 
-    /* ── Cari berdasarkan nomor_sertifikat ── */
+    /* ── Cari berdasarkan nomor ── */
     if (nomor_sertifikat) {
       const { data, error } = await db
         .from("certificates")
-        .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date, description")
-        .eq("nomor_sertifikat", nomor_sertifikat)
+        .select("id, kode, nomor, jenis_sertifikat, nama_penerima, penerbit, status, issue_date, keterangan")
+        .eq("nomor", nomor_sertifikat)
         .maybeSingle();
 
       if (error) {
@@ -46,8 +46,8 @@ export async function POST(request) {
       /* ── Cari voucher dulu berdasarkan code ── */
       const { data: vd, error: vErr } = await db
         .from("vouchers")
-        .select("id, code, title, description, status, expires_at")
-        .eq("code", code)
+        .select("id, kode, judul, keterangan, status, kadaluarsa")
+        .eq("kode", code)
         .maybeSingle();
 
       if (vErr) {
@@ -61,8 +61,8 @@ export async function POST(request) {
         /* ── Jika bukan voucher, cek certificate ── */
         const { data: cd, error: cErr } = await db
           .from("certificates")
-          .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date, description")
-          .eq("code", code)
+          .select("id, kode, nomor, jenis_sertifikat, nama_penerima, penerbit, status, issue_date, keterangan")
+          .eq("kode", code)
           .maybeSingle();
 
         if (cErr) {
@@ -81,9 +81,9 @@ export async function POST(request) {
 
     /* ── Build response ── */
     const responseItem = {
-      code: item.code || "",
-      title: item.title || item.certificate_type || "",
-      description: item.description || null,
+      code: item.kode || "",
+      title: item.judul || item.jenis_sertifikat || "",
+      description: item.keterangan || null,
       status: item.status || "",
     };
 
@@ -101,8 +101,8 @@ export async function POST(request) {
       } else {
         message = "Voucher valid";
       }
-      if (item.expires_at) {
-        responseItem.expires_at = item.expires_at;
+      if (item.kadaluarsa) {
+        responseItem.expires_at = item.kadaluarsa;
       }
     } else {
       if (item.status === "revoked") {
@@ -111,10 +111,10 @@ export async function POST(request) {
       } else {
         message = "Sertifikat valid";
       }
-      responseItem.nomor_sertifikat = item.nomor_sertifikat || null;
-      responseItem.recipient_name = item.recipient_name || "";
-      responseItem.certificate_type = item.certificate_type || "";
-      responseItem.dewan_ambalan = item.dewan_ambalan || null;
+      responseItem.nomor_sertifikat = item.nomor || null;
+      responseItem.recipient_name = item.nama_penerima || "";
+      responseItem.certificate_type = item.jenis_sertifikat || "";
+      responseItem.dewan_ambalan = item.penerbit || null;
       responseItem.issue_date = item.issue_date || null;
     }
 
@@ -156,8 +156,8 @@ export async function GET(request) {
     if (nomor) {
       const { data, error } = await db
         .from("certificates")
-        .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date, description")
-        .eq("nomor_sertifikat", nomor)
+        .select("id, kode, nomor, jenis_sertifikat, nama_penerima, penerbit, status, issue_date, keterangan")
+        .eq("nomor", nomor)
         .maybeSingle();
 
       if (error) {
@@ -171,8 +171,8 @@ export async function GET(request) {
       /* ── Cari voucher dulu ── */
       const { data: vd, error: vErr } = await db
         .from("vouchers")
-        .select("id, code, title, description, status, expires_at")
-        .eq("code", code)
+        .select("id, kode, judul, keterangan, status, kadaluarsa")
+        .eq("kode", code)
         .maybeSingle();
 
       if (vErr) {
@@ -186,8 +186,8 @@ export async function GET(request) {
         /* ── Cek certificate ── */
         const { data: cd, error: cErr } = await db
           .from("certificates")
-          .select("id, code, nomor_sertifikat, certificate_type, recipient_name, dewan_ambalan, status, issue_date, description")
-          .eq("code", code)
+          .select("id, kode, nomor, jenis_sertifikat, nama_penerima, penerbit, status, issue_date, keterangan")
+          .eq("kode", code)
           .maybeSingle();
 
         if (cErr) {
@@ -206,9 +206,9 @@ export async function GET(request) {
 
     /* ── Build response ── */
     const responseItem = {
-      code: item.code || "",
-      title: item.title || item.certificate_type || "",
-      description: item.description || null,
+      code: item.kode || "",
+      title: item.judul || item.jenis_sertifikat || "",
+      description: item.keterangan || null,
       status: item.status || "",
     };
 
@@ -226,8 +226,8 @@ export async function GET(request) {
       } else {
         message = "Voucher valid";
       }
-      if (item.expires_at) {
-        responseItem.expires_at = item.expires_at;
+      if (item.kadaluarsa) {
+        responseItem.expires_at = item.kadaluarsa;
       }
     } else {
       if (item.status === "revoked") {
@@ -236,10 +236,10 @@ export async function GET(request) {
       } else {
         message = "Sertifikat valid";
       }
-      responseItem.nomor_sertifikat = item.nomor_sertifikat || null;
-      responseItem.recipient_name = item.recipient_name || "";
-      responseItem.certificate_type = item.certificate_type || "";
-      responseItem.dewan_ambalan = item.dewan_ambalan || null;
+      responseItem.nomor_sertifikat = item.nomor || null;
+      responseItem.recipient_name = item.nama_penerima || "";
+      responseItem.certificate_type = item.jenis_sertifikat || "";
+      responseItem.dewan_ambalan = item.penerbit || null;
       responseItem.issue_date = item.issue_date || null;
     }
 

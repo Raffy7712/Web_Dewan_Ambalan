@@ -63,14 +63,14 @@ export async function POST(request) {
         });
 
         const insertPayload = {
-          code,
+          kode: code,
           qr_code: qrData,
           barcode: code,
-          title,
+          judul: title,
           status: "active",
         };
-        if (description) insertPayload.description = String(description).slice(0, 500);
-        if (expires_at) insertPayload.expires_at = new Date(expires_at).toISOString();
+        if (description) insertPayload.keterangan = String(description).slice(0, 500);
+        if (expires_at) insertPayload.kadaluarsa = new Date(expires_at).toISOString();
 
         const { data, error } = await db
           .from("vouchers")
@@ -88,10 +88,10 @@ export async function POST(request) {
 
         generated.push(data);
       } else {
-        const { recipient_name, certificate_type, dewan_ambalan, nomor_sertifikat, description: certDesc } = body;
-        if (!recipient_name || !certificate_type) {
+        const { nama_penerima, jenis_sertifikat, penerbit, nomor, keterangan: certKet } = body;
+        if (!nama_penerima || !jenis_sertifikat) {
           return NextResponse.json(
-            { error: "recipient_name dan certificate_type wajib diisi untuk sertifikat" },
+            { error: "nama_penerima dan jenis_sertifikat wajib diisi untuk sertifikat" },
             { status: 400 },
           );
         }
@@ -99,32 +99,30 @@ export async function POST(request) {
         const qrData = JSON.stringify({
           type: "certificate",
           code,
-          nomor_sertifikat: nomor_sertifikat || null,
-          recipient_name,
-          certificate_type,
-          dewan_ambalan: dewan_ambalan || "Dewan Ambalan",
+          nomor: nomor || null,
+          nama_penerima,
+          jenis_sertifikat,
+          penerbit: penerbit || "Dewan Ambalan",
           verifyUrl,
           generatedAt: new Date().toISOString(),
         });
 
         const insertPayload = {
-          code,
+          kode: code,
           qr_code: qrData,
           barcode: code,
-          recipient_name: String(recipient_name).slice(0, 200),
-          certificate_type,
-          dewan_ambalan: dewan_ambalan || "Dewan Ambalan",
+          nama_penerima: String(nama_penerima).slice(0, 200),
+          jenis_sertifikat,
+          penerbit: penerbit || "Dewan Ambalan",
           status: "issued",
         };
 
-        // Add nomor_sertifikat if provided
-        if (nomor_sertifikat) {
-          insertPayload.nomor_sertifikat = String(nomor_sertifikat).slice(0, 100);
+        if (nomor) {
+          insertPayload.nomor = String(nomor).slice(0, 100);
         }
 
-        // Add description if provided
-        if (certDesc) {
-          insertPayload.description = String(certDesc).slice(0, 1000);
+        if (certKet) {
+          insertPayload.keterangan = String(certKet).slice(0, 1000);
         }
 
         const { data, error } = await db
