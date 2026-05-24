@@ -414,7 +414,7 @@ export default function FinanceAdminManager({ months, transactionsByMonth }) {
                             className="border-b border-border last:border-0"
                           >
                             <td className="px-3 py-2 whitespace-nowrap">
-                              {row.tanggal}
+                              {row.tanggal ? new Date(row.tanggal).toLocaleDateString('id-ID') : '-'}
                             </td>
                             <td className="px-3 py-2 capitalize">
                               <span

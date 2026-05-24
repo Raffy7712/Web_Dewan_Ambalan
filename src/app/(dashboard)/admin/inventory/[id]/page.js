@@ -73,7 +73,7 @@ export default function InventoryDetailPage({ params }) {
       unit: item.unit || 'unit',
       condition: item.condition || 'baik',
       location: item.location || '',
-      purchase_date: item.purchase_date ? item.purchase_date.slice(0, 10) : '',
+      purchase_date: item.purchase_date ? new Date(item.purchase_date).toLocaleDateString('en-CA') : '',
       purchase_price: item.purchase_price ?? '',
     });
     setIsEditing(true);
