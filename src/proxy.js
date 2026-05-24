@@ -26,33 +26,8 @@ async function readSession(request) {
   }
 }
 
-function schedulePageViewLog(request, event) {
-  const { pathname } = request.nextUrl;
-  if (pathname.startsWith("/api") || pathname.startsWith("/_next")) return;
-
-  const secret = process.env.INTERNAL_ANALYTICS_SECRET;
-  if (!secret) return;
-
-  const origin = request.nextUrl.origin;
-  const promise = fetch(`${origin}/api/internal/page-view`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-da-internal": secret,
-    },
-    body: JSON.stringify({ path: pathname }),
-  }).catch(() => {});
-
-  if (event && typeof event.waitUntil === "function") {
-    event.waitUntil(promise);
-  } else {
-    void promise;
-  }
-}
-
 export async function proxy(request, event) {
   const { pathname } = request.nextUrl;
-  schedulePageViewLog(request, event);
 
   const needsAuthGate =
     pathname === "/login" ||

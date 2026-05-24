@@ -34,68 +34,6 @@ export async function getAccountsForAdminList() {
   }
 }
 
-/**
- * Ringkasan traffic dari page_view_logs (butuh migration-v7).
- * @returns {Promise<{ ok: boolean, error?: string, totals?: object, byDay?: object[], topPaths?: {path:string,count:number}[] }>}
- */
-export async function getPageViewAnalytics() {
-  const now = Date.now();
-  const dayMs = 24 * 60 * 60 * 1000;
-  const since7d = new Date(now - 7 * dayMs).toISOString();
-  const since24h = new Date(now - dayMs).toISOString();
-
-  let rows;
-  try {
-    const result = await query(
-      `SELECT path, created_at FROM page_view_logs WHERE created_at >= $1 LIMIT 20000`,
-      [since7d]
-    );
-    rows = result.rows ?? [];
-  } catch (err) {
-    if (err.message?.includes("page_view_logs")) {
-      return {
-        ok: false,
-        error:
-          "Tabel page_view_logs belum ada. Jalankan migration-v7.sql di database.",
-      };
-    }
-    return { ok: false, error: err.message };
-  }
-
-  const last24h = rows.filter((r) => r.created_at >= since24h).length;
-  const byDayMap = new Map();
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now - i * dayMs);
-    const key = d.toISOString().slice(0, 10);
-    byDayMap.set(key, 0);
-  }
-  const pathCount = new Map();
-  for (const r of rows) {
-    const day = r.created_at?.slice(0, 10);
-    if (day && byDayMap.has(day)) byDayMap.set(day, (byDayMap.get(day) ?? 0) + 1);
-    const p = r.path || "/";
-    pathCount.set(p, (pathCount.get(p) ?? 0) + 1);
-  }
-  const byDay = [...byDayMap.entries()].map(([date, count]) => ({
-    date,
-    count,
-  }));
-  const topPaths = [...pathCount.entries()]
-    .map(([path, count]) => ({ path, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 20);
-
-  return {
-    ok: true,
-    totals: {
-      last7d: rows.length,
-      last24h,
-    },
-    byDay,
-    topPaths,
-  };
-}
-
 export async function getMyAmbalanApplication(accountId, period = "2026-2027") {
   try {
     const { rows } = await query(

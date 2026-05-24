@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getSession } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
-import { getPageViewAnalytics } from "@/lib/admin-queries";
 import {
   Briefcase,
   Settings,
@@ -10,7 +9,6 @@ import {
   Sparkles,
   Newspaper,
   Users,
-  BarChart3,
   Wallet,
   BookOpen,
   Mails,
@@ -26,12 +24,6 @@ const modules = [
     title: "Panduan pengurus",
     description: "Ringkasan cara pakai panel admin untuk pengurus baru.",
     icon: BookOpen,
-  },
-  {
-    href: "/admin/analytics",
-    title: "Traffic & statistik",
-    description: "Kunjungan per halaman, tren harian, jalur populer.",
-    icon: BarChart3,
   },
   {
     href: "/admin/users",
@@ -118,13 +110,6 @@ export default async function AdminDashboardPage() {
   const session = await getSession();
   if (!session || session.role !== "admin") redirect("/anggota");
 
-  let traffic = { ok: false };
-  try {
-    traffic = await getPageViewAnalytics();
-  } catch (err) {
-    console.error("[admin] getPageViewAnalytics error:", err.message);
-  }
-
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 md:py-8">
       <h1 className="text-3xl font-bold text-foreground mb-2">
@@ -133,27 +118,6 @@ export default async function AdminDashboardPage() {
       <p className="text-muted-foreground mb-6">
         Konten, pengguna, traffic, dan pengaturan situs dalam satu panel.
       </p>
-
-      {traffic.ok && traffic.totals && (
-        <div className="grid sm:grid-cols-2 gap-3 mb-8">
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs font-medium text-muted-foreground">
-              Page views (24 jam)
-            </p>
-            <p className="text-2xl font-bold text-foreground">
-              {traffic.totals.last24h.toLocaleString("id-ID")}
-            </p>
-          </div>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="text-xs font-medium text-muted-foreground">
-              Page views (7 hari)
-            </p>
-            <p className="text-2xl font-bold text-foreground">
-              {traffic.totals.last7d.toLocaleString("id-ID")}
-            </p>
-          </div>
-        </div>
-      )}
 
       <div className="grid md:grid-cols-2 gap-4">
         {modules.map(({ href, title, description, icon: Icon }) => (

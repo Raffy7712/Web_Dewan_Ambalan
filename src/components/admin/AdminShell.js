@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users,
-  BarChart3,
   Newspaper,
   Settings,
   Sparkles,
@@ -25,7 +24,6 @@ import {
 const links = [
   { href: "/admin", label: "Ringkasan", icon: LayoutDashboard, end: true },
   { href: "/admin/panduan", label: "Panduan pengurus", icon: GraduationCap },
-  { href: "/admin/analytics", label: "Traffic", icon: BarChart3 },
   { href: "/admin/users", label: "Akun & blokir", icon: Users },
   { href: "/admin/management", label: "Manajemen admin", icon: UserCog },
   { href: "/admin/finance", label: "Keuangan", icon: Wallet },

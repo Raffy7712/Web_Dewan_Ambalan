@@ -392,15 +392,7 @@ export function createAdminClient() {
       return createQueryBuilder().from(table);
     },
     // RPC support (for functions)
-    async rpc(fn, params) {
-      if (fn === "increment_page_view" || fn === "track_page_view") {
-        const path = params?.path || "/";
-        await query(
-          "INSERT INTO page_view_logs (id, path, created_at) VALUES (gen_random_uuid(), $1, now())",
-          [path]
-        );
-        return { data: { success: true }, error: null };
-      }
+    async rpc(fn) {
       return { data: null, error: { message: `RPC function "${fn}" not implemented` } };
     },
   };

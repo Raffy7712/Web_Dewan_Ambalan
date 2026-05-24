@@ -69,12 +69,6 @@ const sections = [
     ],
   },
   {
-    id: "traffic",
-    title: "Traffic dan analitik halaman",
-    paragraphs: [
-      "Halaman Traffic menampilkan agregat page_view_logs. Panduan lengkap env INTERNAL_ANALYTICS_SECRET, migrasi v7, rate limit, dan troubleshooting ada di berkas repositori Kitab_Suci_Agent.txt (butir 12), bukan di UI halaman Traffic.",
-    ],
-  },
   {
     id: "struktur",
     title: "Struktur dan jabatan",
