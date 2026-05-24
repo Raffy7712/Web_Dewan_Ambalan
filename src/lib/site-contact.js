@@ -17,7 +17,7 @@ export function getSiteContact() {
   const email =
     process.env.FOOTER_CONTACT_EMAIL?.trim() || "pramuka@smkalfurqon.sch.id";
   const websiteUrlRaw = process.env.FOOTER_WEBSITE_URL?.trim() || "";
-  const websiteHrefDefault = "https://smk.al-furqon.id/";
+  const websiteHrefDefault = "https://da-alf.web.id/";
   const websiteHref = websiteUrlRaw || websiteHrefDefault;
   const websiteLabel =
     process.env.FOOTER_WEBSITE_LABEL?.trim() ||
