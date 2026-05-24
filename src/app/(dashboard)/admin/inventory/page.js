@@ -97,13 +97,13 @@ export default function InventoryListPage() {
               <Plus size={16} />
               Tambah Item
             </Link>
-            <Link
+            <a
               href="/api/inventory/export?item_ids=all&format=csv"
               className="inline-flex items-center gap-2 bg-background border border-border hover:border-primary text-foreground font-medium py-2 px-4 rounded-lg text-sm transition-colors"
             >
               <Download size={16} />
               Export Excel
-            </Link>
+            </a>
             <Link
               href="/admin/inventory/export"
               className="inline-flex items-center gap-2 bg-background border border-border hover:border-primary text-muted-foreground font-medium py-2 px-3 rounded-lg text-sm transition-colors"
