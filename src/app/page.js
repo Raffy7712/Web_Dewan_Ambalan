@@ -259,7 +259,7 @@ export default async function LandingPage() {
             {heroTitle}
           </h1>
 
-          <p className="text-foreground/60 text-sm sm:text-base md:text-lg max-w-2xl mb-6 sm:mb-10 leading-relaxed">
+          <p className="text-white/60 text-sm sm:text-base md:text-lg max-w-2xl mb-6 sm:mb-10 leading-relaxed">
             {heroSubtitle}
           </p>
 
@@ -416,13 +416,10 @@ export default async function LandingPage() {
       {/* ── Tri Satya ── */}
       <section className="py-16 px-4 bg-gradient-to-br from-black via-primary/20 to-black text-white">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-primary-foreground/80 font-semibold text-xs uppercase tracking-widest mb-4">
-            Janji Pramuka
-          </p>
           <h2 className="text-xl font-bold mb-6 text-white">
             Tri Satya Pramuka
           </h2>
-          <blockquote className="bg-black/70 border border-primary/50 rounded-2xl p-6 md:p-8 text-foreground/80 leading-loose text-sm md:text-base italic">
+          <blockquote className="bg-black/70 border border-primary/50 rounded-2xl p-6 md:p-8 text-white/80 leading-loose text-sm md:text-base italic">
             Demi kehormatanku aku berjanji akan bersungguh-sungguh:{" "}
             <strong className="text-white not-italic">
               Menjalankan kewajibanku terhadap Tuhan, Negara Kesatuan Republik
