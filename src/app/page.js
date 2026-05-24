@@ -15,7 +15,6 @@ import {
   Users,
   CalendarCheck,
   MapPin,
-  Phone,
   Mail,
   Globe,
 } from "lucide-react";
@@ -541,22 +540,21 @@ export default async function LandingPage() {
         </div>
 
         {/* Contact info strip */}
-        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 px-2">
+        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 px-2">
           {[
             { icon: MapPin, text: contact.addressLine },
-            { icon: Phone, text: contact.phone },
             { icon: Mail, text: contact.email },
             { icon: Globe, text: contact.websiteLabel },
           ].map(({ icon: Icon, text }) => (
             <div
               key={text}
-              className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-muted-foreground"
+              className="flex items-center gap-2 bg-background border border-border rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-muted-foreground break-words min-w-0"
             >
               <Icon
                 size={16}
                 className="text-primary flex-shrink-0"
               />
-              {text}
+              <span className="min-w-0">{text}</span>
             </div>
           ))}
         </div>
