@@ -42,6 +42,7 @@ export async function getPageViewAnalytics() {
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
   const since7d = new Date(now - 7 * dayMs).toISOString();
+  const since24h = new Date(now - dayMs).toISOString();
 
   let rows;
   try {
