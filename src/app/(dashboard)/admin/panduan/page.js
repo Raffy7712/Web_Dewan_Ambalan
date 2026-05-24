@@ -69,7 +69,6 @@ const sections = [
     ],
   },
   {
-  {
     id: "struktur",
     title: "Struktur dan jabatan",
     paragraphs: [
