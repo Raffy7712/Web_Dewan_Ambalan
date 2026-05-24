@@ -191,17 +191,17 @@ export default async function LandingPage() {
               <LogoImage size={32} />
             </div>
             <div className="hidden sm:block">
-              <p className="text-primary/80 text-[10px] sm:text-[11px] font-semibold tracking-wide leading-none">
+              <p className="text-primary text-[10px] sm:text-[11px] font-semibold tracking-wide leading-none">
                 {brandEyebrow}
               </p>
-              <p className="text-muted-foreground text-[11px] sm:text-xs leading-tight mt-0.5">
+              <p className="text-white/60 text-[11px] sm:text-xs leading-tight mt-0.5">
                 {brandDewan}
               </p>
               <p className="text-white text-sm font-bold leading-tight">{brandSchoolNav}</p>
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm text-muted-foreground font-medium">
+          <nav className="hidden md:flex items-center gap-6 text-sm text-white/70 font-medium">
             <a href="#tentang" className="hover:text-white transition-colors">
               Tentang
             </a>
@@ -216,7 +216,7 @@ export default async function LandingPage() {
           <div className="flex items-center gap-1 sm:gap-2">
             <Link
               href="/login"
-              className="px-2 sm:px-4 py-1.5 rounded-full border border-border text-muted-foreground hover:border-primary hover:text-white text-xs sm:text-sm font-medium transition-colors"
+              className="px-2 sm:px-4 py-1.5 rounded-full border border-white/20 text-white/70 hover:border-primary hover:text-white text-xs sm:text-sm font-medium transition-colors"
             >
               Masuk
             </Link>
@@ -246,12 +246,12 @@ export default async function LandingPage() {
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.98),rgba(6,78,59,0.88),rgba(120,53,15,0.58))]" />
 
         <div className="relative max-w-5xl mx-auto w-full">
-          <div className="inline-flex items-center gap-2 bg-primary/15 border border-primary/40 text-primary-foreground/80 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-2 sm:mb-4 tracking-wide">
+          <div className="inline-flex items-center gap-2 bg-primary/15 border border-primary/40 text-white/80 text-[10px] sm:text-xs font-semibold px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-2 sm:mb-4 tracking-wide">
             <Shield size={12} />
             <span className="line-clamp-1">{brandEyebrow}</span>
           </div>
 
-          <p className="text-primary-foreground/80 text-sm sm:text-base md:text-lg font-medium tracking-tight mb-3 sm:mb-4 max-w-3xl">
+          <p className="text-white/70 text-sm sm:text-base md:text-lg font-medium tracking-tight mb-3 sm:mb-4 max-w-3xl">
             {brandDewan}
           </p>
 
@@ -273,13 +273,13 @@ export default async function LandingPage() {
                 <ChevronRight size={16} />
               </Link>
             ) : (
-              <span className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full bg-muted text-muted-foreground font-bold text-xs sm:text-sm">
+              <span className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full bg-white/10 text-white/50 font-bold text-xs sm:text-sm">
                 Registrasi Ditutup
               </span>
             )}
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full border-2 border-primary/80 text-primary-foreground/80 hover:border-white hover:text-white font-bold text-xs sm:text-sm transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full border-2 border-white/30 text-white/70 hover:border-white hover:text-white font-bold text-xs sm:text-sm transition-colors"
             >
               Sudah Anggota? Masuk
             </Link>
