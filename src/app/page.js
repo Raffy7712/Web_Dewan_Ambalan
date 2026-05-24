@@ -541,11 +541,12 @@ export default async function LandingPage() {
         </div>
 
         {/* Contact info strip */}
-        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 px-2">
+        <div className="max-w-3xl mx-auto mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 px-2">
           {[
             { icon: MapPin, text: contact.addressLine },
             { icon: Phone, text: contact.phone },
             { icon: Mail, text: contact.email },
+            { icon: Globe, text: contact.websiteLabel },
           ].map(({ icon: Icon, text }) => (
             <div
               key={text}
@@ -562,29 +563,23 @@ export default async function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="bg-black text-muted-foreground py-5 px-4 text-center border-t border-border">
-        <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm">
-          <span className="inline-flex items-center gap-1.5">
-            <MapPin size={13} className="text-accent shrink-0" />
-            Jl. Raya Bantarkawung, Brebes, Jawa Tengah 52274
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Phone size={13} className="text-accent shrink-0" />
-            (0289) 123456
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Mail size={13} className="text-accent shrink-0" />
-            <a href="mailto:praskaba7@gmail.com" className="hover:text-white transition-colors">
-              praskaba7@gmail.com
-            </a>
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Globe size={13} className="text-accent shrink-0" />
-            <a href="https://da-alf.web.id" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-              da-alf.web.id
-            </a>
-          </span>
+      <footer className="bg-black text-white py-6 px-4 text-center border-t border-border">
+        <div className="flex flex-col items-center gap-1 mb-2">
+          <div className="flex items-center justify-center gap-2.5">
+            <div className="w-6 h-6 rounded bg-primary overflow-hidden flex items-center justify-center">
+              <LogoImage size={24} />
+            </div>
+          </div>
+          <p className="text-primary/80 text-xs font-semibold tracking-wide">
+            {brandEyebrow}
+          </p>
+          <p className="font-bold text-sm">{brandDewan}</p>
+          <p className="text-primary/60 text-sm font-bold">{brandSchoolNav}</p>
+          <p className="text-muted-foreground text-[11px]">Kwartir Ranting Bantarkawung</p>
         </div>
+        <p className="text-muted-foreground text-xs mt-2">
+          &copy; {new Date().getFullYear()} {brandSchoolNav}. Semua hak dilindungi.
+        </p>
       </footer>
     </div>
   );
