@@ -3,7 +3,7 @@ import LogoImage from "@/components/LogoImage";
 import { getRecentPosts, getFeaturedProgramsForPublic } from "@/lib/queries";
 import { getCmsText, getCmsEntriesByPage, isRegistrationEnabled } from "@/lib/cms";
 import { getDisplayUrl } from "@/lib/media-url";
-import { getSiteContact } from "@/lib/site-contact";
+
 import {
   Tent,
   Trophy,
@@ -130,7 +130,11 @@ export default async function LandingPage() {
     ),
     getCmsText("landing", "cta", "title", "Siap Bergabung?"),
     getFeaturedProgramsForPublic(10),
-    getSiteContact(),
+    Promise.resolve({
+      addressLine: "Jl. Raya Bantarkawung, Brebes, Jawa Tengah 52274",
+      email: "praskaba7@gmail.com",
+      websiteLabel: "da-alf.web.id",
+    }),
     getCmsText(
       "landing",
       "tentang",
