@@ -173,7 +173,10 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
     const fd = new FormData();
     fd.set("id", id);
     const res = await deleteOrgMemberAction(null, fd);
-    if (res?.success) router.refresh();
+    if (res?.success) {
+      setMembers((prev) => prev.filter((m) => m.id !== id));
+      router.refresh();
+    }
   }
 
   async function handleDragEnd(jabatan_id, event) {
@@ -192,7 +195,11 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
     const fd = new FormData();
     fd.set("items", JSON.stringify(reordered.map((m) => ({ id: m.id }))));
     const res = await reorderOrgMemberDragAction(null, fd);
-    if (res?.success) router.refresh();
+    if (res?.success) {
+      const ids = new Set(ms.map((m) => m.id));
+      setMembers((prev) => [...prev.filter((m) => !ids.has(m.id)), ...reordered]);
+      router.refresh();
+    }
   }
 
   return (
@@ -200,7 +207,7 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
       <div className="flex items-center gap-2 mb-5">
         <Users size={18} className="text-primary" />
         <h3 className="font-bold text-foreground text-lg">
-          Kelola Anggota Struktur
+          Kelola Struktur Anggota
         </h3>
         <span className="text-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full font-semibold">
           Admin
