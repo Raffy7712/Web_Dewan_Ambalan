@@ -36,8 +36,7 @@ export async function proxy(request, event) {
     pathname === "/reset-password" ||
     pathname.startsWith("/profil") ||
     pathname.startsWith("/admin") ||
-    pathname.startsWith("/keuangan") ||
-    pathname.startsWith("/daftar-calon-dewan-ambalan");
+    pathname.startsWith("/keuangan");
 
   if (!needsAuthGate) {
     return NextResponse.next();
@@ -60,8 +59,7 @@ export async function proxy(request, event) {
   if (
     (pathname.startsWith("/profil") ||
       pathname.startsWith("/admin") ||
-      pathname.startsWith("/keuangan") ||
-      pathname.startsWith("/daftar-calon-dewan-ambalan")) &&
+      pathname.startsWith("/keuangan")) &&
     !session
   ) {
     const loginUrl = new URL("/login", request.url);
