@@ -50,10 +50,7 @@ export default function JabatanManager({ initialJabatan }) {
   }
 
   async function handleReorder(jabatanId, direction) {
-    const fd = new FormData();
-    fd.set("jabatan_id", jabatanId);
-    fd.set("direction", direction);
-    const res = await reorderJabatanAction(null, fd);
+    const res = await reorderJabatanAction(jabatanId, direction);
     if (res?.success) router.refresh();
   }
 

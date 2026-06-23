@@ -14,6 +14,7 @@ import {
 import bcryptjs from "bcryptjs";
 import crypto from "crypto";
 import { redirect } from "next/navigation";
+import { getSession } from "./auth";
 
 const OTP_EXPIRY_MINUTES = 15;
 
@@ -184,4 +185,52 @@ export async function resetPasswordAction(prevState, formData) {
   }
 
   redirect("/login?reset=success");
+}
+
+export async function changePasswordAction(prevState, formData) {
+  const session = await getSession();
+  if (!session) return { error: "Sesi habis. Silakan login ulang." };
+
+  const oldPw = formData.get("old_password")?.toString() ?? "";
+  const newPw = formData.get("new_password")?.toString() ?? "";
+  const confirmPw = formData.get("confirm_password")?.toString() ?? "";
+
+  if (!oldPw || !newPw || !confirmPw) {
+    return { error: "Semua field password wajib diisi." };
+  }
+  if (newPw.length < 8) {
+    return { error: "Password baru minimal 8 karakter." };
+  }
+  if (!/[A-Za-z]/.test(newPw) || !/\d/.test(newPw)) {
+    return { error: "Password baru wajib berisi huruf dan angka." };
+  }
+  if (newPw !== confirmPw) {
+    return { error: "Password baru dan konfirmasi tidak cocok." };
+  }
+
+  let account;
+  try {
+    const result = await query(
+      "SELECT id, password_hash FROM accounts WHERE id = $1",
+      [session.id]
+    );
+    account = result.rows[0] ?? null;
+  } catch (err) {
+    return { error: "Gagal membaca data akun." };
+  }
+  if (!account) return { error: "Akun tidak ditemukan." };
+
+  const valid = await bcryptjs.compare(oldPw, account.password_hash);
+  if (!valid) return { error: "Password lama salah." };
+
+  const password_hash = await bcryptjs.hash(newPw, 12);
+  try {
+    await query("UPDATE accounts SET password_hash = $1 WHERE id = $2", [
+      password_hash, account.id,
+    ]);
+  } catch (err) {
+    return { error: "Gagal memperbarui password." };
+  }
+
+  return { success: "Password berhasil diubah." };
 }

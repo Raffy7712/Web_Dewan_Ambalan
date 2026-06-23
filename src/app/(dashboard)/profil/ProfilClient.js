@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from 'react';
 import { Edit2, Lock, Mail, Briefcase, Calendar, LogOut } from 'lucide-react';
 import { updateProfileAction, logoutAction } from '@/app/actions/auth';
+import { changePasswordAction } from '@/app/actions/password';
 import { getAvatarUrl } from '@/lib/avatar';
 import { useRouter } from 'next/navigation';
 
@@ -12,6 +13,7 @@ export default function ProfilClient({ account }) {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [displayName, setDisplayName] = useState(account.display_name ?? '');
   const [updateState, updateAction, updatePending] = useActionState(updateProfileAction, null);
+  const [pwState, pwAction, pwPending] = useActionState(changePasswordAction, null);
 
   useEffect(() => {
     if (updateState?.success) {
@@ -195,45 +197,57 @@ export default function ProfilClient({ account }) {
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
             <div className="bg-card border border-border rounded-lg max-w-md w-full p-6">
               <h2 className="text-2xl font-bold text-foreground mb-4">Ubah Password</h2>
-              <div className="space-y-4 mb-6">
+              {pwState?.error && (
+                <p className="text-sm text-red-500 mb-3">{pwState.error}</p>
+              )}
+              {pwState?.success && (
+                <p className="text-sm text-emerald-600 mb-3">{pwState.success}</p>
+              )}
+              <form action={pwAction} className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground mb-2">Password Lama</label>
-                  <input 
-                    type="password" 
+                  <input
+                    name="old_password"
+                    type="password"
                     placeholder="Masukkan password lama"
                     className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground mb-2">Password Baru</label>
-                  <input 
-                    type="password" 
+                  <input
+                    name="new_password"
+                    type="password"
                     placeholder="Masukkan password baru"
                     className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground mb-2">Konfirmasi Password</label>
-                  <input 
-                    type="password" 
+                  <input
+                    name="confirm_password"
+                    type="password"
                     placeholder="Konfirmasi password baru"
                     className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setShowPasswordModal(false)}
-                  className="flex-1 bg-muted hover:bg-muted/80 text-foreground py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Batal
-                </button>
-                <button 
-                  className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Simpan
-                </button>
-              </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => { setShowPasswordModal(false); }}
+                    className="flex-1 bg-muted hover:bg-muted/80 text-foreground py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={pwPending}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 rounded-lg font-semibold transition-colors disabled:opacity-60"
+                  >
+                    {pwPending ? 'Menyimpan...' : 'Simpan'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

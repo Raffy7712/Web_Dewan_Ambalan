@@ -16,6 +16,7 @@ function escapeVal(val) {
   if (t === "boolean") return val ? "TRUE" : "FALSE";
   if (val instanceof Date) return escapeLiteral(val.toISOString());
   if (Buffer.isBuffer(val)) return escapeLiteral(val.toString("hex"));
+  if (t === "object") return escapeLiteral(JSON.stringify(val));
   return escapeLiteral(String(val));
 }
 

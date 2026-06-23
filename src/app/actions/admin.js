@@ -214,8 +214,14 @@ export async function reorderJabatanAction(prevState, formData) {
     return { error: "Hanya admin yang bisa mengubah urutan jabatan." };
   }
 
-  const jabatanId = formData.get("jabatan_id")?.toString();
-  const direction = formData.get("direction")?.toString();
+  let jabatanId, direction;
+  if (formData instanceof FormData) {
+    jabatanId = formData.get("jabatan_id")?.toString();
+    direction = formData.get("direction")?.toString();
+  } else {
+    jabatanId = prevState;
+    direction = formData;
+  }
   if (!jabatanId || (direction !== "up" && direction !== "down")) {
     return { error: "Permintaan tidak valid." };
   }

@@ -52,18 +52,19 @@ export default function AdminShell({ children }) {
               : pathname === href || pathname.startsWith(`${href}/`);
             return (
               <Link
-                key={href}
-                href={href}
-                className={cn(
-                  "flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap",
-                  active
-                    ? "bg-primary text-white"
-                    : "bg-muted text-muted-foreground",
-                )}
-              >
-                <Icon size={14} />
-                {label}
-              </Link>
+                  key={href}
+                  href={href}
+                  prefetch={false}
+                  className={cn(
+                    "flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap",
+                    active
+                      ? "bg-primary text-white"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  <Icon size={14} />
+                  {label}
+                </Link>
             );
           })}
         </div>
@@ -88,6 +89,7 @@ export default function AdminShell({ children }) {
                 <Link
                   key={href}
                   href={href}
+                  prefetch={false}
                   className={cn(
                     "flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                     active
