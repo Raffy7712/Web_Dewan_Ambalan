@@ -207,6 +207,42 @@ export async function deleteJabatanAction(prevState, formData) {
   return { success: true };
 }
 
+/** Ubah urutan jabatan via drag-and-drop. Hanya admin. */
+export async function reorderJabatanDragAction(prevState, formData) {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return { error: "Hanya admin yang bisa mengubah urutan jabatan." };
+  }
+
+  let items;
+  try {
+    items = JSON.parse(formData.get("items"));
+  } catch {
+    return { error: "Data urutan tidak valid." };
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return { error: "Data urutan tidak valid." };
+  }
+
+  try {
+    const queryStr = items
+      .map((_, i) => {
+        const offset = i * 2;
+        return `UPDATE jabatan SET urutan = $${offset + 1} WHERE id = $${offset + 2}`;
+      })
+      .join("; ");
+    const params = items.flatMap((item, idx) => [idx + 1, item.id]);
+    await query(queryStr, params);
+  } catch (err) {
+    return { error: "Gagal mengubah urutan jabatan." };
+  }
+
+  revalidatePath("/anggota");
+  revalidatePath("/admin/jabatan");
+  return { success: true };
+}
+
 /** Ubah urutan jabatan (swap dengan tetangga). Hanya admin. */
 export async function reorderJabatanAction(prevState, formData) {
   const session = await getSession();

@@ -1,10 +1,26 @@
 "use client";
-import { useState, useActionState, useEffect } from "react";
+import { useState, useActionState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   addJabatanAction,
   deleteJabatanAction,
-  reorderJabatanAction,
+  reorderJabatanDragAction,
 } from "@/app/actions/admin";
 import {
   Plus,
@@ -12,23 +28,93 @@ import {
   AlertCircle,
   CheckCircle,
   GripVertical,
-  ChevronUp,
-  ChevronDown,
 } from "lucide-react";
+
+function SortableItem({ jabatan, onDelete, deleting, delMsg }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: jabatan.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : "auto",
+    position: "relative",
+  };
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2 px-4 sm:px-5 py-3.5"
+    >
+      <button
+        type="button"
+        className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/5 cursor-grab active:cursor-grabbing touch-none"
+        {...attributes}
+        {...listeners}
+        title="Seret untuk mengubah urutan"
+      >
+        <GripVertical size={18} />
+      </button>
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold text-foreground text-sm">{jabatan.nama}</p>
+        <p className="text-xs text-muted-foreground">
+          Urutan tampil: {jabatan.urutan}
+        </p>
+      </div>
+      {delMsg[jabatan.id] && (
+        <p className="text-xs text-red-500">{delMsg[jabatan.id]}</p>
+      )}
+      <button
+        type="button"
+        onClick={() => onDelete(jabatan)}
+        disabled={deleting[jabatan.id]}
+        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors disabled:opacity-40"
+        title="Hapus jabatan"
+      >
+        {deleting[jabatan.id] ? (
+          <span className="w-4 h-4 border-2 border-gray-300 border-t-red-400 rounded-full animate-spin inline-block" />
+        ) : (
+          <Trash2 size={15} />
+        )}
+      </button>
+    </li>
+  );
+}
 
 export default function JabatanManager({ initialJabatan }) {
   const router = useRouter();
-  const jabatanList = initialJabatan ?? [];
+  const [items, setItems] = useState(initialJabatan ?? []);
   const [addState, addAction, addPending] = useActionState(
     addJabatanAction,
     null,
   );
   const [deleting, setDeleting] = useState({});
   const [delMsg, setDelMsg] = useState({});
+  const [dragState, dragAction, dragPending] = useActionState(
+    reorderJabatanDragAction,
+    null,
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     if (addState?.success) router.refresh();
   }, [addState?.success, router]);
+
+  useEffect(() => {
+    setItems(initialJabatan ?? []);
+  }, [initialJabatan]);
 
   async function handleDelete(jabatan) {
     if (
@@ -49,9 +135,18 @@ export default function JabatanManager({ initialJabatan }) {
     }
   }
 
-  async function handleReorder(jabatanId, direction) {
-    const res = await reorderJabatanAction(jabatanId, direction);
-    if (res?.success) router.refresh();
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = items.findIndex((i) => i.id === active.id);
+    const newIndex = items.findIndex((i) => i.id === over.id);
+    const reordered = arrayMove(items, oldIndex, newIndex);
+    setItems(reordered);
+
+    const fd = new FormData();
+    fd.set("items", JSON.stringify(reordered.map((i) => ({ id: i.id }))));
+    dragAction(fd);
   }
 
   return (
@@ -59,70 +154,37 @@ export default function JabatanManager({ initialJabatan }) {
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className="px-5 py-3 bg-muted border-b border-border">
           <h2 className="font-semibold text-foreground text-sm">
-            Daftar Jabatan ({jabatanList.length})
+            Daftar Jabatan ({items.length})
           </h2>
         </div>
 
-        {jabatanList.length === 0 ? (
+        {items.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground text-sm">
             Belum ada jabatan. Tambahkan di bawah.
           </div>
         ) : (
-          <ul className="divide-y divide-border">
-            {jabatanList.map((j) => (
-              <li
-                key={j.id}
-                className="flex items-center gap-2 px-4 sm:px-5 py-3.5"
-              >
-                <GripVertical
-                  size={16}
-                  className="text-muted-foreground flex-shrink-0 hidden sm:block opacity-50"
-                />
-                <div className="flex flex-col gap-1 flex-shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => handleReorder(j.id, "up")}
-                    className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/5"
-                    title="Urutan naik"
-                  >
-                    <ChevronUp size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleReorder(j.id, "down")}
-                    className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/5"
-                    title="Urutan turun"
-                  >
-                    <ChevronDown size={16} />
-                  </button>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-foreground text-sm">
-                    {j.nama}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Urutan tampil: {j.urutan}
-                  </p>
-                </div>
-                {delMsg[j.id] && (
-                  <p className="text-xs text-red-500">{delMsg[j.id]}</p>
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleDelete(j)}
-                  disabled={deleting[j.id]}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors disabled:opacity-40"
-                  title="Hapus jabatan"
-                >
-                  {deleting[j.id] ? (
-                    <span className="w-4 h-4 border-2 border-gray-300 border-t-red-400 rounded-full animate-spin inline-block" />
-                  ) : (
-                    <Trash2 size={15} />
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={items.map((i) => i.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <ul className="divide-y divide-border">
+                {items.map((j) => (
+                  <SortableItem
+                    key={j.id}
+                    jabatan={j}
+                    onDelete={handleDelete}
+                    deleting={deleting}
+                    delMsg={delMsg}
+                  />
+                ))}
+              </ul>
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 
@@ -166,8 +228,7 @@ export default function JabatanManager({ initialJabatan }) {
         </form>
 
         <p className="text-xs text-muted-foreground mt-3">
-          Urutan diisi otomatis (terakhir). Gunakan panah naik/turun untuk
-          mengubah tampilan di halaman struktur.
+          Seret (drag) untuk mengubah urutan tampilan di halaman struktur.
         </p>
       </div>
     </div>
