@@ -34,7 +34,7 @@ export default async function AnggotaPage() {
     if (jid && grouped[jid]) grouped[jid].members.push(m);
   });
 
-  const groups = Object.values(grouped).filter((g) => g.members.length > 0);
+  const groups = Object.values(grouped);
 
   return (
     <main className="min-h-screen bg-background">

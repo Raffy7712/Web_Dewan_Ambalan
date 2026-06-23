@@ -1,5 +1,7 @@
 "use client";
 
+import { Children } from "react";
+
 /* ─── Classic CSS Tree Org Chart ────────────────────────────────── */
 /* Each <li> gets a ::before vertical line up and ::after horizontal  */
 /* line across siblings.  :first-child/:last-child handle edge cuts.  */
@@ -42,7 +44,7 @@ function TreeNode({ jabatan, members, children }) {
   return (
     <li>
       <NodeInner jabatan={jabatan} members={members} />
-      {children?.length > 0 && <ul>{children}</ul>}
+      {Children.count(children) > 0 && <ul>{children}</ul>}
     </li>
   );
 }

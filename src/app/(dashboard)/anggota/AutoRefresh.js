@@ -11,6 +11,7 @@ export default function AutoRefresh() {
   useEffect(() => {
     mounted.current = true;
 
+    // ── Supabase Realtime ──
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -30,9 +31,15 @@ export default function AutoRefresh() {
       )
       .subscribe();
 
+    // ── Polling fallback (5s) ──
+    const fallback = setInterval(() => {
+      if (mounted.current) router.refresh();
+    }, 5000);
+
     return () => {
       mounted.current = false;
       supabase.removeChannel(channel);
+      clearInterval(fallback);
     };
   }, [router]);
 
