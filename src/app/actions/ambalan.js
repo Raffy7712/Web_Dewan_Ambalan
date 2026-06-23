@@ -13,7 +13,6 @@ import { consumeAmbalanUser, rateLimitMessage } from "@/lib/rate-limit";
 
 export async function submitAmbalanApplicationAction(prevState, formData) {
   const session = await getSession();
-  if (!session) return { error: "Silakan login dulu untuk mendaftar." };
 
   if (!(await isAmbalanRegistrationEnabled())) {
     return {
@@ -43,38 +42,49 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
     return { error: "Jawaban terlalu panjang. Maksimal 800 karakter." };
   }
 
-  const ambR = consumeAmbalanUser(session.id);
-  if (!ambR.ok) return { error: rateLimitMessage(ambR.retryAfterMs) };
+  const accountId = session?.id ?? null;
 
-  let existing = null;
-  try {
-    const existingResult = await query(
-      "SELECT id FROM ambalan_applications WHERE account_id = $1 AND period = $2",
-      [session.id, period]
-    );
-    existing = existingResult.rows[0] ?? null;
-  } catch (err) {
-    if (err.code !== "42P01") {
-      console.error("submitAmbalanApplicationAction:", err.message);
+  if (session) {
+    const ambR = consumeAmbalanUser(session.id);
+    if (!ambR.ok) return { error: rateLimitMessage(ambR.retryAfterMs) };
+  }
+
+  let isFirstSubmit = true;
+
+  if (accountId) {
+    try {
+      const existingResult = await query(
+        "SELECT id FROM ambalan_applications WHERE account_id = $1 AND period = $2",
+        [accountId, period]
+      );
+      isFirstSubmit = !existingResult.rows[0];
+    } catch {
+      // table might not exist yet
     }
   }
 
-  const isFirstSubmit = !existing;
-
   try {
-    await query(
-      `INSERT INTO ambalan_applications (account_id, full_name, class_name, phone, motivation, experience, period, status, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       ON CONFLICT (account_id, period) DO UPDATE SET
-         full_name = EXCLUDED.full_name,
-         class_name = EXCLUDED.class_name,
-         phone = EXCLUDED.phone,
-         motivation = EXCLUDED.motivation,
-         experience = EXCLUDED.experience,
-         status = EXCLUDED.status,
-         updated_at = EXCLUDED.updated_at`,
-      [session.id, full_name, class_name, phone, motivation, experience, period, "pending", new Date().toISOString()]
-    );
+    if (accountId) {
+      await query(
+        `INSERT INTO ambalan_applications (account_id, full_name, class_name, phone, motivation, experience, period, status, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         ON CONFLICT (account_id, period) DO UPDATE SET
+           full_name = EXCLUDED.full_name,
+           class_name = EXCLUDED.class_name,
+           phone = EXCLUDED.phone,
+           motivation = EXCLUDED.motivation,
+           experience = EXCLUDED.experience,
+           status = EXCLUDED.status,
+           updated_at = EXCLUDED.updated_at`,
+        [accountId, full_name, class_name, phone, motivation, experience, period, "pending", new Date().toISOString()]
+      );
+    } else {
+      await query(
+        `INSERT INTO ambalan_applications (account_id, full_name, class_name, phone, motivation, experience, period, status, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [null, full_name, class_name, phone, motivation, experience, period, "pending", new Date().toISOString()]
+      );
+    }
   } catch (err) {
     if (err.code === "42P01") {
       return {
@@ -99,23 +109,24 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
         }),
       )
       .catch(() => {});
+  }
 
-    let acc;
+  if (isFirstSubmit && accountId) {
     try {
       const accResult = await query(
         "SELECT email, display_name FROM accounts WHERE id = $1",
-        [session.id]
+        [accountId]
       );
-      acc = accResult.rows[0] ?? null;
-    } catch (err) {
-      acc = null;
-    }
-    if (acc?.email) {
-      sendAmbalanReceivedEmail(
-        acc.email,
-        acc.display_name ?? session.display_name ?? "Pengguna",
-        period,
-      ).catch(() => {});
+      const acc = accResult.rows[0] ?? null;
+      if (acc?.email) {
+        sendAmbalanReceivedEmail(
+          acc.email,
+          acc.display_name ?? session.display_name ?? "Pengguna",
+          period,
+        ).catch(() => {});
+      }
+    } catch {
+      // non-critical
     }
   }
 

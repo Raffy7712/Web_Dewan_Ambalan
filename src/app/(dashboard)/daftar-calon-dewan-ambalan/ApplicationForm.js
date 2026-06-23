@@ -40,7 +40,7 @@ export default function ApplicationForm({ user, application }) {
           </span>
           <input
             name="full_name"
-            defaultValue={application?.full_name ?? user.display_name}
+            defaultValue={application?.full_name ?? user?.display_name ?? ""}
             required
             className={inputCls}
           />
