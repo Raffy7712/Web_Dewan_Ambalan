@@ -1,10 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { updateAdminPostAction } from "@/app/actions/posts";
-import CloudinaryMediaUpload from "@/components/CloudinaryMediaUpload";
 import {
   AlertCircle,
   CheckCircle,
@@ -19,17 +18,6 @@ export default function AdminPostFormEdit({ initialPost }) {
   const [state, formAction, pending] = useActionState(
     (prevState, formData) => updateAdminPostAction(initialPost.id, prevState, formData),
     null,
-  );
-  const formRef = useRef(null);
-  const [imageUrls, setImageUrls] = useState(
-    initialPost.post_media
-      ?.filter((m) => m.media_type === "image")
-      .map((m) => m.url) || []
-  );
-  const [videoUrls, setVideoUrls] = useState(
-    initialPost.post_media
-      ?.filter((m) => m.media_type === "video")
-      .map((m) => m.url) || []
   );
 
   useEffect(() => {
@@ -60,17 +48,7 @@ export default function AdminPostFormEdit({ initialPost }) {
         </div>
       )}
 
-      <form
-        ref={formRef}
-        action={formAction}
-        className="space-y-6"
-        onSubmit={(e) => {
-          const imageUrlsInput = formRef.current?.querySelector('input[name="image_urls"]');
-          const videoUrlsInput = formRef.current?.querySelector('input[name="video_urls"]');
-          if (imageUrlsInput) imageUrlsInput.value = imageUrls.join("\n");
-          if (videoUrlsInput) videoUrlsInput.value = videoUrls.join("\n");
-        }}
-      >
+      <form action={formAction} className="space-y-6">
         <div className="grid gap-4">
           <label className="block">
             <span className="text-sm font-medium text-foreground">
@@ -160,42 +138,40 @@ export default function AdminPostFormEdit({ initialPost }) {
           <label className="block">
             <span className="text-sm font-medium text-foreground flex items-center gap-2">
               <ImagePlus size={16} />
-              Upload foto (Cloudinary) — Ganti semuanya
+              URL foto (Google Drive)
             </span>
             <p className="text-xs text-muted-foreground mt-1 mb-3">
-              Drag & drop atau klik untuk upload. Minimal 1 dan maksimal 10 foto. Foto pertama menjadi sampul. Mengubah foto akan menghapus semua foto lama.
+              Minimal 1, maksimal 10 URL foto. Satu URL per baris. Foto pertama menjadi sampul. Mengubah akan menghapus semua foto lama.
             </p>
-            <CloudinaryMediaUpload
-              initialUrls={initialPost.post_media
+            <textarea
+              name="image_urls"
+              rows={5}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground font-mono"
+              placeholder="https://drive.google.com/uc?id=...&#10;https://drive.google.com/uc?id=..."
+              defaultValue={(initialPost.post_media
                 ?.filter((m) => m.media_type === "image")
-                .map((m) => m.url) || []}
-              mediaType="image"
-              maxFiles={10}
-              onChange={(urls) => setImageUrls(urls)}
+                .map((m) => m.url) || []).join("\n")}
             />
           </label>
 
           <label className="block">
             <span className="text-sm font-medium text-foreground flex items-center gap-2">
               <Video size={16} />
-              Upload video (Cloudinary, opsional) — Ganti semuanya
+              URL video (Google Drive, opsional)
             </span>
             <p className="text-xs text-muted-foreground mt-1 mb-3">
-              Maksimal 5 video. Kosongkan jika tidak ada. Mengubah video akan menghapus semua video lama.
+              Maksimal 5 URL video. Satu URL per baris.
             </p>
-            <CloudinaryMediaUpload
-              initialUrls={initialPost.post_media
+            <textarea
+              name="video_urls"
+              rows={3}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground font-mono"
+              placeholder="https://drive.google.com/uc?id=..."
+              defaultValue={(initialPost.post_media
                 ?.filter((m) => m.media_type === "video")
-                .map((m) => m.url) || []}
-              mediaType="video"
-              maxFiles={5}
-              onChange={(urls) => setVideoUrls(urls)}
+                .map((m) => m.url) || []).join("\n")}
             />
           </label>
-
-          {/* Hidden inputs untuk form submission (backward compatible dengan action) */}
-          <input type="hidden" name="image_urls" />
-          <input type="hidden" name="video_urls" />
         </div>
 
         <label className="flex items-center gap-3 cursor-pointer">

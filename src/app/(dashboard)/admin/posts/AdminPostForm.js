@@ -1,10 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createAdminPostAction } from "@/app/actions/posts";
-import CloudinaryMediaUpload from "@/components/CloudinaryMediaUpload";
 import {
   AlertCircle,
   CheckCircle,
@@ -21,9 +20,6 @@ export default function AdminPostForm() {
     null,
   );
   const [kind, setKind] = useState("kegiatan");
-  const [imageUrls, setImageUrls] = useState([]);
-  const [videoUrls, setVideoUrls] = useState([]);
-  const formRef = useRef(null);
 
   useEffect(() => {
     if (state?.success) router.refresh();
@@ -53,17 +49,7 @@ export default function AdminPostForm() {
         </div>
       )}
 
-      <form
-        ref={formRef}
-        action={formAction}
-        className="space-y-6"
-        onSubmit={(e) => {
-          const imageUrlsInput = formRef.current?.querySelector('input[name="image_urls"]');
-          const videoUrlsInput = formRef.current?.querySelector('input[name="video_urls"]');
-          if (imageUrlsInput) imageUrlsInput.value = imageUrls.join("\n");
-          if (videoUrlsInput) videoUrlsInput.value = videoUrls.join("\n");
-        }}
-      >
+      <form action={formAction} className="space-y-6">
         <fieldset className="space-y-3">
           <label className="block">
             <span className="text-sm font-semibold text-foreground">
@@ -172,36 +158,34 @@ export default function AdminPostForm() {
           <label className="block">
             <span className="text-sm font-medium text-foreground flex items-center gap-2">
               <ImagePlus size={16} />
-              Upload foto (Cloudinary)
+              URL foto (Google Drive)
             </span>
             <p className="text-xs text-muted-foreground mt-1 mb-3">
-              Drag & drop atau klik untuk upload. Minimal 1 dan maksimal 10 foto. Foto pertama menjadi sampul.
+              Minimal 1, maksimal 10 URL foto. Satu URL per baris. Foto pertama menjadi sampul.
             </p>
-            <CloudinaryMediaUpload
-              mediaType="image"
-              maxFiles={10}
-              onChange={(urls) => setImageUrls(urls)}
+            <textarea
+              name="image_urls"
+              rows={5}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground font-mono"
+              placeholder="https://drive.google.com/uc?id=...&#10;https://drive.google.com/uc?id=..."
             />
           </label>
 
           <label className="block">
             <span className="text-sm font-medium text-foreground flex items-center gap-2">
               <Video size={16} />
-              Upload video (Cloudinary, opsional)
+              URL video (Google Drive, opsional)
             </span>
             <p className="text-xs text-muted-foreground mt-1 mb-3">
-              Maksimal 5 video. Kosongkan jika tidak ada.
+              Maksimal 5 URL video. Satu URL per baris.
             </p>
-            <CloudinaryMediaUpload
-              mediaType="video"
-              maxFiles={5}
-              onChange={(urls) => setVideoUrls(urls)}
+            <textarea
+              name="video_urls"
+              rows={3}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground font-mono"
+              placeholder="https://drive.google.com/uc?id=..."
             />
           </label>
-
-          {/* Hidden inputs untuk form submission (backward compatible dengan action) */}
-          <input type="hidden" name="image_urls" />
-          <input type="hidden" name="video_urls" />
         </div>
 
         <label className="flex items-center gap-3 cursor-pointer">
