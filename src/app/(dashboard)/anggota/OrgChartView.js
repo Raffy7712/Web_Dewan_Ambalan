@@ -158,9 +158,8 @@ function buildChart(groups) {
 }
 
 function NodeCard({ n }) {
-  const { isChain, title, role, members } = n;
+  const { title, role, members } = n;
   const isEmpty = !members || members.length === 0;
-  const cardW = isChain ? CHAIN_W : STAFF_W;
 
   return (
     <div
@@ -168,13 +167,11 @@ function NodeCard({ n }) {
         width: "100%",
         height: "100%",
         background: "hsl(var(--card))",
-        border: isChain
-          ? "2px solid hsl(var(--primary))"
-          : "1px solid hsl(var(--border))",
+        border: "1px solid hsl(var(--border))",
         borderRadius: 12,
         padding: "8px 10px",
         textAlign: "center",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+        boxShadow: "0 1px 4px hsl(var(--border) / .3)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -185,12 +182,10 @@ function NodeCard({ n }) {
       <div
         style={{
           fontWeight: 700,
-          fontSize: isChain ? 12 : 10,
+          fontSize: 11,
           textTransform: "uppercase",
-          letterSpacing: "0.05em",
-          color: isChain
-            ? "hsl(var(--primary))"
-            : "hsl(var(--foreground))",
+          letterSpacing: "0.04em",
+          color: "hsl(var(--foreground))",
         }}
       >
         {title}
@@ -199,9 +194,7 @@ function NodeCard({ n }) {
         <div
           style={{
             fontSize: 9,
-            color: isChain
-              ? "hsl(var(--primary) / .7)"
-              : "hsl(var(--muted-foreground))",
+            color: "hsl(var(--muted-foreground))",
             fontWeight: 600,
             marginTop: 2,
           }}
@@ -235,8 +228,8 @@ function NodeCard({ n }) {
               key={m.id}
               style={{
                 fontSize: 9,
-                background: "hsl(var(--primary) / .1)",
-                color: "hsl(var(--primary))",
+                background: "hsl(var(--muted))",
+                color: "hsl(var(--foreground))",
                 borderRadius: 6,
                 padding: "1px 8px",
                 fontWeight: 500,
