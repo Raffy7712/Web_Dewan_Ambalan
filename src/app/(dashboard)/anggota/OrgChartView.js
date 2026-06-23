@@ -88,30 +88,29 @@ function StaffRow({ groups }) {
 export default function OrgChartView({ groups }) {
   if (!groups?.length) return null;
 
-  const leadership = groups.slice(0, 1);
-  const deputies = groups.slice(1, 2);
-  const staff = groups.slice(2);
+  const pembina = groups[0];
+  const pradana = groups[1];
+  const pemangkuAdat = groups[2];
+  const staff = groups.slice(3);
 
   return (
     <div className="w-full overflow-x-auto py-6">
       <div className="flex flex-col items-center min-w-max px-6 mx-auto">
-        {leadership.map((g) => (
-          <div key={g.jabatan.id} className="flex flex-col items-center">
-            <NodeCard jabatan={g.jabatan} members={g.members} />
-          </div>
-        ))}
-
-        {deputies.length > 0 && (
+        {pembina && (
+          <NodeCard jabatan={pembina.jabatan} members={pembina.members} />
+        )}
+        {pradana && (
           <>
             <VLine />
-            {deputies.map((g) => (
-              <div key={g.jabatan.id} className="flex flex-col items-center">
-                <NodeCard jabatan={g.jabatan} members={g.members} />
-              </div>
-            ))}
+            <NodeCard jabatan={pradana.jabatan} members={pradana.members} />
           </>
         )}
-
+        {pemangkuAdat && (
+          <>
+            <VLine />
+            <NodeCard jabatan={pemangkuAdat.jabatan} members={pemangkuAdat.members} />
+          </>
+        )}
         {staff.length > 0 && (
           <>
             <BranchBar childCount={staff.length} />

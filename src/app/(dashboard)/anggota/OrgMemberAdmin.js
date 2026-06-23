@@ -1,22 +1,26 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   saveOrgMemberAction,
   deleteOrgMemberAction,
-  reorderOrgMemberAction,
+  reorderOrgMemberDragAction,
 } from "@/app/actions/admin";
-import {
-  Plus,
-  Trash2,
-  ChevronUp,
-  ChevronDown,
-  Check,
-  X,
-  Pencil,
-  Users,
-} from "lucide-react";
+import { Plus, Trash2, Check, X, Pencil, GripVertical, Users } from "lucide-react";
 
 function InlineName({ member, onSaved }) {
   const [edit, setEdit] = useState(false);
@@ -99,10 +103,56 @@ function InlineName({ member, onSaved }) {
   );
 }
 
+function SortableMember({ member, onDelete, onSaved }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: member.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-muted/50 group"
+    >
+      <button
+        type="button"
+        className="p-0.5 rounded text-muted-foreground hover:text-primary cursor-grab active:cursor-grabbing touch-none"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={13} />
+      </button>
+      <InlineName member={member} onSaved={onSaved} />
+      <button
+        type="button"
+        onClick={() => onDelete(member.id)}
+        className="p-1 rounded text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <Trash2 size={13} />
+      </button>
+    </div>
+  );
+}
+
 export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
   const router = useRouter();
   const [members, setMembers] = useState(initialMembers ?? []);
   const [adding, setAdding] = useState({});
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
 
   const grouped = {};
   jabatanList.forEach((j) => {
@@ -126,12 +176,22 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
     if (res?.success) router.refresh();
   }
 
-  async function handleReorder(id, direction, jabatan_id) {
+  async function handleDragEnd(jabatan_id, event) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const ms = grouped[jabatan_id]?.members ?? [];
+    const oldIdx = ms.findIndex((m) => m.id === active.id);
+    const newIdx = ms.findIndex((m) => m.id === over.id);
+    if (oldIdx < 0 || newIdx < 0) return;
+
+    const reordered = [...ms];
+    reordered.splice(oldIdx, 1);
+    reordered.splice(newIdx, 0, ms[oldIdx]);
+
     const fd = new FormData();
-    fd.set("id", id);
-    fd.set("direction", direction);
-    fd.set("jabatan_id", jabatan_id);
-    const res = await reorderOrgMemberAction(null, fd);
+    fd.set("items", JSON.stringify(reordered.map((m) => ({ id: m.id }))));
+    const res = await reorderOrgMemberDragAction(null, fd);
     if (res?.success) router.refresh();
   }
 
@@ -178,7 +238,8 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
                 <form
                   action={async (fd) => {
                     const res = await handleSave(fd);
-                    if (res?.success) setAdding((p) => ({ ...p, [j.id]: false }));
+                    if (res?.success)
+                      setAdding((p) => ({ ...p, [j.id]: false }));
                   }}
                   className="flex gap-2 px-4 pt-3 pb-2 bg-muted/20"
                 >
@@ -199,49 +260,32 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
                 </form>
               )}
 
-              <div className="px-2 py-1.5 space-y-0.5">
-                {ms.map((m, idx) => (
-                  <div
-                    key={m.id}
-                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-muted/50 group"
-                  >
-                    <div className="flex flex-col gap-0.5 mr-1">
-                      <button
-                        type="button"
-                        disabled={idx === 0}
-                        onClick={() => handleReorder(m.id, "up", j.id)}
-                        className="p-0.5 rounded text-muted-foreground hover:text-primary disabled:opacity-20"
-                      >
-                        <ChevronUp size={11} />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={idx === ms.length - 1}
-                        onClick={() => handleReorder(m.id, "down", j.id)}
-                        className="p-0.5 rounded text-muted-foreground hover:text-primary disabled:opacity-20"
-                      >
-                        <ChevronDown size={11} />
-                      </button>
-                    </div>
-                    <InlineName
-                      member={m}
-                      onSaved={() => router.refresh()}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(m.id)}
-                      className="p-1 rounded text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={13} />
-                    </button>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(e) => handleDragEnd(j.id, e)}
+              >
+                <SortableContext
+                  items={ms.map((m) => m.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="px-2 py-1.5 space-y-0.5">
+                    {ms.map((m) => (
+                      <SortableMember
+                        key={m.id}
+                        member={m}
+                        onDelete={handleDelete}
+                        onSaved={() => router.refresh()}
+                      />
+                    ))}
+                    {ms.length === 0 && (
+                      <p className="text-xs text-muted-foreground italic px-2 py-2">
+                        Belum ada anggota.
+                      </p>
+                    )}
                   </div>
-                ))}
-                {ms.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic px-2 py-2">
-                    Belum ada anggota.
-                  </p>
-                )}
-              </div>
+                </SortableContext>
+              </DndContext>
             </div>
           );
         })}

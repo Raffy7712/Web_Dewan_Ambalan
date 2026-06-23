@@ -5,6 +5,7 @@ import { getCmsText, isAmbalanRegistrationEnabled } from "@/lib/cms";
 import { UserPlus, Settings } from "lucide-react";
 import OrgChartView from "./OrgChartView";
 import OrgMemberAdmin from "./OrgMemberAdmin";
+import AutoRefresh from "./AutoRefresh";
 
 export default async function AnggotaPage() {
   const [members, jabatanList, session, orgSubtitle, seleksiOpen, orgTitle] =
@@ -37,6 +38,7 @@ export default async function AnggotaPage() {
 
   return (
     <main className="min-h-screen bg-background">
+      <AutoRefresh interval={15000} />
       <section className="bg-gradient-to-br from-card via-background to-card border-b border-border py-10">
         <div className="max-w-6xl mx-auto px-4 flex items-start justify-between gap-4 flex-wrap">
           <div>

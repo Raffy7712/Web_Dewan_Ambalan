@@ -687,6 +687,35 @@ export async function reorderOrgMemberAction(prevState, formData) {
   return { success: true };
 }
 
+export async function reorderOrgMemberDragAction(prevState, formData) {
+  const session = await ensureAdmin();
+  if (!session) return { error: "Hanya admin." };
+
+  let items;
+  try {
+    items = JSON.parse(formData.get("items"));
+  } catch {
+    return { error: "Data urutan tidak valid." };
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return { error: "Data urutan tidak valid." };
+  }
+
+  try {
+    const q = items
+      .map((_, i) => `UPDATE org_members SET sort_order = $${i * 2 + 1} WHERE id = $${i * 2 + 2}`)
+      .join("; ");
+    const params = items.flatMap((item, idx) => [idx + 1, item.id]);
+    await query(q, params);
+  } catch (err) {
+    return { error: "Gagal mengubah urutan." };
+  }
+
+  revalidatePath("/anggota");
+  return { success: true };
+}
+
 export async function setRolePermissionAction(prevState, formData) {
   const session = await ensurePermission("roles.manage");
   if (!session) return { error: "Tidak punya izin untuk mengatur permission." };
