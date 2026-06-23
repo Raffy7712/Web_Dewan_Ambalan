@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   saveOrgMemberAction,
@@ -12,21 +12,104 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
+  Check,
+  X,
+  Pencil,
   Users,
-  CheckCircle,
-  AlertCircle,
 } from "lucide-react";
+
+function InlineName({ member, onSaved }) {
+  const [edit, setEdit] = useState(false);
+  const [val, setVal] = useState(member.nama);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (edit) inputRef.current?.focus();
+  }, [edit]);
+
+  async function handleSave() {
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === member.nama) {
+      setEdit(false);
+      setVal(member.nama);
+      return;
+    }
+    const fd = new FormData();
+    fd.set("id", member.id);
+    fd.set("nama", trimmed);
+    const res = await saveOrgMemberAction(null, fd);
+    if (res?.success) {
+      setEdit(false);
+      onSaved();
+    } else {
+      setVal(member.nama);
+      setEdit(false);
+    }
+  }
+
+  if (edit) {
+    return (
+      <div className="flex items-center gap-1 flex-1">
+        <input
+          ref={inputRef}
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSave();
+            if (e.key === "Escape") {
+              setVal(member.nama);
+              setEdit(false);
+            }
+          }}
+          className="flex-1 border border-primary/50 bg-background text-foreground rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+        <button
+          type="button"
+          onClick={handleSave}
+          className="p-0.5 text-green-600 hover:text-green-500"
+        >
+          <Check size={13} />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setVal(member.nama);
+            setEdit(false);
+          }}
+          className="p-0.5 text-muted-foreground hover:text-foreground"
+        >
+          <X size={13} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <span
+      className="flex-1 text-sm text-foreground cursor-pointer hover:text-primary group/name truncate"
+      onClick={() => setEdit(true)}
+      title="Klik untuk edit"
+    >
+      {member.nama}
+      <Pencil
+        size={11}
+        className="inline ml-1.5 text-muted-foreground opacity-0 group-hover/name:opacity-100 transition-opacity"
+      />
+    </span>
+  );
+}
 
 export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
   const router = useRouter();
   const [members, setMembers] = useState(initialMembers ?? []);
-  const [editing, setEditing] = useState({});
-  const [saving, setSaving] = useState({});
-  const [msg, setMsg] = useState({});
+  const [adding, setAdding] = useState({});
 
   const grouped = {};
   jabatanList.forEach((j) => {
-    grouped[j.id] = { jabatan: j, members: members.filter((m) => m.jabatan?.id === j.id) };
+    grouped[j.id] = {
+      jabatan: j,
+      members: members.filter((m) => m.jabatan?.id === j.id),
+    };
   });
 
   async function handleSave(formData) {
@@ -54,7 +137,7 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
 
   return (
     <div className="mt-10 bg-card border border-primary/20 rounded-xl p-6">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-5">
         <Users size={18} className="text-primary" />
         <h3 className="font-bold text-foreground text-lg">
           Kelola Anggota Struktur
@@ -64,31 +147,40 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
         </span>
       </div>
 
-      <div className="space-y-6">
+      <div className="grid sm:grid-cols-2 gap-4">
         {jabatanList.map((j) => {
           const ms = grouped[j.id]?.members ?? [];
           return (
-            <div key={j.id} className="border border-border rounded-xl p-4">
-              <div className="flex items-center justify-between mb-3">
+            <div
+              key={j.id}
+              className="border border-border rounded-xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between bg-muted/40 px-4 py-2.5 border-b border-border">
                 <h4 className="font-semibold text-foreground text-sm">
-                  {j.nama} ({ms.length})
+                  {j.nama}
+                  <span className="ml-1.5 text-xs text-muted-foreground font-normal">
+                    ({ms.length})
+                  </span>
                 </h4>
                 <button
                   type="button"
-                  onClick={() => setEditing((p) => ({ ...p, [j.id]: !p[j.id] }))}
-                  className="text-xs text-primary hover:underline"
+                  onClick={() =>
+                    setAdding((p) => ({ ...p, [j.id]: !p[j.id] }))
+                  }
+                  className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
                 >
-                  {editing[j.id] ? "Tutup" : "+ Tambah"}
+                  {adding[j.id] ? null : <Plus size={13} />}
+                  {adding[j.id] ? "Tutup" : "Tambah"}
                 </button>
               </div>
 
-              {editing[j.id] && (
+              {adding[j.id] && (
                 <form
                   action={async (fd) => {
                     const res = await handleSave(fd);
-                    if (res?.success) setEditing((p) => ({ ...p, [j.id]: false }));
+                    if (res?.success) setAdding((p) => ({ ...p, [j.id]: false }));
                   }}
-                  className="flex gap-2 mb-3"
+                  className="flex gap-2 px-4 pt-3 pb-2 bg-muted/20"
                 >
                   <input type="hidden" name="jabatan_id" value={j.id} />
                   <input
@@ -100,27 +192,27 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
                   />
                   <button
                     type="submit"
-                    className="bg-primary hover:bg-primary/90 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors"
+                    className="bg-primary hover:bg-primary/90 text-white px-2.5 py-1.5 rounded-lg text-sm font-semibold transition-colors"
                   >
                     <Plus size={15} />
                   </button>
                 </form>
               )}
 
-              <div className="space-y-1">
+              <div className="px-2 py-1.5 space-y-0.5">
                 {ms.map((m, idx) => (
                   <div
                     key={m.id}
-                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted/50 group"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-muted/50 group"
                   >
-                    <div className="flex flex-col gap-0.5">
+                    <div className="flex flex-col gap-0.5 mr-1">
                       <button
                         type="button"
                         disabled={idx === 0}
                         onClick={() => handleReorder(m.id, "up", j.id)}
                         className="p-0.5 rounded text-muted-foreground hover:text-primary disabled:opacity-20"
                       >
-                        <ChevronUp size={12} />
+                        <ChevronUp size={11} />
                       </button>
                       <button
                         type="button"
@@ -128,12 +220,13 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
                         onClick={() => handleReorder(m.id, "down", j.id)}
                         className="p-0.5 rounded text-muted-foreground hover:text-primary disabled:opacity-20"
                       >
-                        <ChevronDown size={12} />
+                        <ChevronDown size={11} />
                       </button>
                     </div>
-                    <span className="flex-1 text-sm text-foreground">
-                      {m.nama}
-                    </span>
+                    <InlineName
+                      member={m}
+                      onSaved={() => router.refresh()}
+                    />
                     <button
                       type="button"
                       onClick={() => handleDelete(m.id)}
@@ -144,8 +237,8 @@ export default function OrgMemberAdmin({ jabatanList, initialMembers }) {
                   </div>
                 ))}
                 {ms.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic">
-                    Belum ada anggota untuk jabatan ini.
+                  <p className="text-xs text-muted-foreground italic px-2 py-2">
+                    Belum ada anggota.
                   </p>
                 )}
               </div>

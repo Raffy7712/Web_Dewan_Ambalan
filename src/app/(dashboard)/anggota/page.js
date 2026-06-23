@@ -2,8 +2,73 @@ import Link from "next/link";
 import { getOrgMembers, getJabatanList } from "@/lib/queries";
 import { getSession } from "@/app/actions/auth";
 import { getCmsText, isAmbalanRegistrationEnabled } from "@/lib/cms";
-import { UserPlus, Settings } from "lucide-react";
+import { UserPlus, Settings, ChevronRight } from "lucide-react";
 import OrgMemberAdmin from "./OrgMemberAdmin";
+
+function AvatarInisial({ nama, size = "md" }) {
+  const inisial = nama
+    .split(" ")
+    .map((s) => s[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const dim = size === "lg" ? "w-24 h-24 text-3xl" : "w-16 h-16 text-xl";
+  return (
+    <div
+      className={`${dim} rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-2 ring-2 ring-primary/10`}
+    >
+      <span className="font-bold text-primary">{inisial}</span>
+    </div>
+  );
+}
+
+function MemberCard({ nama, jabatanNama, isLead }) {
+  return (
+    <div className="bg-card border border-border rounded-xl p-4 text-center hover:shadow-md hover:border-primary/30 transition-all">
+      <AvatarInisial nama={nama} />
+      <h3 className="font-bold text-foreground text-sm leading-tight">
+        {nama}
+      </h3>
+      <span
+        className={`inline-block mt-2 text-xs px-3 py-1 rounded-full font-semibold ${
+          isLead
+            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+            : "bg-primary/10 text-primary"
+        }`}
+      >
+        {jabatanNama}
+      </span>
+    </div>
+  );
+}
+
+function JabatanSection({ jabatan, members, isFirst }) {
+  return (
+    <section className="mb-10">
+      <div className="flex items-center gap-3 mb-5">
+        {isFirst ? (
+          <div className="w-1 h-8 bg-amber-500 rounded-full" />
+        ) : (
+          <div className="w-1 h-8 bg-primary rounded-full" />
+        )}
+        <h2 className="text-lg font-bold text-foreground">{jabatan.nama}</h2>
+        <span className="text-xs bg-muted text-muted-foreground font-semibold px-2.5 py-1 rounded-full">
+          {members.length}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        {members.map((m) => (
+          <MemberCard
+            key={m.id}
+            nama={m.nama}
+            jabatanNama={jabatan.nama}
+            isLead={isFirst}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default async function AnggotaPage() {
   const [members, jabatanList, session, orgSubtitle, seleksiOpen, orgTitle] =
@@ -36,7 +101,7 @@ export default async function AnggotaPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <section className="bg-card border-b border-border py-8">
+      <section className="bg-gradient-to-br from-card via-background to-card border-b border-border py-10">
         <div className="max-w-6xl mx-auto px-4 flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
@@ -68,46 +133,14 @@ export default async function AnggotaPage() {
             )}
           </div>
         ) : (
-          <>
-            {groups.map(({ jabatan, members: ms }) => (
-              <section key={jabatan.id} className="mb-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-1 h-8 bg-primary rounded-full" />
-                  <h2 className="text-xl font-bold text-foreground">
-                    {jabatan.nama}
-                  </h2>
-                  <span className="text-xs bg-primary/10 text-primary font-bold px-2.5 py-1 rounded-full">
-                    {ms.length}
-                  </span>
-                </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                  {ms.map((m) => (
-                    <div
-                      key={m.id}
-                      className="bg-card border border-border rounded-lg p-5 text-center hover:shadow-lg hover:border-primary/50 transition-all"
-                    >
-                      <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
-                        <span className="text-2xl font-bold text-primary">
-                          {m.nama
-                            .split(" ")
-                            .map((s) => s[0])
-                            .join("")
-                            .slice(0, 2)
-                            .toUpperCase()}
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-foreground text-sm line-clamp-2">
-                        {m.nama}
-                      </h3>
-                      <span className="inline-block mt-3 text-xs px-2.5 py-1 rounded-lg font-semibold bg-primary/10 text-primary">
-                        {jabatan.nama}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </>
+          groups.map(({ jabatan, members: ms }, i) => (
+            <JabatanSection
+              key={jabatan.id}
+              jabatan={jabatan}
+              members={ms}
+              isFirst={i === 0}
+            />
+          ))
         )}
 
         {isAdmin && (
@@ -115,13 +148,12 @@ export default async function AnggotaPage() {
         )}
 
         {seleksiOpen && (
-          <div className="mt-10 bg-gradient-to-br from-primary to-primary/80 rounded-lg p-6 text-center text-white shadow-lg">
+          <div className="mt-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl p-6 text-center text-white shadow-lg">
             <UserPlus size={28} className="mx-auto mb-2" />
             <h3 className="font-bold text-lg mb-1">Ingin bergabung?</h3>
-            <p className="text-primary-foreground/80 text-sm mb-4">
+            <p className="text-primary-foreground/80 text-sm mb-4 max-w-md mx-auto">
               Terbuka bagi siswa yang aktif di kegiatan pramuka dan ingin
-              membantu merencanakan program ambalan, termasuk peran pengurus dan
-              dewan formal.
+              membantu merencanakan program ambalan.
             </p>
             <Link
               href="/daftar-calon-dewan-ambalan"
