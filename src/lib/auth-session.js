@@ -108,13 +108,12 @@ export const getCurrentUser = cache(async () => {
 });
 
 export async function getSession() {
-  const user = await getCurrentUser();
-  if (!user) return null;
+  const payload = await readSessionPayload();
+  if (!payload) return null;
   return {
-    id: user.id,
-    username: user.username,
-    display_name: user.display_name,
-    role: user.role,
-    jabatan_id: user.jabatan_id,
+    id: payload.sub ?? payload.id,
+    username: payload.username,
+    display_name: payload.display_name,
+    role: payload.role,
   };
 }

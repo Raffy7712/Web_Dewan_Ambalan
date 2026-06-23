@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TrendingUp, Zap, Users, Calendar } from "lucide-react";
 import {
-  getCmsText,
+  getCmsTexts,
   getMasaBakti,
   isAmbalanRegistrationEnabled,
 } from "@/lib/cms";
@@ -40,14 +40,42 @@ function formatEventDate(iso) {
 
 export default async function HomePage() {
   const [
-    heroDescription,
-    ctaDescription,
-    statMembers,
-    statKegiatan,
+    cmsValues,
     masaBakti,
     programs,
     upcomingDb,
     ambalanOpen,
+  ] = await Promise.all([
+    getCmsTexts([
+      { pageKey: "home", sectionKey: "hero", entryKey: "description" },
+      { pageKey: "home", sectionKey: "cta", entryKey: "description" },
+      { pageKey: "home", sectionKey: "stats", entryKey: "members" },
+      { pageKey: "home", sectionKey: "stats", entryKey: "kegiatan" },
+      { pageKey: "home", sectionKey: "hero", entryKey: "eyebrow" },
+      { pageKey: "home", sectionKey: "hero", entryKey: "title" },
+      { pageKey: "home", sectionKey: "hero", entryKey: "school_line" },
+      { pageKey: "home", sectionKey: "sections", entryKey: "focus_title" },
+      { pageKey: "home", sectionKey: "sections", entryKey: "upcoming_title" },
+      { pageKey: "home", sectionKey: "stats", entryKey: "label_members" },
+      { pageKey: "home", sectionKey: "stats", entryKey: "label_kegiatan" },
+      { pageKey: "home", sectionKey: "stats", entryKey: "label_masa_bakti" },
+      { pageKey: "home", sectionKey: "stats", entryKey: "label_gudep" },
+      { pageKey: "home", sectionKey: "stats", entryKey: "value_gudep" },
+      { pageKey: "home", sectionKey: "cta", entryKey: "block_title" },
+      { pageKey: "home", sectionKey: "cta", entryKey: "button_label" },
+      { pageKey: "home", sectionKey: "cta", entryKey: "closed_message" },
+    ]),
+    getMasaBakti(),
+    getFeaturedProgramsForPublic(8),
+    getUpcomingKegiatan(6),
+    isAmbalanRegistrationEnabled(),
+  ]);
+
+  const [
+    heroDescription,
+    ctaDescription,
+    statMembers,
+    statKegiatan,
     heroEyebrow,
     heroTitle,
     heroSchoolLine,
@@ -61,54 +89,28 @@ export default async function HomePage() {
     ctaBlockTitle,
     ctaButtonLabel,
     ctaClosedMessage,
-  ] = await Promise.all([
-    getCmsText(
-      "home",
-      "hero",
-      "description",
+  ] = cmsValues.map((v, i) => {
+    const fallbacks = [
       "Berkomitmen membina anggota menjadi pribadi beriman, cakap, kreatif, mandiri, dan bertanggung jawab melalui kegiatan kepramukaan yang bermakna.",
-    ),
-    getCmsText(
-      "home",
-      "cta",
-      "description",
       "Pendaftaran seleksi calon pengurus ambalan dibuka untuk siswa yang aktif di kegiatan pramuka. Terbuka untuk seluruh siswa-siswi SMK Al Furqon.",
-    ),
-    getCmsText("home", "stats", "members", "500+"),
-    getCmsText("home", "stats", "kegiatan", "10+"),
-    getMasaBakti(),
-    getFeaturedProgramsForPublic(8),
-    getUpcomingKegiatan(6),
-    isAmbalanRegistrationEnabled(),
-    getCmsText("home", "hero", "eyebrow", "Gugus Depan Brebes 02.165 / Gugus Depan Brebes 02.166"),
-    getCmsText(
-      "home",
-      "hero",
-      "title",
+      "500+",
+      "10+",
+      "Gugus Depan Brebes 02.165 / Gugus Depan Brebes 02.166",
       "Dewan Ambalan",
-    ),
-    getCmsText("home", "hero", "school_line", "SMK Al Furqon Bantarkawung"),
-    getCmsText("home", "sections", "focus_title", "Fokus kegiatan"),
-    getCmsText("home", "sections", "upcoming_title", "Kegiatan terdekat"),
-    getCmsText("home", "stats", "label_members", "Anggota aktif"),
-    getCmsText("home", "stats", "label_kegiatan", "Kegiatan / tahun"),
-    getCmsText("home", "stats", "label_masa_bakti", "Masa bakti"),
-    getCmsText("home", "stats", "label_gudep", "Gugus depan"),
-    getCmsText("home", "stats", "value_gudep", "02.165 / 02.166"),
-    getCmsText("home", "cta", "block_title", "Siap bergabung?"),
-    getCmsText(
-      "home",
-      "cta",
-      "button_label",
+      "SMK Al Furqon Bantarkawung",
+      "Fokus kegiatan",
+      "Kegiatan terdekat",
+      "Anggota aktif",
+      "Kegiatan / tahun",
+      "Masa bakti",
+      "Gugus depan",
+      "02.165 / 02.166",
+      "Siap bergabung?",
       "Ikut seleksi calon pengurus dan dewan",
-    ),
-    getCmsText(
-      "home",
-      "cta",
-      "closed_message",
       "Form seleksi calon pengurus sedang ditutup. Pantau pengumuman di berita atau hubungi pembina pramuka.",
-    ),
-  ]);
+    ];
+    return v ?? fallbacks[i];
+  });
 
   const focusItems = programs.length > 0 ? programs : DEFAULT_FOCUS;
 

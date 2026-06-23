@@ -74,6 +74,32 @@ export async function getCmsText(pageKey, sectionKey, entryKey, fallback = "") {
   return typeof text === "string" && text.length > 0 ? text : fallback;
 }
 
+const _cmsBatchCache = new Map();
+
+export async function getCmsTexts(entries) {
+  const cacheKey = JSON.stringify(entries);
+  if (_cmsBatchCache.has(cacheKey)) return _cmsBatchCache.get(cacheKey);
+
+  try {
+    const conditions = entries.map((_, i) =>
+      `(page_key = $${i * 3 + 1} AND section_key = $${i * 3 + 2} AND entry_key = $${i * 3 + 3})`
+    ).join(" OR ");
+    const params = entries.flatMap(e => [e.pageKey, e.sectionKey, e.entryKey]);
+    const sql = `SELECT page_key, section_key, entry_key, payload FROM cms_entries WHERE is_published = true AND (${conditions})`;
+    const { rows } = await query(sql, params);
+
+    const map = {};
+    for (const r of rows) {
+      map[`${r.page_key}|${r.section_key}|${r.entry_key}`] = r.payload?.text ?? "";
+    }
+    const result = entries.map(e => map[`${e.pageKey}|${e.sectionKey}|${e.entryKey}`] ?? null);
+    _cmsBatchCache.set(cacheKey, result);
+    return result;
+  } catch {
+    return entries.map(() => null);
+  }
+}
+
 export async function getCmsEntriesByPage(pageKey) {
   try {
     const { rows } = await query(
