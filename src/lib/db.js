@@ -1,69 +1,49 @@
-/**
- * db.js — Direct PostgreSQL connection (replaces Supabase client)
- * Uses node-postgres (pg) with connection pooling
- * Schema: app (set via search_path)
- *
- * IMPORTANT: Pool is lazily initialized to avoid crashing the build
- * when DATABASE_URL is not available at build time.
- */
+import { escapeLiteral, escapeIdentifier } from "pg";
+import { createAdminClient } from "./supabase";
 
-import pg from "pg";
+let _supabase = null;
 
-const { Pool } = pg;
-
-let _pool = null;
-
-function getPool() {
-  if (_pool) return _pool;
-
-  const DATABASE_URL = process.env.DATABASE_URL;
-  if (!DATABASE_URL) {
-    throw new Error("DATABASE_URL wajib diset di environment variables");
-  }
-
-  _pool = new Pool({
-    connectionString: DATABASE_URL,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
-    options: "-c search_path=app,public",
-  });
-
-  _pool.on("error", (err) => {
-    console.error("[db] Unexpected pool error:", err.message);
-  });
-
-  return _pool;
+function getSupabase() {
+  if (_supabase) return _supabase;
+  _supabase = createAdminClient();
+  return _supabase;
 }
 
-/**
- * Run a query and return { rows, rowCount }
- */
+function escapeVal(val) {
+  if (val === null || val === undefined) return "NULL";
+  const t = typeof val;
+  if (t === "number") return String(val);
+  if (t === "boolean") return val ? "TRUE" : "FALSE";
+  if (val instanceof Date) return escapeLiteral(val.toISOString());
+  if (Buffer.isBuffer(val)) return escapeLiteral(val.toString("hex"));
+  return escapeLiteral(String(val));
+}
+
+function interpolateQuery(text, params) {
+  if (!params || params.length === 0) return text;
+  let idx = 0;
+  return text.replace(/\$(\d+)/g, (match, num) => {
+    const p = params[Number(num) - 1];
+    return escapeVal(p);
+  });
+}
+
 export async function query(text, params = []) {
   const start = Date.now();
-  const pool = getPool();
-  const result = await pool.query(text, params);
-  const duration = Date.now() - start;
-  if (duration > 2000) {
-    console.warn(`[db] Slow query (${duration}ms):`, text.slice(0, 100));
+  const supabase = getSupabase();
+  const sql = interpolateQuery(text, params);
+  const { data, error } = await supabase.rpc("exec_sql", { sql });
+  if (error) throw new Error(error.message);
+  if (data && data._type === "mutation") {
+    return { rows: [], rowCount: data._row_count };
   }
-  return { rows: result.rows, rowCount: result.rowCount };
+  return { rows: data || [], rowCount: (data || []).length };
 }
 
-/**
- * Get a client from the pool (for transactions)
- */
 export async function getClient() {
-  const pool = getPool();
-  const client = await pool.connect();
-  await client.query("SET search_path TO app, public");
-  return client;
+  throw new Error("Transactions via pool are not available in Supabase REST mode");
 }
 
-/**
- * Helper: SELECT from a table with optional filters
- * Usage: selectFrom('accounts', '*', { id: '123' })
- */
 export async function selectFrom(table, columns = "*", filters = {}) {
   const keys = Object.keys(filters);
   const where = keys.length > 0
@@ -74,11 +54,6 @@ export async function selectFrom(table, columns = "*", filters = {}) {
   return query(sql, values);
 }
 
-/**
- * Helper: INSERT into a table
- * Usage: insertInto('accounts', { username: 'foo', role: 'user' })
- * Returns the inserted row(s)
- */
 export async function insertInto(table, data, returning = "*") {
   const keys = Object.keys(data);
   const values = Object.values(data);
@@ -88,10 +63,6 @@ export async function insertInto(table, data, returning = "*") {
   return query(sql, values);
 }
 
-/**
- * Helper: UPDATE a table
- * Usage: updateTable('accounts', { role: 'admin' }, { id: '123' })
- */
 export async function updateTable(table, data, filters, returning = "*") {
   const setKeys = Object.keys(data);
   const filterKeys = Object.keys(filters);
@@ -102,10 +73,6 @@ export async function updateTable(table, data, filters, returning = "*") {
   return query(sql, values);
 }
 
-/**
- * Helper: DELETE from a table
- * Usage: deleteFrom('otp_tokens', { id: '123' })
- */
 export async function deleteFrom(table, filters, returning = "*") {
   const keys = Object.keys(filters);
   const whereClause = keys.map((k, i) => `${k} = $${i + 1}`).join(" AND ");
@@ -113,5 +80,3 @@ export async function deleteFrom(table, filters, returning = "*") {
   const sql = `DELETE FROM ${table} WHERE ${whereClause} RETURNING ${returning}`;
   return query(sql, values);
 }
-
-

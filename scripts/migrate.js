@@ -41,8 +41,8 @@ loadEnv();
 
 const DATABASE_URL = process.env.DATABASE_URL;
 if (!DATABASE_URL) {
-  console.error('\x1b[31m[migrate] ERROR: DATABASE_URL is not set in environment variables!\x1b[0m');
-  process.exit(1);
+  console.log('\x1b[33m[migrate] DATABASE_URL not set — skipping migrations (Supabase REST mode).\x1b[0m');
+  process.exit(0);
 }
 
 // 2. Initialize PostgreSQL Pool
