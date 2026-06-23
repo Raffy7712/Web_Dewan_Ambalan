@@ -2,73 +2,9 @@ import Link from "next/link";
 import { getOrgMembers, getJabatanList } from "@/lib/queries";
 import { getSession } from "@/app/actions/auth";
 import { getCmsText, isAmbalanRegistrationEnabled } from "@/lib/cms";
-import { UserPlus, Settings, ChevronRight } from "lucide-react";
+import { UserPlus, Settings } from "lucide-react";
+import OrgChartView from "./OrgChartView";
 import OrgMemberAdmin from "./OrgMemberAdmin";
-
-function AvatarInisial({ nama, size = "md" }) {
-  const inisial = nama
-    .split(" ")
-    .map((s) => s[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-  const dim = size === "lg" ? "w-24 h-24 text-3xl" : "w-16 h-16 text-xl";
-  return (
-    <div
-      className={`${dim} rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-2 ring-2 ring-primary/10`}
-    >
-      <span className="font-bold text-primary">{inisial}</span>
-    </div>
-  );
-}
-
-function MemberCard({ nama, jabatanNama, isLead }) {
-  return (
-    <div className="bg-card border border-border rounded-xl p-4 text-center hover:shadow-md hover:border-primary/30 transition-all">
-      <AvatarInisial nama={nama} />
-      <h3 className="font-bold text-foreground text-sm leading-tight">
-        {nama}
-      </h3>
-      <span
-        className={`inline-block mt-2 text-xs px-3 py-1 rounded-full font-semibold ${
-          isLead
-            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
-            : "bg-primary/10 text-primary"
-        }`}
-      >
-        {jabatanNama}
-      </span>
-    </div>
-  );
-}
-
-function JabatanSection({ jabatan, members, isFirst }) {
-  return (
-    <section className="mb-10">
-      <div className="flex items-center gap-3 mb-5">
-        {isFirst ? (
-          <div className="w-1 h-8 bg-amber-500 rounded-full" />
-        ) : (
-          <div className="w-1 h-8 bg-primary rounded-full" />
-        )}
-        <h2 className="text-lg font-bold text-foreground">{jabatan.nama}</h2>
-        <span className="text-xs bg-muted text-muted-foreground font-semibold px-2.5 py-1 rounded-full">
-          {members.length}
-        </span>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-        {members.map((m) => (
-          <MemberCard
-            key={m.id}
-            nama={m.nama}
-            jabatanNama={jabatan.nama}
-            isLead={isFirst}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
 
 export default async function AnggotaPage() {
   const [members, jabatanList, session, orgSubtitle, seleksiOpen, orgTitle] =
@@ -133,14 +69,9 @@ export default async function AnggotaPage() {
             )}
           </div>
         ) : (
-          groups.map(({ jabatan, members: ms }, i) => (
-            <JabatanSection
-              key={jabatan.id}
-              jabatan={jabatan}
-              members={ms}
-              isFirst={i === 0}
-            />
-          ))
+          <div className="bg-card border border-border rounded-xl p-4 md:p-6 overflow-hidden">
+            <OrgChartView groups={groups} />
+          </div>
         )}
 
         {isAdmin && (
