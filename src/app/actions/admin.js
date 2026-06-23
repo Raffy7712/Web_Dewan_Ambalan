@@ -597,6 +597,96 @@ export async function moveFeaturedProgramAction(prevState, formData) {
   return { success: true };
 }
 
+// ─── Org Members (custom names per jabatan) ───────────────────────────────
+
+export async function saveOrgMemberAction(prevState, formData) {
+  const session = await ensureAdmin();
+  if (!session) return { error: "Hanya admin." };
+
+  const id = formData.get("id")?.toString() || null;
+  const jabatan_id = formData.get("jabatan_id")?.toString() ?? "";
+  const nama = formData.get("nama")?.toString().trim() ?? "";
+
+  if (!jabatan_id || !nama) return { error: "Jabatan dan nama wajib diisi." };
+
+  try {
+    if (id) {
+      await query("UPDATE org_members SET nama = $1 WHERE id = $2", [nama, id]);
+    } else {
+      const { rows } = await query(
+        "SELECT COALESCE(MAX(sort_order), -1) + 1 AS next FROM org_members WHERE jabatan_id = $1",
+        [jabatan_id]
+      );
+      const nextSort = rows[0]?.next ?? 0;
+      await query(
+        "INSERT INTO org_members (jabatan_id, nama, sort_order) VALUES ($1, $2, $3)",
+        [jabatan_id, nama, nextSort]
+      );
+    }
+  } catch (err) {
+    return { error: "Gagal menyimpan." };
+  }
+
+  revalidatePath("/anggota");
+  revalidatePath("/admin/jabatan");
+  return { success: true };
+}
+
+export async function deleteOrgMemberAction(prevState, formData) {
+  const session = await ensureAdmin();
+  if (!session) return { error: "Hanya admin." };
+
+  const id = formData.get("id")?.toString();
+  if (!id) return { error: "ID tidak valid." };
+
+  try {
+    await query("DELETE FROM org_members WHERE id = $1", [id]);
+  } catch {
+    return { error: "Gagal menghapus." };
+  }
+
+  revalidatePath("/anggota");
+  revalidatePath("/admin/jabatan");
+  return { success: true };
+}
+
+export async function reorderOrgMemberAction(prevState, formData) {
+  const session = await ensureAdmin();
+  if (!session) return { error: "Hanya admin." };
+
+  const id = formData.get("id")?.toString();
+  const direction = formData.get("direction")?.toString();
+  const jabatan_id = formData.get("jabatan_id")?.toString();
+  if (!id || !direction || !jabatan_id) return { error: "Data tidak valid." };
+
+  let rows;
+  try {
+    const { rows: r } = await query(
+      "SELECT id, sort_order FROM org_members WHERE jabatan_id = $1 ORDER BY sort_order ASC",
+      [jabatan_id]
+    );
+    rows = r;
+  } catch {
+    return { error: "Gagal membaca." };
+  }
+
+  const idx = rows.findIndex((r) => r.id === id);
+  if (idx < 0) return { error: "Tidak ditemukan." };
+  const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+  if (swapIdx < 0 || swapIdx >= rows.length) return { success: true };
+
+  try {
+    await query("UPDATE org_members SET sort_order = $1 WHERE id = $2", [rows[swapIdx].sort_order, rows[idx].id]);
+    await query("UPDATE org_members SET sort_order = $1 WHERE id = $2", [rows[idx].sort_order, rows[swapIdx].id]);
+  } catch {
+    return { error: "Gagal mengubah urutan." };
+  }
+
+  revalidatePath("/anggota");
+  revalidatePath("/admin/jabatan");
+  return { success: true };
+}
+
 export async function setRolePermissionAction(prevState, formData) {
   const session = await ensurePermission("roles.manage");
   if (!session) return { error: "Tidak punya izin untuk mengatur permission." };

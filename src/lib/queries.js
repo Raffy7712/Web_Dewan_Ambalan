@@ -195,6 +195,24 @@ export async function getJabatanList() {
   }
 }
 
+/** Custom org members grouped by jabatan (for public anggota page) */
+export async function getOrgMembers() {
+  const sql = `
+    SELECT om.id, om.nama, om.sort_order,
+           json_build_object('id', j.id, 'nama', j.nama, 'urutan', j.urutan) AS jabatan
+    FROM org_members om
+    INNER JOIN jabatan j ON j.id = om.jabatan_id
+    ORDER BY j.urutan ASC, om.sort_order ASC
+  `;
+  try {
+    const { rows } = await query(sql);
+    return rows;
+  } catch (err) {
+    if (err.code !== "42P01") console.error("getOrgMembers error:", err.message);
+    return [];
+  }
+}
+
 /** Active accounts WITH jabatan set (for public anggota page) */
 export async function getAnggota() {
   const sql = `
