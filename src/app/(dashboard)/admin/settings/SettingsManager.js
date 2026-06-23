@@ -116,7 +116,7 @@ export default function SettingsManager({
               Seleksi calon pengurus ambalan
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Mengatur form <span className="font-mono text-xs">/daftar-ambalan</span>
+              Mengatur form <span className="font-mono text-xs">/daftar-calon-dewan-ambalan</span>
               , CTA di beranda, dan teks masa bakti.
             </p>
           </div>

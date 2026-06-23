@@ -183,7 +183,7 @@ export default async function AnggotaPage() {
               program ambalan, termasuk peran pengurus dan dewan formal.
             </p>
             <Link
-              href="/daftar-ambalan"
+              href="/daftar-calon-dewan-ambalan"
               className="inline-flex items-center gap-2 bg-white hover:bg-muted text-primary font-semibold px-6 py-2.5 rounded-lg transition-colors text-sm"
             >
               <UserPlus size={16} />

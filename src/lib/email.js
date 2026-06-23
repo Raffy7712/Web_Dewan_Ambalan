@@ -1,12 +1,14 @@
 import { Resend } from "resend";
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error(
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+
+if (!RESEND_API_KEY) {
+  console.warn(
     "RESEND_API_KEY belum diset. Email tidak dapat dikirim tanpa kunci API Resend.",
   );
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM?.trim() || "Dewan Ambalan <noreply@smkalfurqon.sch.id>";
 const SITE_NAME = "Dewan Ambalan SMK Al Furqon Bantarkawung";
 
@@ -176,7 +178,7 @@ export async function sendNewAmbalanApplicationNotification(staff, detail) {
           <tr><td style="padding:6px 0;font-weight:600">Periode</td><td>${escapeEmailHtml(detail.period)}</td></tr>
         </table>
         <p style="color:#555;font-size:13px"><strong>Motivasi:</strong><br/>${escapeEmailHtml(detail.motivationPreview)}</p>
-        <a href="${base}/daftar-ambalan"
+        <a href="${base}/daftar-calon-dewan-ambalan"
            style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">
           Buka portal
         </a>
@@ -281,7 +283,7 @@ export async function sendAmbalanReceivedEmail(to, displayName, period) {
         <p style="color:#555">Halo <strong>${escapeEmailHtml(displayName)}</strong>,</p>
         <p style="color:#555">Pengajuan seleksi calon pengurus ambalan periode <strong>${escapeEmailHtml(period)}</strong> sudah kami terima.</p>
         <p style="color:#555">Tim akan menghubungi atau mengumumkan langkah selanjutnya sesuai jadwal humas.</p>
-        <a href="${base}/daftar-ambalan" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Lihat status</a>
+        <a href="${base}/daftar-calon-dewan-ambalan" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Lihat status</a>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
         <p style="color:#aaa;font-size:12px">${SITE_NAME}</p>
       </div>

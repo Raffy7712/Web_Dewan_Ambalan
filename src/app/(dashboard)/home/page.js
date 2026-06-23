@@ -232,7 +232,7 @@ export default async function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3">{ctaBlockTitle}</h2>
             <p className="text-muted-foreground mb-4 sm:mb-6 max-w-2xl mx-auto text-xs sm:text-base">{ctaDescription}</p>
             <Link
-              href="/daftar-ambalan"
+              href="/daftar-calon-dewan-ambalan"
               className="inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white px-5 sm:px-8 py-2 sm:py-3 rounded-lg font-bold transition-colors shadow-lg text-xs sm:text-base"
             >
               {ctaButtonLabel}

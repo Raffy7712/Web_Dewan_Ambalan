@@ -52,7 +52,7 @@ function revalidatePathsAfterCmsChange(page_key) {
   revalidatePath("/anggota");
   revalidatePath("/admin/content");
   if (page_key === "daftar_ambalan") {
-    revalidatePath("/daftar-ambalan");
+    revalidatePath("/daftar-calon-dewan-ambalan");
   }
   if (page_key === "organization") {
     revalidatePath("/profil");
@@ -374,7 +374,7 @@ export async function updateAmbalanPortalSettingsAction(prevState, formData) {
 
   revalidatePath("/");
   revalidatePath("/home");
-  revalidatePath("/daftar-ambalan");
+  revalidatePath("/daftar-calon-dewan-ambalan");
   revalidatePath("/anggota");
   revalidatePath("/admin/settings");
   return {

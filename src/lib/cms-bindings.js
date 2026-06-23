@@ -268,7 +268,7 @@ export const CMS_PUBLIC_BINDINGS = {
     ],
   },
   daftar_ambalan: {
-    path: "/daftar-ambalan",
+    path: "/daftar-calon-dewan-ambalan",
     pathTitle: "Form seleksi calon pengurus",
     pageKey: "daftar_ambalan",
     rows: [

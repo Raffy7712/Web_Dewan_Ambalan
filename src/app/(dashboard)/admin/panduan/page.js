@@ -51,7 +51,7 @@ const sections = [
     id: "pengaturan",
     title: "Pengaturan situs dan seleksi",
     paragraphs: [
-      "Pengaturan situs: aktif atau nonaktif registrasi akun portal; toggle dan masa bakti untuk form Seleksi calon pengurus (/daftar-ambalan).",
+      "Pengaturan situs: aktif atau nonaktif registrasi akun portal; toggle dan masa bakti untuk form Seleksi calon pengurus (/daftar-calon-dewan-ambalan).",
     ],
   },
   {

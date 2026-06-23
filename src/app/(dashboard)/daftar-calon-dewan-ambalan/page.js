@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth-session";
 import { getMyAmbalanApplication } from "@/lib/admin-queries";
-import { redirect } from "next/navigation";
 import ApplicationForm from "./ApplicationForm";
 import {
   CalendarDays,
@@ -10,12 +9,12 @@ import {
   ShieldCheck,
   Users,
   ArrowLeft,
+  LogIn,
 } from "lucide-react";
 import { getCmsText, getMasaBakti, isAmbalanRegistrationEnabled } from "@/lib/cms";
 
-export default async function DaftarAmbalanPage() {
+export default async function DaftarCalonDewanAmbalanPage() {
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/daftar-ambalan");
 
   const [
     registrationOpen,
@@ -68,7 +67,9 @@ export default async function DaftarAmbalanPage() {
     ),
   ]);
 
-  const application = await getMyAmbalanApplication(user.id, masa.period_key);
+  const application = user
+    ? await getMyAmbalanApplication(user.id, masa.period_key)
+    : null;
 
   const step3DescFinal =
     /\d{4}/.test(t3b) || t3b.includes(masa.display)
@@ -128,6 +129,31 @@ export default async function DaftarAmbalanPage() {
               >
                 Lihat berita & pengumuman
               </Link>
+            </div>
+          ) : !user ? (
+            <div className="bg-white dark:bg-[#150f2d] border border-emerald-100 dark:border-purple-900/40 rounded-xl p-6 text-center">
+              <LogIn size={32} className="mx-auto text-emerald-600 dark:text-emerald-400 mb-3" />
+              <p className="text-gray-700 dark:text-purple-200 font-medium mb-2">
+                Login untuk mendaftar
+              </p>
+              <p className="text-sm text-gray-500 dark:text-purple-400 mb-4">
+                Kamu harus punya akun portal untuk mengikuti seleksi calon pengurus ambalan.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link
+                  href="/register?next=/daftar-calon-dewan-ambalan"
+                  className="inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
+                >
+                  Buat akun baru
+                </Link>
+                <Link
+                  href="/login?next=/daftar-calon-dewan-ambalan"
+                  className="inline-flex items-center justify-center gap-2 border border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-semibold px-5 py-2.5 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors text-sm"
+                >
+                  <LogIn size={15} />
+                  Login
+                </Link>
+              </div>
             </div>
           ) : (
             <ApplicationForm user={user} application={application} />

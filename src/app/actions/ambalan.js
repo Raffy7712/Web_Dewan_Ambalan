@@ -119,6 +119,6 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
     }
   }
 
-  revalidatePath("/daftar-ambalan");
+  revalidatePath("/daftar-calon-dewan-ambalan");
   return { success: "Pendaftaran calon pengurus ambalan berhasil dikirim." };
 }
