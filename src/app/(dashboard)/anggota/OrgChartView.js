@@ -1,5 +1,10 @@
 "use client";
 
+import { useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
+
+const Tree = dynamic(() => import("react-d3-tree"), { ssr: false });
+
 const ROLE_LABELS = {
   Pradana: "Ketua",
   "Pemangku Adat": "Wakil Ketua",
@@ -7,154 +12,155 @@ const ROLE_LABELS = {
   "Juru Uang": "Bendahara",
 };
 
-function MemberPill({ nama }) {
-  return (
-    <span className="block text-[11px] leading-tight bg-primary/10 text-primary rounded-md px-2.5 py-0.5 font-medium">
-      {nama}
-    </span>
-  );
+function buildTree(groups) {
+  if (!groups?.length) return null;
+  const [pembina, pradana, pemangku, ...staff] = groups;
+
+  const mkNode = (g, children) => ({
+    name: g.jabatan.nama,
+    attributes: {
+      role: ROLE_LABELS[g.jabatan.nama] || "",
+      members: JSON.stringify(g.members || []),
+      isEmpty: !g.members?.length,
+    },
+    children: children?.length ? children : undefined,
+  });
+
+  const staffNodes = staff.map((g) => mkNode(g));
+  const paNode = pemangku ? mkNode(pemangku, staffNodes) : null;
+  const prNode = pradana
+    ? mkNode(pradana, paNode ? [paNode] : staffNodes)
+    : null;
+
+  return mkNode(pembina, prNode ? [prNode] : paNode ? [paNode] : null);
 }
 
-function ChainCard({ jabatan, members }) {
-  const role = ROLE_LABELS[jabatan.nama];
-  const isEmpty = !members?.length;
+function NodeCard({ nodeDatum }) {
+  const a = nodeDatum.attributes || {};
+  const members = a.members ? JSON.parse(a.members) : [];
+  const isEmpty = a.isEmpty === true || a.isEmpty === "true";
+  const role = a.role || "";
+  const hasChildren = !!(nodeDatum.children && nodeDatum.children.length > 0);
+  const isChain = hasChildren;
+
+  const cardW = isChain ? 170 : 140;
+  const lineH = 20;
+  const headerH = role ? 48 : 36;
+  const bodyH = isEmpty ? 20 : members.length * lineH + 4;
+  const h = headerH + bodyH + 12;
+
   return (
-    <div className="bg-card border-2 border-amber-200 dark:border-amber-800 rounded-xl px-5 py-3 text-center shadow-md min-w-[180px]">
-      <div className="font-bold text-foreground text-xs uppercase tracking-widest">
-        {jabatan.nama}
+    <foreignObject
+      width={cardW}
+      height={h}
+      x={-cardW / 2}
+      y={-h / 2}
+      style={{ overflow: "visible" }}
+    >
+      <div
+        style={{
+          background: "hsl(var(--card))",
+          border: isChain
+            ? "2px solid hsl(var(--primary))"
+            : "1px solid hsl(var(--border))",
+          borderRadius: 12,
+          padding: "8px 10px",
+          textAlign: "center",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+        }}
+      >
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: 11,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            color: isChain ? "hsl(var(--primary))" : "hsl(var(--foreground))",
+          }}
+        >
+          {nodeDatum.name}
+        </div>
+        {role && (
+          <div
+            style={{
+              fontSize: 9,
+              color: isChain
+                ? "hsl(var(--primary) / .7)"
+                : "hsl(var(--muted-foreground))",
+              fontWeight: 600,
+              marginTop: 2,
+            }}
+          >
+            {role}
+          </div>
+        )}
+        {isEmpty ? (
+          <div
+            style={{
+              fontSize: 9,
+              color: "hsl(var(--muted-foreground))",
+              fontStyle: "italic",
+              marginTop: 4,
+            }}
+          >
+            (kosong)
+          </div>
+        ) : (
+          <div
+            style={{
+              marginTop: 4,
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+            }}
+          >
+            {members.map((m) => (
+              <span
+                key={m.id}
+                style={{
+                  fontSize: 9,
+                  background: "hsl(var(--primary) / .1)",
+                  color: "hsl(var(--primary))",
+                  borderRadius: 6,
+                  padding: "1px 8px",
+                  fontWeight: 500,
+                  display: "block",
+                }}
+              >
+                {m.nama}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
-      {role && (
-        <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
-          {role}
-        </div>
-      )}
-      {isEmpty ? (
-        <span className="text-[10px] text-muted-foreground italic mt-1 block">
-          (kosong)
-        </span>
-      ) : (
-        <div className="space-y-0.5 mt-1.5">
-          {members.map((m) => (
-            <MemberPill key={m.id} nama={m.nama} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function StaffCard({ jabatan, members }) {
-  const role = ROLE_LABELS[jabatan.nama];
-  const isEmpty = !members?.length;
-  return (
-    <div className="bg-card border border-border rounded-lg px-3 py-2 text-center shadow-sm min-w-[120px]">
-      <div className="font-bold text-foreground text-[10px] uppercase tracking-widest">
-        {jabatan.nama}
-      </div>
-      {role && (
-        <div className="text-[9px] text-muted-foreground font-medium mt-0.5">
-          {role}
-        </div>
-      )}
-      {isEmpty ? (
-        <span className="text-[9px] text-muted-foreground italic mt-1 block">
-          (kosong)
-        </span>
-      ) : (
-        <div className="space-y-0.5 mt-1">
-          {members.map((m) => (
-            <span
-              key={m.id}
-              className="block text-[10px] bg-primary/10 text-primary rounded px-2 py-0.5 font-medium"
-            >
-              {m.nama}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function VLine() {
-  return (
-    <div className="flex justify-center h-5">
-      <div className="w-[2px] bg-border h-full" />
-    </div>
+    </foreignObject>
   );
 }
 
 export default function OrgChartView({ groups }) {
-  if (!groups?.length) return null;
+  const data = useMemo(() => buildTree(groups), [groups]);
 
-  const [pembina, pradana, pemangku, ...staff] = groups;
-  if (!pembina) return null;
-
-  const splitAt = Math.ceil(staff.length / 2);
-  const staffRow1 = staff.slice(0, splitAt);
-  const staffRow2 = staff.slice(splitAt);
+  if (!data) return null;
 
   return (
-    <div className="w-full overflow-x-auto py-4">
-      <div className="flex flex-col items-center gap-0 min-w-max px-4">
-        {/* Pembina */}
-        <ChainCard jabatan={pembina.jabatan} members={pembina.members} />
-        <VLine />
-        {/* Pradana */}
-        <ChainCard jabatan={pradana.jabatan} members={pradana.members} />
-        <VLine />
-        {/* Pemangku Adat */}
-        {pemangku && (
-          <>
-            <ChainCard jabatan={pemangku.jabatan} members={pemangku.members} />
-            <VLine />
-          </>
+    <div className="w-full h-[520px]">
+      <Tree
+        data={data}
+        orientation="vertical"
+        pathFunc="step"
+        translate={{ x: 300, y: 60 }}
+        nodeSize={{ x: 240, y: 130 }}
+        separation={{ siblings: 0.8, nonSiblings: 1.2 }}
+        renderCustomNodeElement={(rd3tProps) => (
+          <NodeCard nodeDatum={rd3tProps.nodeDatum} />
         )}
-
-        {/* Staff rows */}
-        {staff.length > 0 && (
-          <>
-            {staff.length === 1 ? (
-              <>
-                <VLine />
-                {staff.map((g) => (
-                  <StaffCard key={g.jabatan.id} jabatan={g.jabatan} members={g.members} />
-                ))}
-              </>
-            ) : (
-              <>
-                {/* Semicircle branch bar */}
-                <div className="relative h-10 w-full">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[3px] h-1/2 bg-border/60 rounded-full" />
-                  <div className="absolute top-1/2 left-[4%] right-[4%] h-[3px] bg-border/60 rounded-full" />
-                </div>
-                {/* Row 1 */}
-                <div className="flex justify-center gap-3 md:gap-4 items-start">
-                  {staffRow1.map((g) => (
-                    <div key={g.jabatan.id} className="flex flex-col items-center">
-                      <div className="h-5 w-[2px] bg-border/60" />
-                      <StaffCard jabatan={g.jabatan} members={g.members} />
-                    </div>
-                  ))}
-                </div>
-                {/* Row 2 */}
-                {staffRow2.length > 0 && (
-                  <>
-                    <div className="flex justify-center gap-3 md:gap-4 items-start mt-4">
-                      {staffRow2.map((g) => (
-                        <div key={g.jabatan.id} className="flex flex-col items-center">
-                          <div className="h-5 w-[2px] bg-border/60" />
-                          <StaffCard jabatan={g.jabatan} members={g.members} />
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-          </>
-        )}
-      </div>
+        styles={{
+          links: {
+            stroke: "hsl(var(--border))",
+            strokeWidth: 2,
+          },
+        }}
+      />
     </div>
   );
 }
