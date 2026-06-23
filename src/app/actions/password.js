@@ -1,6 +1,6 @@
 "use server";
 
-import { query, getClient } from "@/lib/db";
+import { query } from "@/lib/db";
 import { sendOtpEmail, sendPasswordChangedEmail } from "@/lib/email";
 import { getClientIp } from "@/lib/request-ip";
 import {
@@ -155,29 +155,16 @@ export async function resetPasswordAction(prevState, formData) {
     return { error: "Kode OTP sudah kadaluarsa. Minta kode baru." };
   }
 
-  const client = await getClient();
+  const password_hash = await bcryptjs.hash(password, 12);
   try {
-    await client.query("BEGIN");
-
-    // Mark token as used
-    await client.query(
-      "UPDATE otp_tokens SET used_at = $1 WHERE id = $2",
-      [new Date().toISOString(), token.id]
-    );
-
-    // Update password
-    const password_hash = await bcryptjs.hash(password, 12);
-    await client.query(
-      "UPDATE accounts SET password_hash = $1 WHERE id = $2",
-      [password_hash, token.account_id]
-    );
-
-    await client.query("COMMIT");
+    await query("UPDATE otp_tokens SET used_at = $1 WHERE id = $2", [
+      new Date().toISOString(), token.id,
+    ]);
+    await query("UPDATE accounts SET password_hash = $1 WHERE id = $2", [
+      password_hash, token.account_id,
+    ]);
   } catch (err) {
-    await client.query("ROLLBACK");
     return { error: "Gagal memperbarui password. Coba lagi." };
-  } finally {
-    client.release();
   }
 
   let acc;

@@ -1,6 +1,6 @@
 "use server";
 
-import { query, getClient } from "@/lib/db";
+import { query } from "@/lib/db";
 import {
   clearSessionCookie,
   createSessionCookie,
@@ -307,30 +307,22 @@ export async function verifyAndRegisterAction(prevState, formData) {
   }
   if (existingEmailResult.rows[0]) return { error: "Email sudah terdaftar." };
 
-  const client = await getClient();
   let newUser;
   try {
-    await client.query("BEGIN");
-
-    await client.query(
+    await query(
       "UPDATE otp_tokens SET used_at = $1 WHERE id = $2",
       [new Date().toISOString(), token.id]
     );
 
     const password_hash = await bcryptjs.hash(password, 12);
-    const insertResult = await client.query(
+    const insertResult = await query(
       "INSERT INTO accounts (display_name, username, email, password_hash, role, jabatan_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, display_name, username, role",
       [display_name, username, email, password_hash, "user", null]
     );
     newUser = insertResult.rows[0];
-
-    await client.query("COMMIT");
   } catch (err) {
-    await client.query("ROLLBACK");
     console.error(err);
     return { error: "Gagal membuat akun. Coba lagi." };
-  } finally {
-    client.release();
   }
 
   sendWelcomeEmail(email, display_name).catch(() => {});

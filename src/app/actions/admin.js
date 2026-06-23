@@ -1,6 +1,6 @@
 "use server";
 
-import { query, getClient } from "@/lib/db";
+import { query } from "@/lib/db";
 import { getSession } from "./auth";
 import { revalidatePath } from "next/cache";
 
@@ -196,21 +196,11 @@ export async function deleteJabatanAction(prevState, formData) {
   const jabatanId = formData.get("jabatan_id")?.toString();
   if (!jabatanId) return { error: "ID jabatan tidak valid." };
 
-  const client = await getClient();
   try {
-    await client.query("BEGIN");
-    // Unassign first (on delete set null via FK, but just to be safe)
-    await client.query(
-      "UPDATE accounts SET jabatan_id = NULL WHERE jabatan_id = $1",
-      [jabatanId]
-    );
-    await client.query("DELETE FROM jabatan WHERE id = $1", [jabatanId]);
-    await client.query("COMMIT");
+    await query("UPDATE accounts SET jabatan_id = NULL WHERE jabatan_id = $1", [jabatanId]);
+    await query("DELETE FROM jabatan WHERE id = $1", [jabatanId]);
   } catch (err) {
-    await client.query("ROLLBACK");
     return { error: "Gagal menghapus jabatan." };
-  } finally {
-    client.release();
   }
   revalidatePath("/anggota");
   revalidatePath("/admin/jabatan");
@@ -251,20 +241,11 @@ export async function reorderJabatanAction(prevState, formData) {
     return { success: true };
   }
 
-  const a = rows[idx];
-  const b = rows[swapIdx];
-
-  const client = await getClient();
   try {
-    await client.query("BEGIN");
-    await client.query("UPDATE jabatan SET urutan = $1 WHERE id = $2", [b.urutan, a.id]);
-    await client.query("UPDATE jabatan SET urutan = $1 WHERE id = $2", [a.urutan, b.id]);
-    await client.query("COMMIT");
+    await query("UPDATE jabatan SET urutan = $1 WHERE id = $2", [rows[swapIdx].urutan, rows[idx].id]);
+    await query("UPDATE jabatan SET urutan = $1 WHERE id = $2", [rows[idx].urutan, rows[swapIdx].id]);
   } catch (err) {
-    await client.query("ROLLBACK");
     return { error: "Gagal mengubah urutan jabatan." };
-  } finally {
-    client.release();
   }
 
   revalidatePath("/anggota");
@@ -330,31 +311,23 @@ export async function updateAmbalanPortalSettingsAction(prevState, formData) {
     formData.get("masa_bakti_period_key")?.toString().trim() || "2026-2027";
   period_key = period_key.replace(/\s+/g, "");
 
-  const client = await getClient();
   try {
-    await client.query("BEGIN");
-
-    await client.query(
+    await query(
       `INSERT INTO site_settings (key, value_json, updated_by) VALUES ($1, $2, $3)
        ON CONFLICT (key) DO UPDATE SET value_json = EXCLUDED.value_json, updated_by = EXCLUDED.updated_by`,
       ["ambalan_registration_enabled", { enabled: ambalanEnabled }, session.id]
     );
 
-    await client.query(
+    await query(
       `INSERT INTO site_settings (key, value_json, updated_by) VALUES ($1, $2, $3)
        ON CONFLICT (key) DO UPDATE SET value_json = EXCLUDED.value_json, updated_by = EXCLUDED.updated_by`,
       ["masa_bakti", { display, period_key }, session.id]
     );
-
-    await client.query("COMMIT");
   } catch (err) {
-    await client.query("ROLLBACK");
     if (err.message?.includes("ambalan_registration_enabled")) {
       return { error: "Gagal menyimpan toggle pendaftaran seleksi." };
     }
     return { error: "Gagal menyimpan masa bakti." };
-  } finally {
-    client.release();
   }
 
   revalidatePath("/");
@@ -570,20 +543,11 @@ export async function moveFeaturedProgramAction(prevState, formData) {
   const swapIdx = direction === "up" ? idx - 1 : idx + 1;
   if (swapIdx < 0 || swapIdx >= rows.length) return { success: true };
 
-  const a = rows[idx];
-  const b = rows[swapIdx];
-
-  const client = await getClient();
   try {
-    await client.query("BEGIN");
-    await client.query("UPDATE featured_programs SET sort_order = $1 WHERE id = $2", [b.sort_order, a.id]);
-    await client.query("UPDATE featured_programs SET sort_order = $1 WHERE id = $2", [a.sort_order, b.id]);
-    await client.query("COMMIT");
+    await query("UPDATE featured_programs SET sort_order = $1 WHERE id = $2", [rows[swapIdx].sort_order, rows[idx].id]);
+    await query("UPDATE featured_programs SET sort_order = $1 WHERE id = $2", [rows[idx].sort_order, rows[swapIdx].id]);
   } catch (err) {
-    await client.query("ROLLBACK");
     return { error: "Gagal mengubah urutan program." };
-  } finally {
-    client.release();
   }
 
   revalidatePath("/home");

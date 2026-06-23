@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getSession } from "./auth";
-import { query, getClient } from "@/lib/db";
+import { query } from "@/lib/db";
 import { getUsersWithEmail } from "@/lib/queries";
 import { sendNewPostNotification } from "@/lib/email";
 import {
@@ -149,12 +149,9 @@ export async function createAdminPostAction(prevState, formData) {
 
   const now = new Date().toISOString();
 
-  const client = await getClient();
   let post;
   try {
-    await client.query("BEGIN");
-
-    const insertResult = await client.query(
+    const insertResult = await query(
       `INSERT INTO posts (title, slug, excerpt, content, category, status, author_id, featured_image_url, event_date, event_location)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING id, title, slug, excerpt as description, category`,
@@ -172,7 +169,7 @@ export async function createAdminPostAction(prevState, formData) {
     for (let i = 0; i < imageUrls.length; i++) {
       const url = imageUrls[i];
       if (!coverUrl) coverUrl = url;
-      await client.query(
+      await query(
         "INSERT INTO post_media (post_id, media_type, media_url, caption, sort_order) VALUES ($1, $2, $3, $4, $5)",
         [post.id, "image", url, "", order++]
       );
@@ -180,22 +177,19 @@ export async function createAdminPostAction(prevState, formData) {
 
     for (let i = 0; i < videoUrls.length; i++) {
       const url = videoUrls[i];
-      await client.query(
+      await query(
         "INSERT INTO post_media (post_id, media_type, media_url, caption, sort_order) VALUES ($1, $2, $3, $4, $5)",
         [post.id, "video", url, "", order++]
       );
     }
 
     if (coverUrl) {
-      await client.query(
+      await query(
         "UPDATE posts SET featured_image_url = $1 WHERE id = $2",
         [coverUrl, post.id]
       );
     }
-
-    await client.query("COMMIT");
   } catch (err) {
-    await client.query("ROLLBACK");
     console.error("createAdminPostAction insert:", err.message, err);
     if (err.message?.includes("posts_category_check") || err.code === "23514") {
       return {
@@ -204,8 +198,6 @@ export async function createAdminPostAction(prevState, formData) {
       };
     }
     return { error: "Gagal menyimpan postingan. Periksa data atau coba lagi." };
-  } finally {
-    client.release();
   }
 
   revalidatePath("/");
@@ -337,11 +329,8 @@ export async function updateAdminPostAction(postId, prevState, formData) {
     };
   }
 
-  const client = await getClient();
   try {
-    await client.query("BEGIN");
-
-    await client.query(
+    await query(
       `UPDATE posts SET title = $1, excerpt = $2, content = $3, event_date = $4, event_location = $5 WHERE id = $6`,
       [
         title, description, content || null,
@@ -351,14 +340,14 @@ export async function updateAdminPostAction(postId, prevState, formData) {
       ]
     );
 
-    await client.query("DELETE FROM post_media WHERE post_id = $1", [postId]);
+    await query("DELETE FROM post_media WHERE post_id = $1", [postId]);
 
     let order = 0;
     let coverUrl = null;
     for (let i = 0; i < imageUrls.length; i++) {
       const url = imageUrls[i];
       if (!coverUrl) coverUrl = url;
-      await client.query(
+      await query(
         "INSERT INTO post_media (post_id, media_type, media_url, caption, sort_order) VALUES ($1, $2, $3, $4, $5)",
         [postId, "image", url, "", order++]
       );
@@ -366,26 +355,21 @@ export async function updateAdminPostAction(postId, prevState, formData) {
 
     for (let i = 0; i < videoUrls.length; i++) {
       const url = videoUrls[i];
-      await client.query(
+      await query(
         "INSERT INTO post_media (post_id, media_type, media_url, caption, sort_order) VALUES ($1, $2, $3, $4, $5)",
         [postId, "video", url, "", order++]
       );
     }
 
     if (coverUrl && coverUrl !== post.cover_image_url) {
-      await client.query(
+      await query(
         "UPDATE posts SET featured_image_url = $1 WHERE id = $2",
         [coverUrl, postId]
       );
     }
-
-    await client.query("COMMIT");
   } catch (err) {
-    await client.query("ROLLBACK");
     console.error("updateAdminPostAction update:", err.message);
     return { error: "Gagal memperbarui postingan. Coba lagi." };
-  } finally {
-    client.release();
   }
 
   revalidatePath("/");
