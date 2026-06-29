@@ -156,6 +156,7 @@ export async function sendNewPostNotification(users, post) {
  * Notify staff when ada pendaftaran baru calon pengurus ambalan.
  */
 export async function sendNewAmbalanApplicationNotification(staff, detail) {
+  if (skipIfNoResend()) return;
   const recipients = staff.map((s) => s.email).filter(Boolean);
   if (!recipients.length) return;
 
@@ -271,6 +272,7 @@ export async function sendAccountUnbannedEmail(to, displayName) {
 /** Konfirmasi ke peserta: pendaftaran seleksi diterima sistem. */
 export async function sendAmbalanReceivedEmail(to, displayName, period) {
   if (skipIfNoResend()) return;
+  if (!to) return;
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   await resend.emails
     .send({

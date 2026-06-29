@@ -122,18 +122,19 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
   }
 
   if (isFirstSubmit) {
-    getStaffEmails()
-      .then((staff) =>
-        sendNewAmbalanApplicationNotification(staff, {
-          fullName: full_name,
-          className: class_name,
-          phone,
-          period,
-          motivationPreview:
-            motivation.length > 220 ? `${motivation.slice(0, 220)}…` : motivation,
-        }),
-      )
-      .catch(() => {});
+    try {
+      const staff = await getStaffEmails();
+      await sendNewAmbalanApplicationNotification(staff, {
+        fullName: full_name,
+        className: class_name,
+        phone,
+        period,
+        motivationPreview:
+          motivation.length > 220 ? `${motivation.slice(0, 220)}…` : motivation,
+      });
+    } catch (e) {
+      console.error("sendNewAmbalanApplicationNotification:", e);
+    }
   }
 
   if (isFirstSubmit && accountId) {
@@ -144,14 +145,14 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
       );
       const acc = accResult.rows[0] ?? null;
       if (acc?.email) {
-        sendAmbalanReceivedEmail(
+        await sendAmbalanReceivedEmail(
           acc.email,
           acc.display_name ?? session.display_name ?? "Pengguna",
           period,
-        ).catch(() => {});
+        );
       }
-    } catch {
-      // non-critical
+    } catch (e) {
+      console.error("sendAmbalanReceivedEmail:", e);
     }
   }
 
