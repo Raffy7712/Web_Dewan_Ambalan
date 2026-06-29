@@ -19,6 +19,7 @@ import {
   Ticket,
   Award,
   Package,
+  ClipboardList,
 } from "lucide-react";
 
 const links = [
@@ -37,6 +38,7 @@ const links = [
   { href: "/admin/inventory", label: "Inventaris", icon: Package },
   { href: "/admin/permissions", label: "Role & izin", icon: Shield },
   { href: "/admin/jabatan", label: "Struktur jabatan", icon: Briefcase },
+  { href: "/admin/ambalan-applications", label: "Calon pengurus", icon: ClipboardList },
 ];
 
 export default function AdminShell({ children }) {

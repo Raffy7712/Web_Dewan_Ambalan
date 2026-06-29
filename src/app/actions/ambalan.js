@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { getSession } from "./auth";
 import { query } from "@/lib/db";
 import { revalidatePath } from "next/cache";
@@ -44,6 +45,30 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
 
   const accountId = session?.id ?? null;
 
+  const headersList = await headers();
+  const submitterIp =
+    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    headersList.get("x-real-ip") ??
+    null;
+
+  const existingName = await query(
+    "SELECT id FROM ambalan_applications WHERE LOWER(full_name) = LOWER($1) AND period = $2 LIMIT 1",
+    [full_name, period]
+  );
+  if (existingName.rows[0]) {
+    return { error: "Nama sudah terdaftar. Gunakan nama lain atau hubungi admin." };
+  }
+
+  if (submitterIp) {
+    const existingIp = await query(
+      "SELECT id FROM ambalan_applications WHERE submitter_ip = $1 AND period = $2 LIMIT 1",
+      [submitterIp, period]
+    );
+    if (existingIp.rows[0]) {
+      return { error: "Perangkat ini sudah digunakan untuk mendaftar. Hubungi admin jika ada kendala." };
+    }
+  }
+
   if (session) {
     const ambR = consumeAmbalanUser(session.id);
     if (!ambR.ok) return { error: rateLimitMessage(ambR.retryAfterMs) };
@@ -66,8 +91,8 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
   try {
     if (accountId) {
       await query(
-        `INSERT INTO ambalan_applications (account_id, full_name, class_name, phone, motivation, experience, period, status, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `INSERT INTO ambalan_applications (account_id, full_name, class_name, phone, motivation, experience, period, status, updated_at, submitter_ip)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          ON CONFLICT (account_id, period) DO UPDATE SET
            full_name = EXCLUDED.full_name,
            class_name = EXCLUDED.class_name,
@@ -76,13 +101,13 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
            experience = EXCLUDED.experience,
            status = EXCLUDED.status,
            updated_at = EXCLUDED.updated_at`,
-        [accountId, full_name, class_name, phone, motivation, experience, period, "pending", new Date().toISOString()]
+        [accountId, full_name, class_name, phone, motivation, experience, period, "pending", new Date().toISOString(), submitterIp]
       );
     } else {
       await query(
-        `INSERT INTO ambalan_applications (account_id, full_name, class_name, phone, motivation, experience, period, status, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [null, full_name, class_name, phone, motivation, experience, period, "pending", new Date().toISOString()]
+        `INSERT INTO ambalan_applications (account_id, full_name, class_name, phone, motivation, experience, period, status, updated_at, submitter_ip)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [null, full_name, class_name, phone, motivation, experience, period, "pending", new Date().toISOString(), submitterIp]
       );
     }
   } catch (err) {
