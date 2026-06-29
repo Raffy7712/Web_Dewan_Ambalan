@@ -59,16 +59,6 @@ export async function submitAmbalanApplicationAction(prevState, formData) {
     return { error: "Nama sudah terdaftar. Gunakan nama lain atau hubungi admin." };
   }
 
-  if (submitterIp) {
-    const existingIp = await query(
-      "SELECT id FROM ambalan_applications WHERE submitter_ip = $1 AND period = $2 LIMIT 1",
-      [submitterIp, period]
-    );
-    if (existingIp.rows[0]) {
-      return { error: "Perangkat ini sudah digunakan untuk mendaftar. Hubungi admin jika ada kendala." };
-    }
-  }
-
   if (session) {
     const ambR = consumeAmbalanUser(session.id);
     if (!ambR.ok) return { error: rateLimitMessage(ambR.retryAfterMs) };
