@@ -244,7 +244,7 @@ export default async function LandingPage() {
       <section className="relative overflow-hidden bg-black text-white min-h-[60vh] sm:min-h-[70vh] md:min-h-[78vh] px-3 sm:px-4 py-12 sm:py-16 md:py-24 flex items-center">
         <div
           className="absolute -right-16 sm:-right-8 md:right-[-2rem] top-1/2 h-64 sm:h-80 md:h-[42rem] w-64 sm:w-80 md:w-[42rem] -translate-y-1/2 opacity-10 sm:opacity-15 md:opacity-20 bg-contain bg-no-repeat bg-center"
-          style={{ backgroundImage: 'url(/logo.png)' }}
+          style={{ backgroundImage: 'url(/logo.webp)' }}
         />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.98),rgba(6,78,59,0.88),rgba(120,53,15,0.58))]" />
 
