@@ -9,7 +9,7 @@ if (!RESEND_API_KEY) {
 }
 
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
-const FROM = process.env.EMAIL_FROM?.trim() || "Dewan Ambalan <noreply@smkalfurqon.sch.id>";
+const FROM = process.env.EMAIL_FROM?.trim() || "Dewan Ambalan <noreply@mail.da-alf.my.id>";
 const SITE_NAME = "Dewan Ambalan SMK Al Furqon Bantarkawung";
 
 function escapeEmailHtml(s) {
