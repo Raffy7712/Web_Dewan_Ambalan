@@ -92,7 +92,7 @@ export async function sendNewCommentNotification(staff, comment) {
         <blockquote style="background:#f5f3ff;border-left:4px solid #7c3aed;padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0">
           <p style="margin:0;color:#374151">${preview}</p>
         </blockquote>
-        <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/berita/${comment.postSlug}"
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/verify"
            style="display:inline-block;background:#6d28d9;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px">
           Lihat Komentar
         </a>
@@ -138,7 +138,7 @@ export async function sendNewPostNotification(users, post) {
         <p style="color:#888;font-size:12px">Postingan Baru · ${escapeEmailHtml(categoryLabel)}</p>
         <h3 style="color:#111;margin:16px 0 8px">${safeTitle}</h3>
         ${safeDesc ? `<p style="color:#555">${safeDesc}</p>` : ""}
-        <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/berita/${post.slug}"
+        <a href="${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/verify"
            style="display:inline-block;background:#6d28d9;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">
           Baca Selengkapnya
         </a>
@@ -179,7 +179,7 @@ export async function sendNewAmbalanApplicationNotification(staff, detail) {
           <tr><td style="padding:6px 0;font-weight:600">Periode</td><td>${escapeEmailHtml(detail.period)}</td></tr>
         </table>
         <p style="color:#555;font-size:13px"><strong>Motivasi:</strong><br/>${escapeEmailHtml(detail.motivationPreview)}</p>
-        <a href="${base}/daftar-calon-dewan-ambalan"
+        <a href="${base}/verify"
            style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">
           Buka portal
         </a>
@@ -238,7 +238,7 @@ export async function sendAccountBannedEmail(to, displayName, reason) {
         <p style="color:#555">Akses akunmu ke website Dewan Ambalan saat ini <strong>diblokir</strong>. Kamu tidak dapat login hingga admin mencabut blokir.</p>
         ${r}
         <p style="color:#555">Jika menurutmu ini kesalahan, hubungi pembina atau humas melalui kanal resmi sekolah.</p>
-        <p style="color:#888;font-size:13px"><a href="${base}/home">Buka beranda portal</a></p>
+        <p style="color:#888;font-size:13px"><a href="${base}/verify">Buka beranda portal</a></p>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
         <p style="color:#aaa;font-size:12px">${SITE_NAME}</p>
       </div>
@@ -285,7 +285,7 @@ export async function sendAmbalanReceivedEmail(to, displayName, period) {
         <p style="color:#555">Halo <strong>${escapeEmailHtml(displayName)}</strong>,</p>
         <p style="color:#555">Pengajuan seleksi calon pengurus ambalan periode <strong>${escapeEmailHtml(period)}</strong> sudah kami terima.</p>
         <p style="color:#555">Tim akan menghubungi atau mengumumkan langkah selanjutnya sesuai jadwal humas.</p>
-        <a href="${base}/daftar-calon-dewan-ambalan" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Lihat status</a>
+        <a href="${base}/verify" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Lihat status</a>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
         <p style="color:#aaa;font-size:12px">${SITE_NAME}</p>
       </div>
@@ -340,7 +340,7 @@ export async function sendStaffFinancePublishedNotification(staff, detail) {
         <h2 style="color:#047857">${SITE_NAME}</h2>
         <p style="color:#888;font-size:12px">Notifikasi staff</p>
         <p style="color:#555">Laporan keuangan <strong>${escapeEmailHtml(detail.periodLabel)}</strong> sekarang <strong>terpublikasi</strong> di halaman transparansi.</p>
-        <a href="${base}/keuangan" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Lihat /keuangan</a>
+        <a href="${base}/verify" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Lihat portal</a>
         <a href="${base}/admin/finance" style="display:inline-block;margin-left:8px;background:#334155;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Panel admin</a>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>
         <p style="color:#aaa;font-size:12px">${SITE_NAME}</p>
@@ -398,7 +398,7 @@ export async function sendAccountRoleChangedEmail(to, displayName, newRole) {
         <p style="color:#555">Halo <strong>${escapeEmailHtml(displayName)}</strong>,</p>
         <p style="color:#555">Peran akun portalmu telah diubah menjadi <strong>${roleLabel}</strong> oleh admin.</p>
         <p style="color:#888;font-size:13px">Jika kamu tidak mengerti perubahan ini, silakan hubungi pembina atau humas melalui kanal resmi sekolah.</p>
-        <a href="${base}/profil" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Lihat profil</a>
+        <a href="${base}/verify" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Lihat profil</a>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
         <p style="color:#aaa;font-size:12px">${SITE_NAME}</p>
       </div>
@@ -451,7 +451,7 @@ export async function sendNewDeviceLoginEmail(to, displayName, deviceName, ipAdd
           Jika ini adalah login normal kamu, tidak perlu melakukan tindakan apapun. Kami akan mempercayai perangkat ini untuk login berikutnya.
         </p>
         
-        <a href="${base}/profil" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Kelola perangkat terpercaya</a>
+        <a href="${base}/verify" style="display:inline-block;background:#047857;color:white;text-decoration:none;padding:10px 20px;border-radius:8px;font-size:14px;margin-top:12px">Kelola perangkat terpercaya</a>
         <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0"/>
         <p style="color:#aaa;font-size:12px">${SITE_NAME}</p>
       </div>
@@ -459,3 +459,5 @@ export async function sendNewDeviceLoginEmail(to, displayName, deviceName, ipAdd
     })
     .catch((e) => console.error("sendNewDeviceLoginEmail:", e.message));
 }
+
+

@@ -1,4 +1,4 @@
-import RegisterClient from "./RegisterClient";
+﻿import RegisterClient from "./RegisterClient";
 import { isRegistrationEnabled } from "@/lib/cms";
 
 export default async function RegisterPage({ searchParams }) {

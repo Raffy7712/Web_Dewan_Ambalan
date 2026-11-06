@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum JenisDokumen {
+  sertifikat
+  piagam
+  surat
+  voucher
+}
+
+enum StatusDokumen {
+  issued
+  revoked
+}
+
+model Document {
+  id                String           @id @default(uuid())
+  kode              String           @unique
+  jenis             JenisDokumen
+  nomor             String?
+  judul             String
+  penerima          String?
+  penerbit          String?
+  keterangan        String?
+  status            StatusDokumen    @default(issued)
+  tanggalTerbit     DateTime?        @db.Date
+  tanggalKadaluarsa DateTime?        @db.Date
+  createdBy         String?
+  createdAt         DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime         @updatedAt @db.Timestamptz(6)
+
+  scans             VerificationScan[]
+
+  @@index([jenis])
+  @@index([status])
+  @@index([nomor])
+}
+
+model VerificationScan {
+  id          String   @id @default(uuid())
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId  String
+  scannedAt   DateTime @default(now()) @db.Timestamptz(6)
+  ipAddress   String?
+  metadata    Json?
+
+  @@index([documentId])
+  @@index([scannedAt])
+}

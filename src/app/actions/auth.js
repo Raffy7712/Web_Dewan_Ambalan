@@ -134,7 +134,7 @@ export async function loginAction(prevState, formData) {
 
   await createSessionCookie(account);
   const safeNext =
-    nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/home";
+    nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : (account.role === "admin" ? "/admin" : "/verify");
   redirect(safeNext);
 }
 
@@ -340,7 +340,7 @@ export async function verifyAndRegisterAction(prevState, formData) {
   await createSessionCookie(newUser);
   const nextPath = formData.get("next")?.toString() ?? "";
   const safeNext =
-    nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/home";
+    nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : (account.role === "admin" ? "/admin" : "/verify");
   redirect(safeNext);
 }
 
@@ -368,3 +368,4 @@ export async function updateProfileAction(prevState, formData) {
   }
   return { success: "Profil berhasil diperbarui!" };
 }
+

@@ -1,5 +1,4 @@
-import { Geist } from "next/font/google";
-import CookieConsent from "@/components/CookieConsent";
+﻿import { Geist } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -8,9 +7,9 @@ const geistSans = Geist({
 });
 
 export const metadata = {
-  title: "SMK Al Furqon — Dewan Ambalan Penegak",
+  title: "Verifikasi Keaslian Dokumen | Dewan Ambalan",
   description:
-    "Portal Dewan Ambalan Pramuka Penegak: Gudep Brebes 02.165 / 02.166 · SMK Al Furqon Bantarkawung. Satyaku Kudarmakan, Darmaku Kubaktikan.",
+    "Portal verifikasi keaslian dokumen (sertifikat, piagam, surat, voucher) Dewan Ambalan Pramuka Penegak SMK Al Furqon Bantarkawung.",
   icons: [
     { rel: "icon", url: "/logo.png" },
     { rel: "apple-touch-icon", url: "/logo.png" },
@@ -20,10 +19,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="id" className={geistSans.variable} suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col antialiased">
-        {children}
-        <CookieConsent />
-      </body>
+      <body className="min-h-screen flex flex-col antialiased">{children}</body>
     </html>
   );
 }

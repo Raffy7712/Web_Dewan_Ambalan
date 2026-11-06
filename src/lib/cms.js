@@ -17,7 +17,7 @@ export async function isRegistrationEnabled() {
   }
 }
 
-/** Toggle pendaftaran form seleksi calon pengurus (halaman /daftar-calon-dewan-ambalan). */
+/** Toggle pendaftaran form seleksi calon pengurus (halaman pendaftaran calon pengurus). */
 export async function isAmbalanRegistrationEnabled() {
   try {
     const { rows } = await query(
@@ -114,3 +114,4 @@ export async function getCmsEntriesByPage(pageKey) {
     return [];
   }
 }
+

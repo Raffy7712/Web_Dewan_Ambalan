@@ -1,263 +1,137 @@
-import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase";
+﻿import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getClientIp } from "@/lib/request-ip";
+import { rateLimitConsume, rateLimitMessage } from "@/lib/rate-limit";
 
-/* ── helper: safe JSON response ── */
+const RATE_MAX = 60;
+const RATE_WINDOW = 60 * 1000; // 1 menit
+
 function json(data, status = 200) {
   return NextResponse.json(data, { status });
 }
 
-/* ── POST /api/verification — public verification ── */
+// prisma camelCase -> respons snake_case (kontrak frontend)
+function publicItem(row) {
+  return {
+    kode: row.kode,
+    jenis: row.jenis,
+    judul: row.judul,
+    nomor: row.nomor ?? null,
+    penerima: row.penerima ?? null,
+    penerbit: row.penerbit ?? null,
+    status: row.status,
+    tanggal_terbit: row.tanggalTerbit ?? null,
+    tanggal_kadaluarsa: row.tanggalKadaluarsa ?? null,
+    keterangan: row.keterangan ?? null,
+  };
+}
+
+function isExpired(jenis, tanggalKadaluarsa) {
+  if (jenis !== "voucher" && jenis !== "surat") return false;
+  if (!tanggalKadaluarsa) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const exp = new Date(tanggalKadaluarsa);
+  exp.setHours(0, 0, 0, 0);
+  return exp < today;
+}
+
+async function resolveDocument({ kode, nomor, jenis }) {
+  if (kode) {
+    return prisma.document.findUnique({ where: { kode } });
+  }
+  if (nomor && jenis) {
+    return prisma.document.findFirst({ where: { nomor, jenis } });
+  }
+  return null;
+}
+
+async function verify({ kode, nomor, jenis }, request) {
+  // Rate limit per IP
+  const ip = await getClientIp();
+  const r = rateLimitConsume(`verify:${ip}`, RATE_MAX, RATE_WINDOW);
+  if (!r.ok) {
+    return json(
+      { ok: false, error: rateLimitMessage(r.retryAfterMs), valid: false },
+      429,
+    );
+  }
+
+  const data = await resolveDocument({ kode, nomor, jenis });
+
+  if (!data) {
+    return json({ ok: false, valid: false, message: "Dokumen tidak ditemukan" }, 404);
+  }
+
+  const revoked = data.status === "revoked";
+  const expired = isExpired(data.jenis, data.tanggalKadaluarsa);
+  const valid = !revoked && !expired;
+
+  let message = "Dokumen valid";
+  if (revoked) message = "Dokumen telah dibatalkan (revoked)";
+  else if (expired) message = "Dokumen sudah kadaluarsa";
+
+  // Catat scan (best-effort, jangan gagalkan respon)
+  try {
+    await prisma.verificationScan.create({
+      data: {
+        documentId: data.id,
+        ipAddress: ip,
+        metadata: { kode: data.kode ?? null, jenis: data.jenis ?? null },
+      },
+    });
+  } catch (e) {
+    console.error("[/api/verification] scan log gagal:", e);
+  }
+
+  return json({
+    ok: true,
+    valid,
+    message,
+    type: data.jenis,
+    jitem: publicItem(data),
+  });
+}
+
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const kode = searchParams.get("kode");
+    const nomor = searchParams.get("nomor");
+    const jenis = searchParams.get("jenis");
+
+    if (!kode && !(nomor && jenis)) {
+      return json(
+        { ok: false, error: "Parameter kode atau (nomor + jenis) diperlukan" },
+        400,
+      );
+    }
+    return await verify({ kode, nomor, jenis }, request);
+  } catch (error) {
+    console.error("[/api/verification GET]", error);
+    return json({ ok: false, error: "Internal server error", detail: error?.message || String(error) }, 500);
+  }
+}
+
 export async function POST(request) {
   try {
     let body;
     try {
       body = await request.json();
     } catch {
-      return json({ error: "Invalid request body" }, 400);
+      return json({ ok: false, error: "Invalid request body" }, 400);
     }
 
-    const { code, nomor_sertifikat } = body;
-
-    if ((!code && !nomor_sertifikat) || (code && typeof code !== "string") || (nomor_sertifikat && typeof nomor_sertifikat !== "string")) {
-      return json({ error: "code atau nomor diperlukan" }, 400);
+    const { kode, nomor, jenis } = body ?? {};
+    if (!kode && !(nomor && jenis)) {
+      return json(
+        { ok: false, error: "Field kode atau (nomor + jenis) diperlukan" },
+        400,
+      );
     }
-
-    const db = createAdminClient();
-
-    let item = null;
-    let itemType = null;
-
-    /* ── Cari berdasarkan nomor ── */
-    if (nomor_sertifikat) {
-      const { data, error } = await db
-        .from("certificates")
-        .select("id, kode, nomor, jenis_sertifikat, nama_penerima, penerbit, status, issue_date, keterangan")
-        .eq("nomor", nomor_sertifikat)
-        .maybeSingle();
-
-      if (error) {
-        return json({ error: "Query error", detail: error.message }, 500);
-      }
-      if (data) {
-        item = data;
-        itemType = "certificate";
-      }
-    } else {
-      /* ── Cari voucher dulu berdasarkan code ── */
-      const { data: vd, error: vErr } = await db
-        .from("vouchers")
-        .select("id, kode, judul, keterangan, status, kadaluarsa")
-        .eq("kode", code)
-        .maybeSingle();
-
-      if (vErr) {
-        return json({ error: "Query error", detail: vErr.message }, 500);
-      }
-
-      if (vd) {
-        item = vd;
-        itemType = "voucher";
-      } else {
-        /* ── Jika bukan voucher, cek certificate ── */
-        const { data: cd, error: cErr } = await db
-          .from("certificates")
-          .select("id, kode, nomor, jenis_sertifikat, nama_penerima, penerbit, status, issue_date, keterangan")
-          .eq("kode", code)
-          .maybeSingle();
-
-        if (cErr) {
-          return json({ error: "Query error", detail: cErr.message }, 500);
-        }
-        if (cd) {
-          item = cd;
-          itemType = "certificate";
-        }
-      }
-    }
-
-    if (!item) {
-      return json({ error: "Tidak ditemukan", valid: false }, 404);
-    }
-
-    /* ── Build response ── */
-    const responseItem = {
-      code: item.kode || "",
-      title: item.judul || item.jenis_sertifikat || "",
-      description: item.keterangan || null,
-      status: item.status || "",
-    };
-
-    let valid = true;
-    let message = "";
-
-    if (itemType === "voucher") {
-      if (item.status === "expired" || item.status === "used" || item.status === "revoked") {
-        valid = false;
-        message = item.status === "expired"
-          ? "Voucher sudah expired"
-          : item.status === "used"
-            ? "Voucher sudah digunakan"
-            : "Voucher telah dibatalkan";
-      } else {
-        message = "Voucher valid";
-      }
-      if (item.kadaluarsa) {
-        responseItem.expires_at = item.kadaluarsa;
-      }
-    } else {
-      if (item.status === "revoked") {
-        valid = false;
-        message = "Sertifikat telah dibatalkan";
-      } else {
-        message = "Sertifikat valid";
-      }
-      responseItem.nomor_sertifikat = item.nomor || null;
-      responseItem.recipient_name = item.nama_penerima || "";
-      responseItem.certificate_type = item.jenis_sertifikat || "";
-      responseItem.dewan_ambalan = item.penerbit || null;
-      responseItem.issue_date = item.issue_date || null;
-    }
-
-    return json({
-      ok: true,
-      valid,
-      message,
-      type: itemType,
-      item: responseItem,
-    });
+    return await verify({ kode, nomor, jenis }, request);
   } catch (error) {
     console.error("[/api/verification POST]", error);
-    return json(
-      {
-        error: "Internal server error",
-        detail: error?.message || String(error),
-      },
-      500,
-    );
-  }
-}
-
-/* ── GET /api/verification?code=xxx — public verification via query param ── */
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const code = searchParams.get("code");
-    const nomor = searchParams.get("nomor_sertifikat");
-
-    if (!code && !nomor) {
-      return json({ error: "Parameter code atau nomor_sertifikat diperlukan" }, 400);
-    }
-
-    const db = createAdminClient();
-
-    let item = null;
-    let itemType = null;
-
-    if (nomor) {
-      const { data, error } = await db
-        .from("certificates")
-        .select("id, kode, nomor, jenis_sertifikat, nama_penerima, penerbit, status, issue_date, keterangan")
-        .eq("nomor", nomor)
-        .maybeSingle();
-
-      if (error) {
-        return json({ error: "Query error", detail: error.message }, 500);
-      }
-      if (data) {
-        item = data;
-        itemType = "certificate";
-      }
-    } else {
-      /* ── Cari voucher dulu ── */
-      const { data: vd, error: vErr } = await db
-        .from("vouchers")
-        .select("id, kode, judul, keterangan, status, kadaluarsa")
-        .eq("kode", code)
-        .maybeSingle();
-
-      if (vErr) {
-        return json({ error: "Query error", detail: vErr.message }, 500);
-      }
-
-      if (vd) {
-        item = vd;
-        itemType = "voucher";
-      } else {
-        /* ── Cek certificate ── */
-        const { data: cd, error: cErr } = await db
-          .from("certificates")
-          .select("id, kode, nomor, jenis_sertifikat, nama_penerima, penerbit, status, issue_date, keterangan")
-          .eq("kode", code)
-          .maybeSingle();
-
-        if (cErr) {
-          return json({ error: "Query error", detail: cErr.message }, 500);
-        }
-        if (cd) {
-          item = cd;
-          itemType = "certificate";
-        }
-      }
-    }
-
-    if (!item) {
-      return json({ error: "Tidak ditemukan", valid: false }, 404);
-    }
-
-    /* ── Build response ── */
-    const responseItem = {
-      code: item.kode || "",
-      title: item.judul || item.jenis_sertifikat || "",
-      description: item.keterangan || null,
-      status: item.status || "",
-    };
-
-    let valid = true;
-    let message = "";
-
-    if (itemType === "voucher") {
-      if (item.status === "expired" || item.status === "used" || item.status === "revoked") {
-        valid = false;
-        message = item.status === "expired"
-          ? "Voucher sudah expired"
-          : item.status === "used"
-            ? "Voucher sudah digunakan"
-            : "Voucher telah dibatalkan";
-      } else {
-        message = "Voucher valid";
-      }
-      if (item.kadaluarsa) {
-        responseItem.expires_at = item.kadaluarsa;
-      }
-    } else {
-      if (item.status === "revoked") {
-        valid = false;
-        message = "Sertifikat telah dibatalkan";
-      } else {
-        message = "Sertifikat valid";
-      }
-      responseItem.nomor_sertifikat = item.nomor || null;
-      responseItem.recipient_name = item.nama_penerima || "";
-      responseItem.certificate_type = item.jenis_sertifikat || "";
-      responseItem.dewan_ambalan = item.penerbit || null;
-      responseItem.issue_date = item.issue_date || null;
-    }
-
-    return json({
-      ok: true,
-      valid,
-      message,
-      type: itemType,
-      item: responseItem,
-    });
-  } catch (error) {
-    console.error("[/api/verification GET]", error);
-    return json(
-      {
-        error: "Internal server error",
-        detail: error?.message || String(error),
-      },
-      500,
-    );
+    return json({ ok: false, error: "Internal server error", detail: error?.message || String(error) }, 500);
   }
 }

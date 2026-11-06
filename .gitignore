@@ -58,3 +58,8 @@ Thumbs.db
 
 
 .env*
+
+# build logs
+*.log
+build_npm*.log
+next_build.log
