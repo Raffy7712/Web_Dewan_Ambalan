@@ -6,10 +6,10 @@
     "dev": "node --disable-warning=DEP0205 ./node_modules/next/dist/bin/next dev",
     "dev:all-warnings": "next dev",
     "dev:webpack": "next dev --webpack",
-    "build": "node scripts/migrate.js && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "migrate": "node scripts/migrate.js"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
