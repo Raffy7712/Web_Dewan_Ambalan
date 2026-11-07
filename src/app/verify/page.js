@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -48,7 +48,7 @@ function fmt(date) {
 
 export default function VerifyPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground">Memuat…</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-[#6B5E52]">Memuat…</div>}>
       <VerifyForm />
     </Suspense>
   );
@@ -157,102 +157,116 @@ function VerifyForm() {
     : "";
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="sticky top-0 z-50 bg-card border-b border-border shadow-sm">
+    <div className="min-h-screen bg-[#FBF6EE] text-[#3A2E25] flex flex-col">
+      <header className="sticky top-0 z-50 bg-[#FBF6EE]/90 backdrop-blur border-b border-[#E5DDD0]">
         <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-9 h-9 rounded-lg overflow-hidden bg-primary/10 flex items-center justify-center">
-              <LogoImage size={32} />
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#5B3A1F] flex items-center justify-center overflow-hidden">
+              <LogoImage size={28} />
             </div>
-            <span className="font-bold text-foreground text-sm">Verifikasi Dokumen</span>
+            <span className="font-bold text-[#3A2E25] text-sm">Dewan Ambalan</span>
           </Link>
-          <Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-            Beranda
-          </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/verify"
+              className="text-sm font-medium text-[#6B5E52] hover:text-[#5B3A1F] transition-colors"
+            >
+              Verifikasi
+            </Link>
+            <Link
+              href="/admin"
+              className="text-sm font-medium text-[#6B5E52] hover:text-[#5B3A1F] transition-colors"
+            >
+              Admin
+            </Link>
+            <Link
+              href="/admin/login"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[#5B3A1F] hover:bg-[#4A2F18] text-[#FBF6EE] text-sm font-semibold transition-colors"
+            >
+              Masuk
+            </Link>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 px-4 py-8 sm:py-12">
+      <main className="flex-1 px-4 py-10 sm:py-14">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-secondary/10 border border-secondary/30 text-secondary text-xs font-semibold px-3 py-1.5 rounded-full mb-3">
+            <div className="inline-flex items-center gap-2 bg-[#EDE3D6] text-[#5B3A1F] text-xs font-semibold px-3.5 py-1.5 rounded-full mb-3">
               <ShieldCheck size={14} />
-              Verifikasi Keaslian Dokumen
+              Layanan Resmi Dewan Ambalan
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold">
-              Cek Keaslian Dokumen
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Verifikasi Dokumen
             </h1>
-            <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
-              Masukkan kode dokumen, atau pilih jenis dan nomor dokumen untuk
-              memastikan dokumen sah.
+            <p className="text-[#6B5E52] text-sm mt-2 leading-relaxed">
+              Masukkan kode unik yang tertera pada dokumen atau pindai QR code.
             </p>
           </div>
 
-          <Card>
-            <CardContent className="p-5 sm:p-6">
-              <form onSubmit={onSubmit} className="flex flex-col gap-4">
-                <div>
-                  <Label htmlFor="kode">Kode dokumen</Label>
-                  <Input
-                    id="kode"
-                    value={kode}
-                    onChange={(e) => setKode(e.target.value)}
-                    placeholder="Contoh: SRT-2026-AB12CD"
-                    autoComplete="off"
-                    className="mt-1.5"
-                  />
-                </div>
+          <form onSubmit={onSubmit} className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 rounded-xl border border-[#E5DDD0] bg-white p-2 shadow-sm">
+              <input
+                id="kode"
+                value={kode}
+                onChange={(e) => setKode(e.target.value)}
+                placeholder="SRT-2026-TQUIKT"
+                autoComplete="off"
+                className="flex-1 h-11 px-3 bg-transparent text-sm outline-none placeholder:text-[#6B5E52]"
+              />
+              <Button
+                type="submit"
+                disabled={status === "loading"}
+                className="h-11 rounded-lg bg-[#5B3A1F] hover:bg-[#4A2F18] text-[#FBF6EE] shadow-none"
+              >
+                {status === "loading" ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    Memeriksa…
+                  </>
+                ) : (
+                  <>
+                    <Search size={16} />
+                    Verifikasi
+                  </>
+                )}
+              </Button>
+            </div>
 
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <span className="h-px flex-1 bg-border" />
-                  atau
-                  <span className="h-px flex-1 bg-border" />
-                </div>
+            <div className="flex items-center gap-3 text-xs text-[#6B5E52]">
+              <span className="h-px flex-1 bg-[#E5DDD0]" />
+              atau
+              <span className="h-px flex-1 bg-[#E5DDD0]" />
+            </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="jenis">Jenis dokumen</Label>
-                    <select
-                      id="jenis"
-                      value={jenis}
-                      onChange={(e) => setJenis(e.target.value)}
-                      className="mt-1.5 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    >
-                      {JENIS.map((o) => (
-                        <option key={o.value} value={o.value}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <Label htmlFor="nomor">Nomor dokumen</Label>
-                    <Input
-                      id="nomor"
-                      value={nomor}
-                      onChange={(e) => setNomor(e.target.value)}
-                      placeholder="Nomor dokumen"
-                      className="mt-1.5"
-                    />
-                  </div>
-                </div>
-
-                <Button type="submit" disabled={status === "loading"} className="h-11">
-                  {status === "loading" ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      Memeriksa…
-                    </>
-                  ) : (
-                    <>
-                      <Search size={16} />
-                      Verifikasi
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="jenis" className="text-[#6B5E52]">Jenis dokumen</Label>
+                <select
+                  id="jenis"
+                  value={jenis}
+                  onChange={(e) => setJenis(e.target.value)}
+                  className="mt-1.5 flex h-11 w-full rounded-lg border border-[#E5DDD0] bg-white px-3 py-1 text-sm text-[#3A2E25] shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-[#5B3A1F]"
+                >
+                  {JENIS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="nomor" className="text-[#6B5E52]">Nomor dokumen</Label>
+                <Input
+                  id="nomor"
+                  value={nomor}
+                  onChange={(e) => setNomor(e.target.value)}
+                  placeholder="Nomor dokumen"
+                  className="mt-1.5 h-11 rounded-lg border-[#E5DDD0]"
+                />
+              </div>
+            </div>
+          </form>
 
           {status === "valid" && result?.jitem && (
             <ResultCard tone="valid" message={message} item={result.jitem} qrUrl={qrUrl} />
@@ -261,12 +275,12 @@ function VerifyForm() {
             <ResultCard tone="invalid" message={message} item={result.jitem} qrUrl={qrUrl} />
           )}
           {status === "notfound" && (
-            <Card className="mt-5 border-destructive/40">
+            <Card className="mt-5 border-[#C62828]/50 bg-white">
               <CardContent className="p-5 flex items-start gap-3">
-                <AlertTriangle className="text-destructive mt-0.5" size={20} />
+                <AlertTriangle className="text-[#C62828] mt-0.5" size={20} />
                 <div>
-                  <p className="font-semibold text-destructive">Dokumen tidak ditemukan</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="font-semibold text-[#C62828]">Dokumen tidak ditemukan</p>
+                  <p className="text-sm text-[#6B5E52] mt-1">
                     {message || "Periksa kembali kode atau nomor dokumen yang dimasukkan."}
                   </p>
                 </div>
@@ -277,11 +291,11 @@ function VerifyForm() {
           {history.length > 0 && (
             <div className="mt-8">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold flex items-center gap-2">
-                  <History size={16} className="text-muted-foreground" />
+                <h2 className="text-sm font-semibold flex items-center gap-2 text-[#3A2E25]">
+                  <History size={16} className="text-[#6B5E52]" />
                   Riwayat scan
                 </h2>
-                <Button variant="ghost" size="sm" onClick={clearHistory} className="h-8">
+                <Button variant="ghost" size="sm" onClick={clearHistory} className="h-8 text-[#6B5E52] hover:text-[#5B3A1F]">
                   <Trash2 size={14} />
                   Bersihkan
                 </Button>
@@ -290,20 +304,20 @@ function VerifyForm() {
                 {history.map((h) => (
                   <li
                     key={h.kode + h.time}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-[#E5DDD0] bg-white px-3 py-2"
                   >
                     <Link href={`/verify?kode=${encodeURIComponent(h.kode)}`} className="min-w-0">
-                      <p className="text-sm font-medium truncate">{h.judul || h.kode}</p>
-                      <p className="text-xs text-muted-foreground truncate">
+                      <p className="text-sm font-medium truncate text-[#3A2E25]">{h.judul || h.kode}</p>
+                      <p className="text-xs text-[#6B5E52] truncate">
                         {JENIS_LABEL[h.jenis] || h.jenis} · {h.kode}
                       </p>
                     </Link>
                     {h.valid ? (
-                      <Badge variant="default" className="shrink-0 bg-primary/10 text-primary border-primary/30">
+                      <Badge className="shrink-0 bg-[#0F6B3C]/10 text-[#0F6B3C] border-[#0F6B3C]/30">
                         <CheckCircle2 size={12} className="mr-1" /> Sah
                       </Badge>
                     ) : (
-                      <Badge variant="destructive" className="shrink-0">
+                      <Badge className="shrink-0 bg-[#C62828] text-white border-transparent">
                         <XCircle size={12} className="mr-1" /> Tidak sah
                       </Badge>
                     )}
@@ -315,10 +329,10 @@ function VerifyForm() {
         </div>
       </main>
 
-      <footer className="bg-card border-t border-border py-5 px-4 text-center">
-        <p className="text-muted-foreground text-xs">
-          &copy; {new Date().getFullYear()} Dewan Ambalan SMK Al Furqon Bantarkawung.
-        </p>
+      <footer className="bg-[#5B3A1F] text-[#FBF6EE]">
+        <div className="max-w-3xl mx-auto px-4 py-5 text-center text-xs">
+          <p>&copy; 2026 Dewan Ambalan &mdash; Layanan Verifikasi Resmi</p>
+        </div>
       </footer>
     </div>
   );
@@ -327,48 +341,43 @@ function VerifyForm() {
 function ResultCard({ tone, message, item, qrUrl }) {
   const valid = tone === "valid";
   return (
-    <Card className={`mt-5 ${valid ? "border-primary/40" : "border-destructive/40"}`}>
+    <Card className={`mt-5 ${valid ? "border-[#0F6B3C] bg-white" : "border-[#C62828]/50 bg-white"}`}>
       <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {valid ? (
-            <Badge variant="default" className="bg-primary/10 text-primary border-primary/30">
-              <CheckCircle2 size={14} className="mr-1" /> Dokumen Sah
-            </Badge>
+            <span className="inline-flex items-center gap-1.5 bg-[#0F6B3C] text-white text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
+              <CheckCircle2 size={14} /> Dokumen Terverifikasi
+            </span>
           ) : (
-            <Badge variant="destructive">
-              <XCircle size={14} className="mr-1" /> Tidak Valid
-            </Badge>
+            <span className="inline-flex items-center gap-1.5 bg-[#C62828] text-white text-xs font-bold uppercase tracking-wide px-3 py-1 rounded-full">
+              <XCircle size={14} /> Dokumen Tidak Valid
+            </span>
           )}
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-[#6B5E52]">
             {JENIS_LABEL[item.jenis] || item.jenis}
           </span>
         </div>
-        {message && <p className="text-sm text-muted-foreground mt-2">{message}</p>}
+        {message && <p className="text-sm text-[#6B5E52] mt-2">{message}</p>}
       </CardHeader>
       <CardContent className="pt-0">
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-          <Field label="Judul" value={item.judul} />
-          <Field label="Kode" value={item.kode} />
-          <Field label="Nomor" value={item.nomor} />
-          <Field label="Penerima" value={item.penerima} />
-          <Field label="Penerbit" value={item.penerbit} />
-          <Field label="Status" value={item.status} />
-          <Field label="Tanggal terbit" value={fmt(item.tanggal_terbit)} />
-          <Field label="Tanggal kadaluarsa" value={fmt(item.tanggal_kadaluarsa)} />
-          {item.keterangan && (
-            <div className="sm:col-span-2">
-              <dt className="text-xs text-muted-foreground">Keterangan</dt>
-              <dd className="mt-0.5">{item.keterangan}</dd>
-            </div>
-          )}
+        <dl className="divide-y divide-[#E5DDD0]">
+          <Row label="Jenis" value={JENIS_LABEL[item.jenis] || item.jenis} />
+          <Row label="Kode" value={item.kode} />
+          <Row label="Nomor" value={item.nomor} />
+          <Row label="Nama" value={item.penerima} />
+          <Row label="Penerbit" value={item.penerbit} />
+          <Row label="Status" value={item.status} />
+          <Row label="Diterbitkan" value={fmt(item.tanggal_terbit)} />
+          <Row label="Kadaluarsa" value={fmt(item.tanggal_kadaluarsa)} />
+          {item.keterangan && <Row label="Keterangan" value={item.keterangan} />}
         </dl>
 
         {qrUrl && (
-          <div className="mt-5 flex flex-col items-center gap-2 border-t border-border pt-4">
-            <div className="bg-white p-3 rounded-lg">
+          <div className="mt-5 flex flex-col items-center gap-2 border-t border-[#E5DDD0] pt-4">
+            <div className="bg-white p-3 rounded-lg border border-[#E5DDD0]">
               <QRCodeSVG value={qrUrl} size={132} />
             </div>
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-[#6B5E52] text-center">
               Pindai untuk membuka verifikasi dokumen ini.
             </p>
           </div>
@@ -378,12 +387,11 @@ function ResultCard({ tone, message, item, qrUrl }) {
   );
 }
 
-function Field({ label, value }) {
+function Row({ label, value }) {
   return (
-    <div>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="mt-0.5 break-words">{value || "-"}</dd>
+    <div className="flex items-start justify-between gap-4 py-2.5">
+      <dt className="text-xs text-[#6B5E52]">{label}</dt>
+      <dd className="text-sm font-medium text-[#3A2E25] text-right break-words">{value || "-"}</dd>
     </div>
   );
 }
-
