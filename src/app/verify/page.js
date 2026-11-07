@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -183,7 +183,7 @@ function VerifyForm() {
               href="/admin/login"
               className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-[#5B3A1F] hover:bg-[#4A2F18] text-[#FBF6EE] text-sm font-semibold transition-colors"
             >
-              Masuk
+              Masuk Admin
             </Link>
           </div>
         </div>
